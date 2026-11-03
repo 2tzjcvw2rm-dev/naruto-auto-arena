@@ -111,6 +111,40 @@ button:active{transform:translateY(2px)}
 #criticalStats{color:#ffdb8a;font-size:15px;margin-top:9px}
 .upgrades{grid-template-columns:repeat(2,minmax(0,1fr))}
 .upgrades button{min-height:64px}
+</style><style>
+/* 5v5 team update */
+.arena{height:440px;min-height:440px}
+#hero,#enemy{display:none!important}
+.team-side{position:absolute;bottom:14%;width:45%;height:58%;z-index:4;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);align-items:end;gap:0}
+#allyTeam{left:2%}#foeTeam{right:2%;direction:rtl}
+.mini-unit{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:end;min-width:0;filter:drop-shadow(0 5px 3px #17221a88);animation:breathe 1.6s ease-in-out infinite}
+.mini-unit svg{height:92px;width:100%;max-width:80px;overflow:visible}
+.mini-unit.enemy-unit svg{transform:scaleX(-1)}
+.mini-unit .unit-name{font-size:10px;font-weight:900;color:white;background:#101b2dc9;padding:2px 3px;border-radius:4px;white-space:nowrap;max-width:100%;overflow:hidden}
+.mini-unit .unit-hp{width:85%;height:5px;border-radius:6px;background:#601d29;margin:3px auto}
+.mini-unit .unit-hp i{display:block;height:100%;background:#4ef18b;border-radius:6px}
+.mini-unit.down{opacity:.22;filter:grayscale(1)}
+.mini-unit.striking{animation:miniStrike .34s ease-in-out!important}
+.mini-unit.targeted{filter:brightness(1.8) drop-shadow(0 0 8px #f55)}
+@keyframes miniStrike{50%{transform:translateX(15px) scale(1.18)}}
+#foeTeam .mini-unit.striking{animation:miniEnemyStrike .34s ease-in-out!important}
+@keyframes miniEnemyStrike{50%{transform:translateX(-15px) scale(1.18)}}
+#teamBtn{background:#547ab0;color:white;box-shadow:0 3px #28436a;border-color:#9cc1f3}
+#teamModal{position:fixed;inset:0;z-index:2000;background:#07111bea;display:none;align-items:center;justify-content:center;padding:12px}
+#teamModal.open{display:flex}
+.team-dialog{width:min(100%,530px);max-height:92vh;overflow:auto;border:2px solid #cf8b39;border-radius:16px;background:#1b2638;padding:16px;text-align:left}
+.team-dialog h2{text-align:center;color:#ffb347;margin:0 0 8px}
+.team-dialog p{font-size:13px;color:#c4d2e3;margin:7px 0 12px}
+.team-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.team-card{display:flex;gap:8px;align-items:center;text-align:left;background:#2c3a4d;color:white;border:2px solid #4b5e77;border-radius:10px;padding:8px;box-shadow:none;font-size:12px;min-height:74px}
+.team-card.chosen{border-color:#ffbd56;background:#59432c}
+.team-card svg{width:46px;height:65px;flex-shrink:0}
+.team-card strong{font-size:13px}
+.team-card small{display:block;color:#c8d3e3;font-size:11px;margin-top:3px}
+.team-close{width:100%;margin-top:12px}
+#teamStatus{color:#ffcd7d;text-align:center;font-weight:700;font-size:14px;margin:6px 0}
+#hitnumber{left:55%!important;top:23%!important}
+@media(max-width:390px){.arena{height:405px;min-height:405px}.mini-unit svg{height:76px}.mini-unit .unit-name{font-size:9px}}
 </style></head>
 <body>
 <header>
@@ -121,7 +155,7 @@ button:active{transform:translateY(2px)}
 <div class="sun"></div>
 <div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
 <div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
-<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Автоматические бои, прокачка и техники ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Автоматические бои, прокачка и техники ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -132,19 +166,98 @@ button:active{transform:translateY(2px)}
 <div class="bar"><div id="enemybar" class="fill"></div></div></div>
 </div>
 <div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
-<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
 <button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
 <button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
 <button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
 </div>
-<div id="log">⚔️ Автобой начался</div>
+<div id="teamStatus">Команда: 1/5</div><div id="log">⚔️ Автобой начался</div>
 </div>
-<script>
+<div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
 let s;
 try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
 s=Object.assign({coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100,critChance:5,critDamage:150},s||{});
 s.critChance=Number(s.critChance)||5;s.critDamage=Number(s.critDamage)||150;
+const roster=[
+{id:'naruto',name:'Наруто',role:'Атака',color:'#f19b2c',hair:'#f8d13d',skin:'#f4bd8c',hp:125,atk:16,spd:12},
+{id:'sasuke',name:'Саске',role:'Урон',color:'#4e5793',hair:'#1c2232',skin:'#e7bba0',hp:105,atk:21,spd:15},
+{id:'sakura',name:'Сакура',role:'Лечение',color:'#d45d77',hair:'#f6a0b7',skin:'#f4c1aa',hp:115,atk:12,spd:11},
+{id:'kakashi',name:'Какаши',role:'Скорость',color:'#556b7b',hair:'#d8e3e9',skin:'#e0b9a4',hp:110,atk:19,spd:18},
+{id:'hinata',name:'Хината',role:'Защита',color:'#a99bd1',hair:'#262a47',skin:'#efd1c0',hp:135,atk:13,spd:10},
+{id:'shikamaru',name:'Шикамару',role:'Контроль',color:'#697c57',hair:'#292b2c',skin:'#d9ad87',hp:120,atk:15,spd:12},
+{id:'gaara',name:'Гаара',role:'Защита',color:'#a05c44',hair:'#c95743',skin:'#f2c6a8',hp:145,atk:17,spd:9}
+];
+const enemies=[
+{id:'itachi',name:'Итачи',color:'#272b34',hair:'#16151d',skin:'#d9b7aa',hp:110,atk:16,spd:13},
+{id:'pain',name:'Пейн',color:'#33343e',hair:'#ec8c4d',skin:'#d6b7a3',hp:125,atk:16,spd:11},
+{id:'kisame',name:'Кисаме',color:'#333c4e',hair:'#425b78',skin:'#7495ad',hp:145,atk:14,spd:9},
+{id:'deidara',name:'Дейдара',color:'#252c35',hair:'#e9cf79',skin:'#e4c0a1',hp:95,atk:19,spd:14},
+{id:'sasori',name:'Сасори',color:'#33303a',hair:'#b75c47',skin:'#d8b5a0',hp:115,atk:16,spd:12}
+];
+function ninjaSVG(c){
+return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><path d="M21 115L16 65Q20 56 32 53H50Q62 56 65 66L60 115" fill="'+c.color+'" stroke="#252c39" stroke-width="3"/><path d="M31 91L29 116M50 91L51 116" stroke="#242c38" stroke-width="6"/><path d="M18 65L12 89L24 95M63 65L69 89L58 95" fill="none" stroke="'+c.color+'" stroke-width="11"/><ellipse cx="40" cy="34" rx="20" ry="25" fill="'+c.skin+'" stroke="#47352f" stroke-width="2"/><path d="M18 34L14 21L27 23L25 9L35 16L42 3L48 15L60 8L58 23L68 21L62 35L55 21L25 24Z" fill="'+c.hair+'" stroke="#30313b" stroke-width="2"/><path d="M23 34L57 34L56 43L24 43Z" fill="#2a3545"/><rect x="33" y="35" width="15" height="7" rx="2" fill="#b8c4cc"/><path d="M27 48L35 48M46 48L54 48" stroke="#272936" stroke-width="3"/><path d="M36 56Q40 59 45 56" fill="none" stroke="#a15c50" stroke-width="2"/></svg>';
+}
+s.team=Array.isArray(s.team)?s.team.filter(id=>roster.some(r=>r.id===id)):['naruto'];
+if(!s.team.includes('naruto'))s.team.unshift('naruto');
+s.team=[...new Set(s.team)].slice(0,5);
+let allies=[],foes=[];
+function initTeams(){
+allies=s.team.map(id=>{let r=roster.find(x=>x.id===id);return {...r,curHp:r.hp+s.maxHp*.25,maxHp:r.hp+s.maxHp*.25}});
+foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08))}));
+renderTeams();
+}
+function renderTeams(){
+for(let [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+el(side).innerHTML=units.map((u,i)=>'<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div></div>').join('');
+}
+el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+}
+function renderTeamCards(){
+el('teamCards').innerHTML=roster.map(c=>'<button class="team-card '+(s.team.includes(c.id)?'chosen':'')+'" onclick="toggleMember(\''+c.id+'\')">'+ninjaSVG(c)+'<span><strong>'+(s.team.includes(c.id)?'✓ ':'')+c.name+'</strong><small>'+c.role+' · ⚔️ '+c.atk+' · ❤️ '+c.hp+'</small></span></button>').join('');
+}
+function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
+function closeTeam(){el('teamModal').classList.remove('open');renderTeams();render()}
+function toggleMember(id){
+if(id==='naruto'){log('Наруто — лидер команды');return}
+if(s.team.includes(id)){s.team=s.team.filter(x=>x!==id)}
+else if(s.team.length>=5){el('teamStatus').textContent='Максимум 5 ниндзя!';return}
+else s.team.push(id);
+save();initTeams();renderTeamCards();
+}
+function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330)}
+function battleRound(){
+let livingA=allies.filter(u=>u.curHp>0),livingE=foes.filter(u=>u.curHp>0);
+if(!livingA.length){allies.forEach(u=>u.curHp=u.maxHp);log('💚 Команда восстановилась!');renderTeams();return}
+if(!livingE.length){winWave();return}
+let attacker=livingA[Math.floor(Math.random()*livingA.length)],target=livingE[Math.floor(Math.random()*livingE.length)];
+let ai=allies.indexOf(attacker),ei=foes.indexOf(target);
+let crit=Math.random()*100<s.critChance;
+let base=attacker.atk+(attacker.id==='naruto'?s.damage:Math.round(s.damage*.3));
+let multiplier=1,skill='';
+if(attacker.id==='naruto'&&turn%7===0){multiplier=4;skill='Расенган';effect('Расенган')}
+else if(attacker.id==='naruto'&&turn%3===0){multiplier=2;skill='Клоны';effect('Клоны')}
+else if(attacker.id==='sasuke'&&turn%4===0){multiplier=2;skill='Чидори'}
+else if(attacker.id==='kakashi'&&turn%4===0){multiplier=2;skill='Райкири'}
+else if(attacker.id==='sakura'&&turn%3===0){let wounded=allies.filter(u=>u.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];wounded.curHp=Math.min(wounded.maxHp,wounded.curHp+35);skill='Лечение'}
+let dmg=Math.round(base*multiplier*(crit?s.critDamage/100:1));
+target.curHp=Math.max(0,target.curHp-dmg);
+animateUnit('allyTeam',ai,'striking');animateUnit('foeTeam',ei,'targeted');
+showDamage(dmg,crit);
+log(attacker.name+' → '+target.name+': '+(crit?'💥 КРИТ! ':'')+dmg+(skill?' · '+skill:''));
+if(foes.every(u=>u.curHp<=0)){winWave();return}
+let retaliation=foes.filter(u=>u.curHp>0);
+if(retaliation.length){
+let foe=retaliation[Math.floor(Math.random()*retaliation.length)];
+let victim=allies.filter(u=>u.curHp>0)[Math.floor(Math.random()*allies.filter(u=>u.curHp>0).length)];
+victim.curHp=Math.max(0,victim.curHp-Math.max(2,Math.round(foe.atk*.45-s.speed*.12)));
+animateUnit('foeTeam',foes.indexOf(foe),'striking');
+}
+renderTeams();render();
+}
+function winWave(){
+s.coins+=15+s.wave*5;s.level++;s.wave++;save();initTeams();log('🏆 Команда победила! Волна '+s.wave+' · монеты получены');render();
+}
 let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 let started=false,paused=false,timer=null;
 function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
@@ -172,7 +285,7 @@ if(type==='critDamage')s.critDamage+=15;
 save();render();log('Улучшение куплено!');
 }
 function hit(){
-turn++;let dmg=s.damage;
+turn++;battleRound();return;let dmg=s.damage;
 let crit=Math.random()*100<s.critChance;
 el('hero').classList.add('attack');el('enemy').classList.add('hurt');
 setTimeout(()=>el('enemy').classList.remove('hurt'),200);
@@ -194,13 +307,13 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 render();
 }
 function schedule(){clearTimeout(timer);if(!started||paused)return;timer=setTimeout(()=>{hit();schedule()},Math.max(350,1400-s.speed*35))}
-function startGame(){started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';log('⚔️ Бой начался!');schedule()}
+function startGame(){initTeams();started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';log('⚔️ Бой начался!');schedule()}
 function togglePause(){
 if(!started){startGame();return}
 paused=!paused;el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');schedule();
 }
-render();
+initTeams();render();
 </script>
 </body>
 </html>
