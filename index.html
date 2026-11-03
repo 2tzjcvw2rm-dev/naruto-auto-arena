@@ -178,6 +178,12 @@ button:active{transform:translateY(2px)}
 </style><style>.profile-open{background:#f5bd59!important;color:#1c2533!important;border:2px solid #ffe1a1!important}.team-card{display:block!important;text-align:center!important}.team-card svg{vertical-align:middle}.team-card button{font-size:12px;padding:9px 5px}</style><style>
 .quality-0{border-color:#d6dce6!important;color:#f0f4fc!important}.quality-1{border-color:#4ee784!important;color:#75ffa0!important}.quality-2{border-color:#479cff!important;color:#77baff!important}.quality-3{border-color:#bc75ff!important;color:#d5a3ff!important}.quality-4{border-color:#ffd34e!important;color:#ffe37b!important}.quality-5{border-color:#ff4b58!important;color:#ff8991!important}
 .bag-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.bag-item{background:#202e42;border:2px solid #788397;border-radius:9px;padding:9px 5px;color:#fff;box-shadow:none;font-size:12px;min-height:76px}.bag-item b{font-size:23px}.bag-section{border-top:1px solid #65728a;margin-top:14px;padding-top:10px}.bag-section h3{margin:4px 0;color:#ffcf70}.bag-actions{display:flex;gap:5px;margin-top:6px}.bag-actions button{flex:1;padding:9px 4px;font-size:12px}.equip-slot small{font-size:11px}.profile-dialog{max-height:93vh}
+</style><style>
+#bagModal{position:fixed;inset:0;z-index:2600;background:#07101def;display:none;align-items:center;justify-content:center;padding:12px}
+#bagModal.open{display:flex}
+#bagBtn{background:linear-gradient(#c69b5a,#86603c);border:2px solid #e9c58b;color:#fff;font-size:16px}
+.bag-dialog{background:#202b3c;border:2px solid #dfb56d;border-radius:15px;padding:14px;width:min(100%,530px);max-height:92vh;overflow:auto}
+.bag-dialog h2{color:#ffcf77;margin:0 0 8px}
 </style></head>
 <body>
 <header>
@@ -199,14 +205,14 @@ button:active{transform:translateY(2px)}
 <div class="bar"><div id="enemybar" class="fill"></div></div></div>
 </div>
 <div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
-<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🎒 Персонажи и предметы</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🥷 Персонажи</button><button id="bagBtn" onclick="openBag()">🎒 Сумка</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
 <button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
 <button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
 <button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
 </div>
 <div id="teamStatus">Команда: 1/5</div><div id="log">⚔️ Автобой начался</div>
 </div>
-<div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
+<div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
 let s;
 try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
@@ -342,10 +348,35 @@ el('profileContent').innerHTML='<div class="profile-hero">'+ninjaSVG(c)+'<div cl
 '<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
 '<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
 '<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
-'<div class="bag-section"><h3>🎒 Сумка · '+s.inventory.filter(x=>!gearOwner(x.id)).length+' свободно</h3><div class="bag-grid">'+(bag||'<div style="grid-column:span 2;color:#cbd4e3">Сумка пуста. Купи предмет ниже.</div>')+'</div></div>'+
-'<div class="bag-section"><h3>🛒 Магазин предметов</h3><div class="bag-grid">'+gearCatalog.map(g=>'<button class="bag-item" onclick="buyGear(\''+g.slot+'\')"><b>'+g.icon+'</b><div>'+g.label+'</div><small>Белый · '+g.cost+' 🪙</small></button>').join('')+'</div></div>'+
 '<div class="profile-hint" id="profileHint">Купленные вещи остаются в сумке после снятия. Улучшения сохраняются.</div>';
 }
+
+function openBag(){if(started&&!paused)togglePause();el('bagModal').classList.add('open');renderBag()}
+function closeBag(){el('bagModal').classList.remove('open');initTeams();render()}
+function bagAction(id,hero){
+const item=itemById(id);if(!item)return;
+const owner=gearOwner(id);
+if(owner===hero)delete heroData(owner).gear[item.slot];
+else{if(owner)delete heroData(owner).gear[item.slot];delete heroData(hero).gear[item.slot];heroData(hero).gear[item.slot]=id}
+save();initTeams();render();renderBag();
+}
+function bagUpgrade(id){
+const item=itemById(id);if(!item||item.quality>=5)return;
+const cost=upgradeCost(item);
+if(s.coins<cost){el('bagHint').textContent='Не хватает монет! Нужно '+cost;return}
+s.coins-=cost;item.quality++;save();initTeams();render();renderBag();
+}
+function renderBag(){
+const available=s.inventory.filter(i=>!gearOwner(i.id));
+el('bagContent').innerHTML='<p style="color:#e8d7b7">🪙 Монеты: '+s.coins+' · Свободно: '+available.length+' · Всего: '+s.inventory.length+'</p>'+
+'<div class="bag-grid">'+(s.inventory.map(item=>{
+const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id);
+return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+qualities[item.quality].name+'</div><small>'+(owner?'Надето: '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="bagAction('+item.id+',document.getElementById(\\'bagHero\\').value)">'+(owner?'Снять / надеть':'Надеть')+'</button><button '+(item.quality===5?'disabled':'')+' onclick="bagUpgrade('+item.id+')">'+(item.quality===5?'MAX':'⬆️ '+upgradeCost(item)+' 🪙')+'</button></div></div>'
+}).join('')||'<p>Сумка пуста. Купи предмет ниже.</p>')+'</div>'+
+'<p style="margin:12px 0 5px;color:#f5dba5">На какого ниндзя надевать:</p><select id="bagHero" style="width:100%;padding:11px;border-radius:8px;background:#34445a;color:white">'+roster.map(x=>'<option value="'+x.id+'">'+x.name+'</option>').join('')+'</select>'+
+'<div class="bag-section"><h3>🛒 Магазин</h3><div class="bag-grid">'+gearCatalog.map(g=>'<button class="bag-item" onclick="bagBuy(\\''+g.slot+'\\')"><b>'+g.icon+'</b><div>'+g.label+'</div><small>Белый · '+g.cost+' 🪙</small></button>').join('')+'</div></div><p id="bagHint" style="color:#ffcf77;font-size:13px">Предметы остаются в сумке после снятия.</p>';
+}
+function bagBuy(slot){const g=gearCatalog.find(x=>x.slot===slot);if(s.coins<g.cost){el('bagHint').textContent='Не хватает монет!';return}s.coins-=g.cost;newItem(slot);save();render();renderBag()}
 function levelCost(p){return 30+p.level*20}
 function levelHero(){let p=heroData(selectedProfile),cost=levelCost(p);if(s.coins<cost){showGearHint('Не хватает монет! Нужно '+cost);return}s.coins-=cost;p.level++;save();initTeams();render();renderProfile()}
 function buyGear(slot){const g=gearCatalog.find(x=>x.slot===slot);if(!g)return;if(s.coins<g.cost){showGearHint('Не хватает монет! Нужно '+g.cost);return}s.coins-=g.cost;newItem(slot);save();render();renderProfile()}
