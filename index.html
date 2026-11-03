@@ -204,7 +204,7 @@ button:active{transform:translateY(2px)}
 
 
 .arena.three-active .ground{opacity:.65}
-</style><script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+</style><script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -534,9 +534,10 @@ const cls=kind==='melee'?'jutsu-melee':kind==='heal'||kind==='support'?'jutsu-he
 source.style.setProperty('--strike',side==='allyTeam'?'22px':'-22px');
 source.style.setProperty('--chakra',color);
 source.classList.remove('jutsu-melee','jutsu-cast','jutsu-ultimate','jutsu-heal');
+const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin='50% 75%';sprite.animate([{transform:'translateY(0) rotate(0deg)'},{transform:action===2?'translateY(-16px) rotate(-9deg)':'translateY(-7px) rotate(-6deg)'},{transform:action===0?'translateX(14px) rotate(12deg)':'translateX(5px) rotate(5deg)'},{transform:'translateY(0) rotate(0deg)'}],{duration:1500,easing:'ease-in-out'});}
 void source.offsetWidth;source.classList.add(cls);
 setTimeout(()=>source.classList.remove(cls),1300);
-if(target!==source&&kind!=='heal'&&kind!=='support'){target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
+if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
 const fx=document.createElement('div');
 fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
 fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
@@ -656,7 +657,7 @@ let heroRenderer=null;
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
 if(heroRenderer){try{heroRenderer.dispose()}catch(e){}heroRenderer=null}
-if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);return}
+if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);host.insertAdjacentHTML('beforeend','<span class="model-credit">3D временно недоступно</span>');return}
 try{
 host.innerHTML='';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
@@ -827,7 +828,7 @@ function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)ret
 function startGame(){clearTimeout(actionTimer);roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
 function togglePause(){
 if(!started){startGame();return}
-paused=!paused;if(paused){clearTimeout(actionTimer);roundInProgress=false}else schedule();el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
+paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInProgress=false}else{roundInProgress=false;schedule()}el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
