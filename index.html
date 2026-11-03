@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naruto Auto Arena</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10192e;color:white;font-family:Arial;text-align:center}
+header{background:#18263e;padding:18px;color:#ffa52c}
+h1{font-size:27px;margin:5px}
+.arena{height:310px;background:linear-gradient(#293c63,#546c91);position:relative;overflow:hidden}
+.sun{position:absolute;right:35px;top:30px;background:#ffcb75;border-radius:50%;width:65px;height:65px}
+.ground{position:absolute;bottom:0;width:100%;height:70px;background:#345c47}
+.fighter{position:absolute;bottom:65px;font-size:75px;transition:transform .25s}
+#hero{left:12%}#enemy{right:12%}
+.attack{transform:translateX(45px) scale(1.15)!important}
+.hurt{filter:brightness(2)}
+.effect{position:absolute;top:100px;width:100%;font-size:48px;pointer-events:none}
+.panel{padding:16px}
+.bars{display:flex;gap:15px;justify-content:space-between}
+.unit{width:48%}
+.bar{background:#712c38;border-radius:20px;height:16px;overflow:hidden;margin-top:8px}
+.fill{height:100%;background:#39d68c;width:100%;transition:width .3s}
+button{background:#ffa52c;color:#152037;border:0;border-radius:14px;padding:16px 8px;font-weight:bold;font-size:14px}
+.upgrades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+#log{min-height:65px;color:#b9d1fa;margin-top:18px}
+.stats{margin-top:15px;font-size:17px}
+</style>
+</head>
+<body>
+<header>
+<h1>🍥 Naruto Auto Arena</h1>
+<div>Автобой • Клоны • Расенган</div>
+</header>
+<div class="arena">
+<div class="sun"></div>
+<div class="ground"></div>
+<div id="hero" class="fighter">🥷</div>
+<div id="enemy" class="fighter">👹</div>
+<div id="effect" class="effect"></div>
+</div>
+<div class="panel">
+<div class="bars">
+<div class="unit">Наруто ур. <span id="level">1</span>
+<div class="bar"><div id="hpbar" class="fill"></div></div></div>
+<div class="unit">Противник <span id="wave">1</span>
+<div class="bar"><div id="enemybar" class="fill"></div></div></div>
+</div>
+<div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
+<div class="upgrades">
+<button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
+<button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
+<button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button>
+</div>
+<div id="log">⚔️ Автобой начался</div>
+</div>
+<script>
+let s=JSON.parse(localStorage.getItem('narutoSave')||'null')||{coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100};
+let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
+const el=id=>document.getElementById(id);
+function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
+function render(){
+el('coins').textContent=s.coins;
+el('level').textContent=s.level;
+el('wave').textContent=s.wave;
+el('speed').textContent=s.speed;
+el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';
+el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
+}
+function log(t){el('log').textContent=t}
+function effect(t){el('effect').textContent=t;setTimeout(()=>el('effect').textContent='',650)}
+function upgrade(type){
+let cost=type==='speed'?25:20;
+if(s.coins<cost){log('Недостаточно монет!');return}
+s.coins-=cost;
+if(type==='damage')s.damage+=5;
+if(type==='speed')s.speed+=3;
+if(type==='hp'){s.maxHp+=25;hp+=25}
+save();render();log('Улучшение куплено!');
+}
+function hit(){
+turn++;
+let dmg=s.damage;
+el('hero').classList.add('attack');
+setTimeout(()=>el('hero').classList.remove('attack'),260);
+if(turn%7===0){dmg*=4;effect('🔵 Расенган!');log('Наруто использует Расенган!')}
+else if(turn%3===0){dmg*=2;effect('🥷🥷');log('Теневые клоны атакуют!')}
+else log('Наруто наносит '+dmg+' урона!');
+enemyHp-=dmg;
+if(enemyHp<=0){
+s.coins+=15+s.wave*5;s.level++;s.wave++;
+maxEnemy=100+s.wave*25;enemyHp=maxEnemy;hp=s.maxHp;
+log('🏆 Победа! Следующая волна '+s.wave);
+save();
+}else{
+hp-=Math.max(2,14-Math.floor(s.speed/5));
+if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
+}
+render();
+}
+render();
+setInterval(hit,Math.max(350,1400-s.speed*35));
+</script>
+</body>
+</html>
