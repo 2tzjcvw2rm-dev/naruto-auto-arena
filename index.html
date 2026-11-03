@@ -175,7 +175,10 @@ button:active{transform:translateY(2px)}
 .damage-pop{position:absolute;top:22%;left:55%;z-index:1900;pointer-events:none;color:#fff6a6;font-weight:1000;font-size:clamp(32px,8vw,49px);white-space:nowrap;text-shadow:2px 3px #78381e,0 0 12px #ffc64d;animation:damagePop 1.15s ease-out forwards}
 .damage-pop.iscrit{color:#ff477a;font-size:clamp(31px,8vw,51px);text-shadow:3px 3px #550820,0 0 22px #ff184e}
 @keyframes damagePop{0%{opacity:0;transform:translateY(20px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.15)}75%{opacity:1;transform:translateY(-42px) scale(1)}100%{opacity:0;transform:translateY(-78px) scale(.95)}}
-</style><style>.profile-open{background:#f5bd59!important;color:#1c2533!important;border:2px solid #ffe1a1!important}.team-card{display:block!important;text-align:center!important}.team-card svg{vertical-align:middle}.team-card button{font-size:12px;padding:9px 5px}</style></head>
+</style><style>.profile-open{background:#f5bd59!important;color:#1c2533!important;border:2px solid #ffe1a1!important}.team-card{display:block!important;text-align:center!important}.team-card svg{vertical-align:middle}.team-card button{font-size:12px;padding:9px 5px}</style><style>
+.quality-0{border-color:#d6dce6!important;color:#f0f4fc!important}.quality-1{border-color:#4ee784!important;color:#75ffa0!important}.quality-2{border-color:#479cff!important;color:#77baff!important}.quality-3{border-color:#bc75ff!important;color:#d5a3ff!important}.quality-4{border-color:#ffd34e!important;color:#ffe37b!important}.quality-5{border-color:#ff4b58!important;color:#ff8991!important}
+.bag-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.bag-item{background:#202e42;border:2px solid #788397;border-radius:9px;padding:9px 5px;color:#fff;box-shadow:none;font-size:12px;min-height:76px}.bag-item b{font-size:23px}.bag-section{border-top:1px solid #65728a;margin-top:14px;padding-top:10px}.bag-section h3{margin:4px 0;color:#ffcf70}.bag-actions{display:flex;gap:5px;margin-top:6px}.bag-actions button{flex:1;padding:9px 4px;font-size:12px}.equip-slot small{font-size:11px}.profile-dialog{max-height:93vh}
+</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -297,32 +300,81 @@ const gearCatalog=[
 {slot:'ring',label:'Кольцо',icon:'💍',bonus:'crit',value:5,cost:100},
 {slot:'scroll',label:'Свиток',icon:'📜',bonus:'critDamage',value:25,cost:110}
 ];
+
 s.heroProgress=s.heroProgress||{};
+s.inventory=Array.isArray(s.inventory)?s.inventory:[];
+s.nextItemId=Number(s.nextItemId)||1;
+const qualities=[{name:'Белый',color:'#e8edf5'},{name:'Зелёный',color:'#4ee784'},{name:'Синий',color:'#479cff'},{name:'Фиолетовый',color:'#bc75ff'},{name:'Жёлтый',color:'#ffd34e'},{name:'Красный',color:'#ff4b58'}];
 let selectedProfile='naruto';
-function heroData(id){
-if(!s.heroProgress[id])s.heroProgress[id]={level:1,gear:{}};
-return s.heroProgress[id];
+function heroData(id){if(!s.heroProgress[id])s.heroProgress[id]={level:1,gear:{}};const p=s.heroProgress[id];p.gear=p.gear||{};return p}
+function itemById(id){return s.inventory.find(x=>x.id===Number(id))}
+function newItem(slot,quality=0){let item={id:s.nextItemId++,slot:slot,quality:quality};s.inventory.push(item);return item}
+function migrateOldGear(){
+for(const [id,p] of Object.entries(s.heroProgress)){
+p.gear=p.gear||{};
+for(const [slot,value] of Object.entries(p.gear)){
+if(value===true){p.gear[slot]=newItem(slot).id}
+else if(typeof value==='number'&&!itemById(value)){delete p.gear[slot]}
 }
+}
+save();
+}
+migrateOldGear();
+function gearOwner(itemId){for(const [id,p] of Object.entries(s.heroProgress)){if(Object.values(p.gear||{}).some(v=>v===itemId))return id}return null}
 function heroBonuses(id){
 const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critDamage:0};
-for(const g of gearCatalog)if(p.gear[g.slot])b[g.bonus]+=g.value;
+for(const g of gearCatalog){const item=itemById(p.gear[g.slot]);if(item)b[g.bonus]+=g.value*(1+item.quality)}
 return b;
 }
 function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
 function closeProfile(){el('profileModal').classList.remove('open');initTeams();render();openTeam()}
 function selectProfile(id){selectedProfile=id;renderProfile()}
+function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 function renderProfile(){
 const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
 el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+let slots=gearCatalog.map(g=>{const item=itemById(p.gear[g.slot]);return '<button class="equip-slot '+(item?'equipped quality-'+item.quality:'')+'" onclick="slotClick(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(item?qualities[item.quality].name+' ✓':'Пусто · выбрать')+'</small></button>'}).join('');
+let bag=s.inventory.map(item=>{
+const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
+return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
+}).join('');
 el('profileContent').innerHTML='<div class="profile-hero">'+ninjaSVG(c)+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
-'<div class="equip-grid">'+gearCatalog.map(g=>'<button class="equip-slot '+(p.gear[g.slot]?'equipped':'')+'" onclick="buyGear(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(p.gear[g.slot]?'✓ Надето':g.cost+' 🪙')+'</small></button>').join('')+'</div>'+
+'<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
 '<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
-'<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="resetHeroGear()">🎒 Снять предметы</button></div><div class="profile-hint" id="profileHint">Нажми на пустой слот, чтобы купить и надеть предмет.</div>';
+'<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
+'<div class="bag-section"><h3>🎒 Сумка · '+s.inventory.filter(x=>!gearOwner(x.id)).length+' свободно</h3><div class="bag-grid">'+(bag||'<div style="grid-column:span 2;color:#cbd4e3">Сумка пуста. Купи предмет ниже.</div>')+'</div></div>'+
+'<div class="bag-section"><h3>🛒 Магазин предметов</h3><div class="bag-grid">'+gearCatalog.map(g=>'<button class="bag-item" onclick="buyGear(\''+g.slot+'\')"><b>'+g.icon+'</b><div>'+g.label+'</div><small>Белый · '+g.cost+' 🪙</small></button>').join('')+'</div></div>'+
+'<div class="profile-hint" id="profileHint">Купленные вещи остаются в сумке после снятия. Улучшения сохраняются.</div>';
 }
 function levelCost(p){return 30+p.level*20}
-function levelHero(){let p=heroData(selectedProfile),cost=levelCost(p);if(s.coins<cost){el('profileHint').textContent='Не хватает монет! Нужно '+cost;return}s.coins-=cost;p.level++;save();initTeams();render();renderProfile()}
-function buyGear(slot){const g=gearCatalog.find(x=>x.slot===slot),p=heroData(selectedProfile);if(p.gear[slot]){el('profileHint').textContent='Предмет уже надет';return}if(s.coins<g.cost){el('profileHint').textContent='Не хватает монет! Нужно '+g.cost;return}s.coins-=g.cost;p.gear[slot]=true;save();initTeams();render();renderProfile()}
-function resetHeroGear(){heroData(selectedProfile).gear={};save();initTeams();renderProfile()}
+function levelHero(){let p=heroData(selectedProfile),cost=levelCost(p);if(s.coins<cost){showGearHint('Не хватает монет! Нужно '+cost);return}s.coins-=cost;p.level++;save();initTeams();render();renderProfile()}
+function buyGear(slot){const g=gearCatalog.find(x=>x.slot===slot);if(!g)return;if(s.coins<g.cost){showGearHint('Не хватает монет! Нужно '+g.cost);return}s.coins-=g.cost;newItem(slot);save();render();renderProfile()}
+function equipItem(id){
+const item=itemById(id);if(!item)return;
+const owner=gearOwner(id);
+if(owner===selectedProfile){delete heroData(owner).gear[item.slot]}
+else{
+if(owner)delete heroData(owner).gear[item.slot];
+const p=heroData(selectedProfile);delete p.gear[item.slot];p.gear[item.slot]=item.id;
+}
+save();initTeams();render();renderProfile();
+}
+function slotClick(slot){
+const p=heroData(selectedProfile),equipped=itemById(p.gear[slot]);
+if(equipped){equipItem(equipped.id);return}
+const free=s.inventory.find(i=>i.slot===slot&&!gearOwner(i.id));
+if(free){equipItem(free.id);return}
+showGearHint('Нет свободного предмета этого типа. Купи его в магазине ниже.');
+}
+function unequipAll(){heroData(selectedProfile).gear={};save();initTeams();render();renderProfile()}
+function resetHeroGear(){unequipAll()}
+function upgradeCost(item){return 35*(item.quality+1)}
+function improveItem(id){
+const item=itemById(id);if(!item||item.quality>=5)return;
+const cost=upgradeCost(item);
+if(s.coins<cost){showGearHint('Для улучшения нужно '+cost+' монет');return}
+s.coins-=cost;item.quality++;save();initTeams();render();renderProfile();
+}
 let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 let started=false,paused=false,timer=null;
 function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
