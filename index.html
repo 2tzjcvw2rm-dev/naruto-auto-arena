@@ -97,6 +97,20 @@ button:active{transform:translateY(2px)}
 .rasengan{background:repeating-conic-gradient(from 20deg,#5ce1ff 0 25deg,#c8ffff 25deg 50deg,#1479df 50deg 75deg);border:4px solid #b9ffff}
 .rasengan.active{animation:rasfly .7s cubic-bezier(.25,.6,.6,1) forwards,chakraSpin .14s linear infinite}
 @keyframes chakraSpin{to{filter:hue-rotate(35deg)}}
+</style><style>
+#hitnumber{position:absolute!important;top:29%!important;left:58%!important;z-index:999!important;display:block!important;opacity:0;font-size:46px!important;color:#fff36a!important;font-weight:1000!important;text-shadow:3px 3px 0 #9b1c17,0 0 18px #ff6d00!important;pointer-events:none}
+#hitnumber.active{animation:floatHit .9s ease-out forwards!important}
+#hitnumber.critical{color:#ffcf21!important;font-size:58px!important;text-shadow:3px 3px #ae1515,0 0 24px #ff4a00!important}
+@keyframes floatHit{0%{opacity:0;transform:translateY(18px) scale(.5)}15%{opacity:1;transform:translateY(0) scale(1.2)}70%{opacity:1;transform:translateY(-35px) scale(1)}100%{opacity:0;transform:translateY(-70px) scale(.9)}}
+#startOverlay{position:absolute;inset:0;background:#0b1420e8;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#startOverlay h2{font-size:32px;color:#ffb341;margin:0;text-shadow:0 3px #673a1a}
+#startOverlay p{margin:0;color:#e4e6f0}
+#startButton,#pauseButton{font-size:18px;padding:15px 26px;border-radius:14px;cursor:pointer}
+#pauseButton{background:#26394d;color:white;border:1px solid #6883a0;box-shadow:none}
+.controls{display:flex;justify-content:center;gap:12px;margin-top:12px}
+#criticalStats{color:#ffdb8a;font-size:15px;margin-top:9px}
+.upgrades{grid-template-columns:repeat(2,minmax(0,1fr))}
+.upgrades button{min-height:64px}
 </style></head>
 <body>
 <header>
@@ -107,7 +121,7 @@ button:active{transform:translateY(2px)}
 <div class="sun"></div>
 <div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
 <div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
-<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Автоматические бои, прокачка и техники ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -118,62 +132,75 @@ button:active{transform:translateY(2px)}
 <div class="bar"><div id="enemybar" class="fill"></div></div></div>
 </div>
 <div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
-<div class="upgrades">
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
 <button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
 <button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
-<button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button>
+<button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
 </div>
 <div id="log">⚔️ Автобой начался</div>
 </div>
 <script>
-let s=JSON.parse(localStorage.getItem('narutoSave')||'null')||{coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100};
-let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 const el=id=>document.getElementById(id);
+let s;
+try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
+s=Object.assign({coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100,critChance:5,critDamage:150},s||{});
+s.critChance=Number(s.critChance)||5;s.critDamage=Number(s.critDamage)||150;
+let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
+let started=false,paused=false,timer=null;
 function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
 function render(){
-el('coins').textContent=s.coins;
-el('level').textContent=s.level;
-el('wave').textContent=s.wave;
-el('speed').textContent=s.speed;
-el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';
-el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
+el('coins').textContent=s.coins;el('level').textContent=s.level;el('wave').textContent=s.wave;el('speed').textContent=s.speed;
+el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
+el('critChance').textContent=s.critChance+'%';el('critDamage').textContent=s.critDamage+'%';
 }
 function log(t){el('log').textContent=t}
-function pulse(id,duration=700){let node=el(id);node.classList.remove('active');void node.offsetWidth;node.classList.add('active');setTimeout(()=>node.classList.remove('active'),duration)}
-function effect(t){let special=t.includes('Расенган');pulse(special?'rasengan':'clones');pulse('speedlines',450);if(special){el('jutsulabel').textContent='螺旋丸 • РАСЕНГАН!';pulse('jutsulabel',950)}else{el('jutsulabel').textContent='影分身 • ТЕНЕВЫЕ КЛОНЫ!';pulse('jutsulabel',950)}}
-function showDamage(d){el('hitnumber').textContent='−'+d;pulse('hitnumber',680);pulse('shockwave',500)}
+function pulse(id,duration=700){const node=el(id);if(!node)return;node.classList.remove('active');void node.offsetWidth;node.classList.add('active');setTimeout(()=>node.classList.remove('active'),duration)}
+function effect(t){let special=t.includes('Расенган');pulse(special?'rasengan':'clones');pulse('speedlines',450);el('jutsulabel').textContent=special?'螺旋丸 • РАСЕНГАН!':'影分身 • ТЕНЕВЫЕ КЛОНЫ!';pulse('jutsulabel',950)}
+function showDamage(d,critical){
+let n=el('hitnumber');n.classList.remove('active','critical');void n.offsetWidth;n.textContent=(critical?'КРИТ! ':'−')+d;if(critical)n.classList.add('critical');n.classList.add('active');pulse('shockwave',500);
+}
 function upgrade(type){
-let cost=type==='speed'?25:20;
-if(s.coins<cost){log('Недостаточно монет!');return}
+let cost=type==='speed'?25:(type==='critChance'||type==='critDamage'?40:20);
+if(s.coins<cost){log('Недостаточно монет! Нужно '+cost+' 🪙');return}
+if(type==='critChance'&&s.critChance>=75){log('Максимальный крит. шанс 75%');return}
 s.coins-=cost;
 if(type==='damage')s.damage+=5;
 if(type==='speed')s.speed+=3;
 if(type==='hp'){s.maxHp+=25;hp+=25}
+if(type==='critChance')s.critChance=Math.min(75,s.critChance+2);
+if(type==='critDamage')s.critDamage+=15;
 save();render();log('Улучшение куплено!');
 }
 function hit(){
-turn++;
-let dmg=s.damage;
-el('hero').classList.add('attack');el('enemy').classList.add('hurt');setTimeout(()=>el('enemy').classList.remove('hurt'),200);
+turn++;let dmg=s.damage;
+let crit=Math.random()*100<s.critChance;
+el('hero').classList.add('attack');el('enemy').classList.add('hurt');
+setTimeout(()=>el('enemy').classList.remove('hurt'),200);
 setTimeout(()=>el('hero').classList.remove('attack'),260);
-if(turn%7===0){dmg*=4;effect('🔵 Расенган!');log('Наруто использует Расенган!')}
-else if(turn%3===0){dmg*=2;effect('🥷🥷');log('Теневые клоны атакуют!')}
-else log('Наруто наносит '+dmg+' урона!');
-enemyHp-=dmg;
-showDamage(dmg);
+let skill='';
+if(turn%7===0){dmg*=4;skill='Расенган';effect('Расенган')}
+else if(turn%3===0){dmg*=2;skill='Теневые клоны';effect('Клоны')}
+if(crit)dmg=Math.round(dmg*s.critDamage/100);
+dmg=Math.round(dmg);enemyHp-=dmg;
+showDamage(dmg,crit);
+log((skill?skill+'! ':'Наруто атакует! ')+(crit?'💥 КРИТ! ':'')+'−'+dmg+' HP');
 if(enemyHp<=0){
-s.coins+=15+s.wave*5;s.level++;s.wave++;
-maxEnemy=100+s.wave*25;enemyHp=maxEnemy;hp=s.maxHp;
-log('🏆 Победа! Следующая волна '+s.wave);
-save();
+s.coins+=15+s.wave*5;s.level++;s.wave++;maxEnemy=100+s.wave*25;enemyHp=maxEnemy;hp=s.maxHp;
+save();log('🏆 Победа! Волна '+s.wave+' · награда получена!');
 }else{
 hp-=Math.max(2,14-Math.floor(s.speed/5));
 if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 }
 render();
 }
+function schedule(){clearTimeout(timer);if(!started||paused)return;timer=setTimeout(()=>{hit();schedule()},Math.max(350,1400-s.speed*35))}
+function startGame(){started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';log('⚔️ Бой начался!');schedule()}
+function togglePause(){
+if(!started){startGame();return}
+paused=!paused;el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
+log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');schedule();
+}
 render();
-function loop(){hit();setTimeout(loop,Math.max(350,1400-s.speed*35))}setTimeout(loop,1100);
 </script>
 </body>
 </html>
