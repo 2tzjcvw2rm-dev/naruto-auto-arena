@@ -252,7 +252,7 @@ button:active{transform:translateY(2px)}
 @keyframes rasenganSpin{to{transform:rotate(360deg)}}
 @keyframes cutinPunch{0%{transform:translateX(-30px)}65%,100%{transform:translateX(40px)}}
 @keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
-</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style></head>
+</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -497,9 +497,29 @@ kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9b
 deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
 sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']]
 };
+let rasengan3d=null;
+function drawRasengan3D(box){
+if(typeof THREE==='undefined')return;
+const target=box.querySelector('.cutin-orb');if(!target)return;
+try{
+if(rasengan3d){rasengan3d.renderer.dispose();rasengan3d=null}
+const w=100,h=100;
+const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+target.replaceChildren(renderer.domElement);
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.z=4;
+scene.add(new THREE.AmbientLight(0xffffff,1.5));
+const light=new THREE.PointLight(0x78dfff,25,10);light.position.set(2,2,3);scene.add(light);
+const core=new THREE.Mesh(new THREE.SphereGeometry(.8,32,20),new THREE.MeshStandardMaterial({color:0x25bfff,emissive:0x168aff,emissiveIntensity:1.8,transparent:true,opacity:.9,roughness:.25}));scene.add(core);
+const rings=[];for(let i=0;i<4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.92+i*.08,.024,8,64),new THREE.MeshBasicMaterial({color:i%2?0xffffff:0x57e7ff,transparent:true,opacity:.85}));ring.rotation.set(i*.7,i*.9,0);scene.add(ring);rings.push(ring)}
+rasengan3d={renderer};const startedAt=performance.now();
+function tick(now){if(rasengan3d?.renderer!==renderer||!box.classList.contains('visible'))return;const t=(now-startedAt)/1000;core.rotation.y=t*3;rings.forEach((r,i)=>{r.rotation.x+=.045+i*.008;r.rotation.y-=.05+i*.006});renderer.render(scene,camera);requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+}catch(e){console.warn('Rasengan 3D unavailable',e)}
+}
+
 function showRasenganCutin(){
 let box=el('rasenganCutin');if(!box)return;
-box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible');
+box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible');drawRasengan3D(box);
 clearTimeout(window.rasenganCutinTimer);
 window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350);
 }
