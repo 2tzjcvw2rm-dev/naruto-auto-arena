@@ -152,6 +152,29 @@ button:active{transform:translateY(2px)}
 #hitnumber{color:#ffe36a!important}
 .teamQuick{position:absolute;top:10px;left:10px;z-index:1050;padding:10px 13px;background:linear-gradient(#7298ed,#355cb7);color:white;border:2px solid #b9d5ff;border-radius:12px;font-weight:900;font-size:14px;box-shadow:0 3px #1b3575}
 #startOverlay .teamQuick{position:static;min-width:190px}
+</style><style>
+.upgrades{display:none!important}
+#criticalStats{display:none}
+#heroProfileBtn{background:linear-gradient(#ffcf68,#e38b27);border:2px solid #ffe0a0;color:#28202a;font-size:16px}
+#profileModal{position:fixed;inset:0;z-index:2400;background:#07101deF;display:none;align-items:center;justify-content:center;padding:12px}
+#profileModal.open{display:flex}
+.profile-dialog{background:linear-gradient(#3d3d40,#1a2838);border:2px solid #c7a265;border-radius:16px;padding:15px;width:min(100%,510px);max-height:92vh;overflow:auto;color:#f7ead4}
+.profile-dialog h2{margin:4px 0 10px;color:#ffcf6c}
+.profile-hero{display:flex;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#6e9eb7,#dfc38f);border-radius:12px;padding:12px}
+.profile-hero svg{width:110px;height:145px}
+.profile-hero .hero-details{color:#252b37;text-align:left;font-weight:800}
+.equip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.equip-slot{min-height:77px;background:#222e40;border:2px solid #8c7b64;border-radius:9px;color:#f9dfab;padding:7px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;font-size:12px}
+.equip-slot.equipped{border-color:#ffca5e;background:#3b3b39}
+.equip-slot b{font-size:24px}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;text-align:left}
+.profile-stats span{background:#2c3543;padding:8px;border-radius:7px;font-size:13px}
+.profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.profile-actions button{padding:12px 6px}
+.profile-hint{font-size:12px;color:#d8c9a9;min-height:20px;margin-top:9px}
+.damage-pop{position:absolute;top:22%;left:55%;z-index:1900;pointer-events:none;color:#fff6a6;font-weight:1000;font-size:clamp(32px,8vw,49px);white-space:nowrap;text-shadow:2px 3px #78381e,0 0 12px #ffc64d;animation:damagePop 1.15s ease-out forwards}
+.damage-pop.iscrit{color:#ff477a;font-size:clamp(31px,8vw,51px);text-shadow:3px 3px #550820,0 0 22px #ff184e}
+@keyframes damagePop{0%{opacity:0;transform:translateY(20px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.15)}75%{opacity:1;transform:translateY(-42px) scale(1)}100%{opacity:0;transform:translateY(-78px) scale(.95)}}
 </style></head>
 <body>
 <header>
@@ -173,14 +196,14 @@ button:active{transform:translateY(2px)}
 <div class="bar"><div id="enemybar" class="fill"></div></div></div>
 </div>
 <div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
-<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🎒 Персонажи и предметы</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
 <button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
 <button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
 <button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
 </div>
 <div id="teamStatus">Команда: 1/5</div><div id="log">⚔️ Автобой начался</div>
 </div>
-<div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
+<div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
 let s;
 try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
@@ -210,7 +233,7 @@ if(!s.team.includes('naruto'))s.team.unshift('naruto');
 s.team=[...new Set(s.team)].slice(0,5);
 let allies=[],foes=[];
 function initTeams(){
-allies=s.team.map(id=>{let r=roster.find(x=>x.id===id);return {...r,curHp:r.hp+s.maxHp*.25,maxHp:r.hp+s.maxHp*.25}});
+allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25}});
 foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08))}));
 renderTeams();
 }
@@ -239,7 +262,7 @@ if(!livingA.length){allies.forEach(u=>u.curHp=u.maxHp);log('💚 Команда 
 if(!livingE.length){winWave();return}
 let attacker=livingA[Math.floor(Math.random()*livingA.length)],target=livingE[Math.floor(Math.random()*livingE.length)];
 let ai=allies.indexOf(attacker),ei=foes.indexOf(target);
-let crit=Math.random()*100<s.critChance;
+let crit=Math.random()*100<Math.min(100,s.critChance+(attacker.bonusCrit||0));
 let base=attacker.atk+(attacker.id==='naruto'?s.damage:Math.round(s.damage*.3));
 let multiplier=1,skill='';
 if(attacker.id==='naruto'&&turn%7===0){multiplier=4;skill='Расенган';effect('Расенган')}
@@ -265,6 +288,40 @@ renderTeams();render();
 function winWave(){
 s.coins+=15+s.wave*5;s.level++;s.wave++;save();initTeams();log('🏆 Команда победила! Волна '+s.wave+' · монеты получены');render();
 }
+const gearCatalog=[
+{slot:'weapon',label:'Оружие',icon:'⚔️',bonus:'atk',value:8,cost:60},
+{slot:'head',label:'Повязка',icon:'🥷',bonus:'hp',value:30,cost:45},
+{slot:'body',label:'Броня',icon:'🦺',bonus:'hp',value:55,cost:80},
+{slot:'feet',label:'Обувь',icon:'👟',bonus:'speed',value:4,cost:50},
+{slot:'ring',label:'Кольцо',icon:'💍',bonus:'crit',value:5,cost:100},
+{slot:'scroll',label:'Свиток',icon:'📜',bonus:'critDamage',value:25,cost:110}
+];
+s.heroProgress=s.heroProgress||{};
+let selectedProfile='naruto';
+function heroData(id){
+if(!s.heroProgress[id])s.heroProgress[id]={level:1,gear:{}};
+return s.heroProgress[id];
+}
+function heroBonuses(id){
+const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critDamage:0};
+for(const g of gearCatalog)if(p.gear[g.slot])b[g.bonus]+=g.value;
+return b;
+}
+function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
+function closeProfile(){el('profileModal').classList.remove('open');initTeams();render()}
+function selectProfile(id){selectedProfile=id;renderProfile()}
+function renderProfile(){
+const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
+el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+el('profileContent').innerHTML='<div class="profile-hero">'+ninjaSVG(c)+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
+'<div class="equip-grid">'+gearCatalog.map(g=>'<button class="equip-slot '+(p.gear[g.slot]?'equipped':'')+'" onclick="buyGear(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(p.gear[g.slot]?'✓ Надето':g.cost+' 🪙')+'</small></button>').join('')+'</div>'+
+'<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
+'<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="resetHeroGear()">🎒 Снять предметы</button></div><div class="profile-hint" id="profileHint">Нажми на пустой слот, чтобы купить и надеть предмет.</div>';
+}
+function levelCost(p){return 30+p.level*20}
+function levelHero(){let p=heroData(selectedProfile),cost=levelCost(p);if(s.coins<cost){el('profileHint').textContent='Не хватает монет! Нужно '+cost;return}s.coins-=cost;p.level++;save();initTeams();render();renderProfile()}
+function buyGear(slot){const g=gearCatalog.find(x=>x.slot===slot),p=heroData(selectedProfile);if(p.gear[slot]){el('profileHint').textContent='Предмет уже надет';return}if(s.coins<g.cost){el('profileHint').textContent='Не хватает монет! Нужно '+g.cost;return}s.coins-=g.cost;p.gear[slot]=true;save();initTeams();render();renderProfile()}
+function resetHeroGear(){heroData(selectedProfile).gear={};save();initTeams();renderProfile()}
 let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 let started=false,paused=false,timer=null;
 function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
@@ -277,7 +334,15 @@ function log(t){el('log').textContent=t}
 function pulse(id,duration=700){const node=el(id);if(!node)return;node.classList.remove('active');void node.offsetWidth;node.classList.add('active');setTimeout(()=>node.classList.remove('active'),duration)}
 function effect(t){let special=t.includes('Расенган');pulse(special?'rasengan':'clones');pulse('speedlines',450);el('jutsulabel').textContent=special?'螺旋丸 • РАСЕНГАН!':'影分身 • ТЕНЕВЫЕ КЛОНЫ!';pulse('jutsulabel',950)}
 function showDamage(d,critical){
-let n=el('hitnumber');n.classList.remove('active','critical');void n.offsetWidth;n.textContent=critical?'💥 КРИТ! −'+d:'−'+d;if(critical)n.classList.add('critical');n.classList.add('active');pulse('shockwave',500);
+const arena=document.querySelector('.arena');
+const n=document.createElement('div');
+n.className='damage-pop'+(critical?' iscrit':'');
+n.textContent=critical?'КРИТ! −'+d:'−'+d;
+n.style.left=(critical?'45%':'57%');
+n.style.top=(18+Math.floor(Math.random()*13))+'%';
+arena.appendChild(n);
+setTimeout(()=>n.remove(),1200);
+pulse('shockwave',500);
 }
 function upgrade(type){
 let cost=type==='speed'?25:(type==='critChance'||type==='critDamage'?40:20);
@@ -300,7 +365,7 @@ setTimeout(()=>el('hero').classList.remove('attack'),260);
 let skill='';
 if(turn%7===0){dmg*=4;skill='Расенган';effect('Расенган')}
 else if(turn%3===0){dmg*=2;skill='Теневые клоны';effect('Клоны')}
-if(crit)dmg=Math.round(dmg*s.critDamage/100);
+if(crit)dmg=Math.round(dmg*(s.critDamage+(attacker.bonusCritDamage||0))/100);
 dmg=Math.round(dmg);enemyHp-=dmg;
 showDamage(dmg,crit);
 log((skill?skill+'! ':'Наруто атакует! ')+(crit?'💥 КРИТ! ':'')+'−'+dmg+' HP');
