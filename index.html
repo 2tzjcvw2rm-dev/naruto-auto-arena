@@ -198,7 +198,7 @@ button:active{transform:translateY(2px)}
 @keyframes sideCounter{50%{transform:translateX(-18px) scale(1.14)}}
 #hero,#enemy{display:none!important}
 .formation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}.formation-col{background:#1a2a3d;border:1px solid #7084a0;border-radius:10px;padding:8px 4px}.formation-col h3{font-size:12px;margin:0 0 8px;color:#ffd27b}.formation-unit{padding:7px 3px;margin:5px 0;border-radius:8px;background:#31475c;font-size:12px;min-height:40px}.formation-empty{color:#8797a8;border:1px dashed #70839a;background:transparent}.formation-choice{display:flex;gap:4px;margin-top:6px}.formation-choice button{flex:1;padding:8px 1px;font-size:11px;border-radius:7px}.formation-choice button.active{background:#63dca0;border-color:#bbffe0}.team-card .formation-choice{width:100%}
-</style></head>
+</style><style>.preset-options{display:flex;gap:6px;margin:8px 0}.preset-options button{flex:1;padding:10px 2px;font-size:12px}.preset-options button.active{background:#5bd99a;color:#132c24}.formation-slot{width:100%;margin:5px 0;padding:8px 3px;background:#30485d;border:1px solid #7895b2;border-radius:8px;color:#fff;font-size:12px;min-height:41px}.formation-slot.empty{border-style:dashed;color:#b3c6d7}.formation-col{min-width:0}.formation-col h3{font-size:11px}.formation-help{font-size:12px;color:#e8c992}</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -257,9 +257,28 @@ s.team=[...new Set(s.team)].slice(0,5);
 s.formation=s.formation||{};
 const formationRows=['front','middle','back'];
 const rowNames={front:'🛡️ Передняя',middle:'⚔️ Средняя',back:'💚 Задняя'};
+const formationPresets=[[1,2,2],[2,1,2],[2,2,1]];
+s.formationPreset=Number.isInteger(s.formationPreset)&&s.formationPreset>=0&&s.formationPreset<3?s.formationPreset:0;
+s.formationSlots=Array.isArray(s.formationSlots)?s.formationSlots.slice(0,5):[];
+function formationSizes(){return formationPresets[s.formationPreset]}
+function formationRowForSlot(i){let n=formationSizes();return i<n[0]?'front':i<n[0]+n[1]?'middle':'back'}
 function ensureFormation(){
-const counts={front:0,middle:0,back:0};
-for(const id of s.team){let row=s.formation[id];if(!formationRows.includes(row)||counts[row]>=2){row=formationRows.find(r=>counts[r]<2)||'back';s.formation[id]=row}counts[row]++}
+let used=new Set();
+s.formationSlots=s.formationSlots.slice(0,5).map(id=>{if(!s.team.includes(id)||used.has(id))return null;used.add(id);return id});
+while(s.formationSlots.length<5)s.formationSlots.push(null);
+for(const id of s.team){if(!used.has(id)){let i=s.formationSlots.indexOf(null);if(i>=0){s.formationSlots[i]=id;used.add(id)}}}
+s.formation={};
+s.formationSlots.forEach((id,i)=>{if(id)s.formation[id]=formationRowForSlot(i)});
+}
+function selectPreset(index){s.formationPreset=index;ensureFormation();save();initTeams();renderTeamCards()}
+function putInSlot(slot,id){
+if(slot<0||slot>=5)return;
+ensureFormation();
+const old=s.formationSlots[slot];
+const other=s.formationSlots.indexOf(id);
+if(other>=0)s.formationSlots[other]=old||null;
+s.formationSlots[slot]=id||null;
+ensureFormation();save();initTeams();renderTeamCards();
 }
 ensureFormation();
 let allies=[],foes=[];
@@ -283,20 +302,29 @@ return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?
 el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 }
 function renderFormationPreview(){
-const counts={front:[],middle:[],back:[]};
-for(const id of s.team){const row=s.formation[id]||'front';(counts[row]||counts.front).push(roster.find(x=>x.id===id)?.name||id)}
-el('formationPreview').innerHTML='<div class="formation-grid">'+formationRows.map(row=>'<div class="formation-col"><h3>'+rowNames[row]+'</h3>'+counts[row].map(name=>'<div class="formation-unit">'+name+'</div>').join('')+Array.from({length:Math.max(0,2-counts[row].length)},()=>'<div class="formation-unit formation-empty">+ место</div>').join('')+'</div>').join('')+'</div>';
+ensureFormation();
+const sizes=formationSizes();
+let offset=0;
+const columns=formationRows.map((row,i)=>{
+const cells=Array.from({length:sizes[i]},(_,j)=>{
+const slot=offset+j,current=s.formationSlots[slot]||'';
+return '<select class="formation-slot '+(current?'':'empty')+'" aria-label="Позиция '+(slot+1)+'" onchange="putInSlot('+slot+',this.value)"><option value="">＋ Место '+(slot+1)+'</option>'+s.team.map(id=>'<option value="'+id+'" '+(id===current?'selected':'')+'>'+roster.find(x=>x.id===id).name+'</option>').join('')+'</select>'
+}).join('');
+offset+=sizes[i];
+return '<div class="formation-col"><h3>'+rowNames[row]+'</h3>'+cells+'</div>';
+}).join('');
+el('formationPreview').innerHTML='<p class="formation-help">Выбери схему, затем назначь любого ниндзя в каждую ячейку. Можно менять их местами.</p><div class="preset-options">'+formationPresets.map((p,i)=>'<button class="'+(s.formationPreset===i?'active':'')+'" onclick="selectPreset('+i+')">'+p.join('–')+'</button>').join('')+'</div><div class="formation-grid">'+columns+'</div>';
 }
 function setFormation(id,row){
-if(!s.team.includes(id))return;
-if(s.team.filter(x=>x!==id&&s.formation[x]===row).length>=2){el('teamStatus').textContent='На этой линии уже 2 ниндзя';return}
-s.formation[id]=row;save();initTeams();renderTeamCards();
+const slot=s.formationSlots.findIndex((x,i)=>formationRowForSlot(i)===row&&x===null);
+if(slot<0){el('teamStatus').textContent='В этой линии нет свободного места — поменяй бойцов в схеме';return}
+putInSlot(slot,id);
 }
 function renderTeamCards(){
 renderFormationPreview();
 el('teamCards').innerHTML=roster.map(c=>{
-const chosen=s.team.includes(c.id),row=s.formation[c.id]||'front';
-return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div>'+(chosen?'<div class="formation-choice">'+formationRows.map(r=>'<button class="'+(row===r?'active':'')+'" onclick="setFormation(\''+c.id+'\',\''+r+'\')">'+(r==='front'?'🛡️ Перед':r==='middle'?'⚔️ Центр':'💚 Тыл')+'</button>').join('')+'</div>':'')+'</div>'
+const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id);
+return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+(chosen?' · Место '+(slot+1):'')+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>'
 }).join('');
 }
 function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
