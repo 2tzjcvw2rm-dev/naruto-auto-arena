@@ -160,6 +160,7 @@ if(turn%7===0){dmg*=4;effect('🔵 Расенган!');log('Наруто исп�
 else if(turn%3===0){dmg*=2;effect('🥷🥷');log('Теневые клоны атакуют!')}
 else log('Наруто наносит '+dmg+' урона!');
 enemyHp-=dmg;
+showDamage(dmg);
 if(enemyHp<=0){
 s.coins+=15+s.wave*5;s.level++;s.wave++;
 maxEnemy=100+s.wave*25;enemyHp=maxEnemy;hp=s.maxHp;
