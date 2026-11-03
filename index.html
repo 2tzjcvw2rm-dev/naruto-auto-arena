@@ -28,7 +28,37 @@ button{background:#ffa52c;color:#152037;border:0;border-radius:14px;padding:16px
 #log{min-height:65px;color:#b9d1fa;margin-top:18px}
 .stats{margin-top:15px;font-size:17px}
 </style>
-</head>
+<style>
+body{background:#10151d;font-family:system-ui,-apple-system,sans-serif}
+header{background:linear-gradient(120deg,#171c29,#392b2c);border-bottom:2px solid #dc852d;padding:14px}
+h1{font-size:clamp(21px,5vw,30px);text-shadow:0 2px 3px #111}
+.arena{height:min(58vh,460px);min-height:340px;background:linear-gradient(#8ac2dc,#e9c69b 58%,#9d8e74 59%,#64754c);isolation:isolate}
+.sun{right:14%;top:11%;background:#fff0b5;box-shadow:0 0 55px #fff4b0}
+.mountain{position:absolute;inset:7% 0 32%;background:linear-gradient(#9e9d91,#7c827d);clip-path:polygon(0 75%,15% 45%,28% 57%,44% 15%,57% 45%,72% 8%,100% 50%,100% 100%,0 100%)}
+.hokage{position:absolute;top:23%;left:23%;font-size:clamp(25px,8vw,50px);letter-spacing:8px;color:#615f59;opacity:.55;font-weight:900;text-shadow:2px 3px #c4baac}
+.village{position:absolute;bottom:25%;height:30%;width:100%;display:flex;justify-content:space-around;align-items:end}
+.house{height:60%;width:21%;border:3px solid #9c6349;border-radius:6px;background:linear-gradient(#e1b47f,#bf7956);position:relative}
+.house:before{content:"";position:absolute;top:-16%;left:-12%;width:124%;height:24%;background:#a95239;border-radius:50% 50% 15% 15%}
+.house:nth-child(2){height:90%;width:25%;border-radius:40% 40% 6px 6px}
+.house:nth-child(3){height:72%}
+.ground{height:27%;background:linear-gradient(#758a5d,#6b7957 25%,#70664e);border-top:5px solid #b2a07d}
+.fighter{bottom:11%;font-size:unset;width:34%;height:55%;max-width:190px;filter:drop-shadow(2px 8px 5px #0008);z-index:3}
+.fighter svg{width:100%;height:100%;overflow:visible}
+#hero{left:5%}#enemy{right:4%;transform:scaleX(-1)}
+#enemy.hurt{filter:brightness(1.8) drop-shadow(0 0 12px #fff)}
+.clones{position:absolute;bottom:18%;left:18%;width:40%;height:34%;z-index:2;display:none;opacity:.65}
+.clones.active{display:flex;animation:clonepop .6s ease-out}
+.clones svg{width:50%;height:100%}
+@keyframes clonepop{from{opacity:0;transform:scale(.7)}to{opacity:.65;transform:scale(1)}}
+.rasengan{position:absolute;left:32%;bottom:37%;width:65px;height:65px;z-index:6;border-radius:50%;display:none;background:radial-gradient(circle,#fff,#8cf5ff 25%,#2da9fa 53%,#0054bf 75%,transparent 80%);box-shadow:0 0 24px 10px #69dfff}
+.rasengan.active{display:block;animation:rasfly .7s ease-in forwards}
+@keyframes rasfly{from{transform:translateX(0) scale(.6)}to{transform:translateX(180%) scale(1.5);opacity:0}}
+.panel{background:linear-gradient(#23283a,#111725);padding:15px}
+button{background:linear-gradient(#ffc35b,#e8902e);box-shadow:0 3px 0 #90531e;border:1px solid #ffd17d}
+button:active{transform:translateY(2px)}
+#log{color:#ffdfae}
+@media(min-width:650px){body{max-width:650px;margin:auto}}
+</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -36,9 +66,9 @@ button{background:#ffa52c;color:#152037;border:0;border-radius:14px;padding:16px
 </header>
 <div class="arena">
 <div class="sun"></div>
-<div class="ground"></div>
-<div id="hero" class="fighter">🥷</div>
-<div id="enemy" class="fighter">👹</div>
+<div class="mountain"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
+<div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="rasengan" class="rasengan"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -70,7 +100,7 @@ el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';
 el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
 }
 function log(t){el('log').textContent=t}
-function effect(t){el('effect').textContent=t;setTimeout(()=>el('effect').textContent='',650)}
+function effect(t){let id=t.includes('Расенган')?'rasengan':'clones';el(id).classList.remove('active');void el(id).offsetWidth;el(id).classList.add('active');setTimeout(()=>el(id).classList.remove('active'),700)}
 function upgrade(type){
 let cost=type==='speed'?25:20;
 if(s.coins<cost){log('Недостаточно монет!');return}
@@ -83,7 +113,7 @@ save();render();log('Улучшение куплено!');
 function hit(){
 turn++;
 let dmg=s.damage;
-el('hero').classList.add('attack');
+el('hero').classList.add('attack');el('enemy').classList.add('hurt');setTimeout(()=>el('enemy').classList.remove('hurt'),200);
 setTimeout(()=>el('hero').classList.remove('attack'),260);
 if(turn%7===0){dmg*=4;effect('🔵 Расенган!');log('Наруто использует Расенган!')}
 else if(turn%3===0){dmg*=2;effect('🥷🥷');log('Теневые клоны атакуют!')}
@@ -101,7 +131,7 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 render();
 }
 render();
-setInterval(hit,Math.max(350,1400-s.speed*35));
+function loop(){hit();setTimeout(loop,Math.max(350,1400-s.speed*35))}setTimeout(loop,1100);
 </script>
 </body>
 </html>
