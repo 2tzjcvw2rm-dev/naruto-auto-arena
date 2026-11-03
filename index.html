@@ -214,6 +214,32 @@ button:active{transform:translateY(2px)}
 .arena .mini-unit.targeted{filter:brightness(1.6) sepia(.4)}
 .arena .mini-unit.ultimate{filter:drop-shadow(0 0 12px #fb4757)}
 #battleFeed{position:absolute;top:42px;left:50%;transform:translateX(-50%);z-index:90;background:#101b30de;border:1px solid #e7b569;border-radius:9px;color:#fff;padding:5px 8px;font-size:12px;max-width:80%;pointer-events:none}
+</style><style>
+/* Character-specific combat animations */
+.arena{isolation:isolate}
+.mini-unit{transform-origin:50% 80%}
+.mini-unit.jutsu-melee{animation:ninjaLunge .62s cubic-bezier(.2,.8,.2,1)!important}
+.mini-unit.jutsu-cast{animation:ninjaCast .66s ease-in-out!important}
+.mini-unit.jutsu-ultimate{animation:ninjaUltimate .8s ease-in-out!important;filter:drop-shadow(0 0 9px var(--chakra,#6ecaff))}
+.mini-unit.jutsu-heal{animation:ninjaHeal .85s ease-in-out!important}
+.mini-unit.jutsu-hurt{animation:ninjaHurt .38s ease-out!important}
+@keyframes ninjaLunge{0%,100%{transform:translateX(-50%)}40%{transform:translateX(calc(-50% + var(--strike,22px))) scale(1.14)}}
+@keyframes ninjaCast{0%,100%{transform:translateX(-50%)}45%{transform:translateX(-50%) translateY(-9px) scale(1.1)}}
+@keyframes ninjaUltimate{0%,100%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.27) translateY(-9px)}65%{transform:translateX(calc(-50% + var(--strike,22px))) scale(1.15)}}
+@keyframes ninjaHeal{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(-8px);filter:drop-shadow(0 0 15px #4aff9e)}}
+@keyframes ninjaHurt{0%,100%{transform:translateX(-50%)}45%{transform:translateX(calc(-50% - var(--strike,22px)*.3)) rotate(7deg);filter:brightness(2)}}
+#jutsuFxLayer{position:absolute;inset:0;pointer-events:none;z-index:65;overflow:hidden}
+.jutsu-fx{position:absolute;width:38px;height:38px;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--fx,#5fbaff) 30%,transparent 72%);box-shadow:0 0 14px var(--fx,#5fbaff);animation:jutsuFly .65s ease-out forwards;--dx:0px;--dy:0px}
+.jutsu-fx::after{content:attr(data-icon);position:absolute;inset:0;display:grid;place-items:center;font-size:24px;text-shadow:0 0 8px #fff}
+.jutsu-fx.jutsu-area{width:85px;height:85px;animation:jutsuBurst .85s ease-out forwards}
+.jutsu-fx.jutsu-support{width:60px;height:60px;animation:jutsuSupport .95s ease-out forwards}
+.jutsu-fx.jutsu-shadow{border-radius:12px;transform:translate(-50%,-50%) skewX(-25deg)}
+.jutsu-fx.jutsu-clones::before,.jutsu-fx.jutsu-clones::after{content:'🥷';position:absolute;top:-12px;font-size:25px;opacity:.8}
+.jutsu-fx.jutsu-clones::before{left:-32px}.jutsu-fx.jutsu-clones::after{right:-32px}
+@keyframes jutsuFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1}70%{opacity:1;transform:translate(calc(-50% + var(--dx)*.8),calc(-50% + var(--dy)*.8)) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.6)}}
+@keyframes jutsuBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.25)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+@keyframes jutsuSupport{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}45%{opacity:1}100%{opacity:0;transform:translate(-50%,-85%) scale(1.8)}}
+@media(prefers-reduced-motion:reduce){.mini-unit.jutsu-melee,.mini-unit.jutsu-cast,.mini-unit.jutsu-ultimate,.mini-unit.jutsu-heal,.mini-unit.jutsu-hurt{animation-duration:.1s!important}}
 </style></head>
 <body>
 <header>
@@ -224,7 +250,7 @@ button:active{transform:translateY(2px)}
 <div class="sun"></div>
 <div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
 <div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
-<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="roundIndicator" class="round-indicator">Раунд 1 / 12</div><div id="battleFeed" aria-live="polite">⚔️ Приготовься к бою</div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="roundIndicator" class="round-indicator">Раунд 1 / 12</div><div id="jutsuFxLayer" aria-hidden="true"></div><div id="battleFeed" aria-live="polite">⚔️ Приготовься к бою</div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -430,6 +456,41 @@ itachi:['Кунай','Огненная техника','Аматерасу'],pai
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол']
 };
+const jutsuVisuals={
+naruto:[['melee','#ffb34c','👊'],['clones','#f5f5ff','🥷'],['orb','#4ec7ff','🌀']],
+sasuke:[['melee','#a6aaff','⚔️'],['fire','#ff6a22','🔥'],['lightning','#77baff','⚡']],
+sakura:[['melee','#f6a0ba','💥'],['support','#ffdb8c','✨'],['heal','#53ffa3','💚']],
+kakashi:[['melee','#d2d9de','🗡️'],['clones','#a9d4e5','🥷'],['lightning','#5bbcff','⚡']],
+hinata:[['melee','#b4a7ff','👊'],['orb','#aa8cff','☯️'],['heal','#8de8ff','🛡️']],
+shikamaru:[['melee','#b5d4a6','🗡️'],['shadow','#55576f','🌑'],['shadow','#8d83c2','🕸️']],
+gaara:[['sand','#d7ae6e','🏜️'],['support','#e5bf79','🛡️'],['sand','#f0b85d','🌪️']],
+itachi:[['melee','#dd7272','🗡️'],['fire','#f65d22','🔥'],['fire','#30263e','🖤']],
+pain:[['melee','#b6a1df','👊'],['orb','#9b78e6','🌀'],['orb','#d2a5ff','💥']],
+kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
+deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
+sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']]
+};
+function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
+const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
+const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
+if(!source||!target||!layer||!arena)return;
+const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
+const sx=from.left+from.width/2-box.left,sy=from.top+from.height*.43-box.top;
+const tx=to.left+to.width/2-box.left,ty=to.top+to.height*.4-box.top;
+const cls=kind==='melee'?'jutsu-melee':kind==='heal'||kind==='support'?'jutsu-heal':action===2?'jutsu-ultimate':'jutsu-cast';
+source.style.setProperty('--strike',side==='allyTeam'?'22px':'-22px');
+source.style.setProperty('--chakra',color);
+source.classList.remove('jutsu-melee','jutsu-cast','jutsu-ultimate','jutsu-heal');
+void source.offsetWidth;source.classList.add(cls);
+setTimeout(()=>source.classList.remove(cls),850);
+if(target!==source){target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),400)}
+const fx=document.createElement('div');
+fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
+fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
+fx.style.setProperty('--dx',(tx-sx)+'px');fx.style.setProperty('--dy',(ty-sy)+'px');fx.style.setProperty('--fx',color);
+fx.dataset.icon=icon;layer.appendChild(fx);
+setTimeout(()=>fx.remove(),1050);
+}
 function battleAction(unit,own,opponents){
 if(unit.curHp<=0||!opponents.some(x=>x.curHp>0))return;
 const enemy=own===allies?foes:allies;
@@ -444,14 +505,15 @@ let dmg=0,healed=0,crit=false;
 if(ult)unit.rage=0;else unit.rage=Math.min(100,(unit.rage||0)+(secondary?26:17));
 if(unit.id==='sakura'&&action===2){
 const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
-if(hurt){healed=Math.min(hurt.maxHp-hurt.curHp,Math.round(hurt.maxHp*.52));hurt.curHp+=healed;log('💚 Сакура лечит '+hurt.name+' на '+healed+' HP')}
+if(hurt){healed=Math.min(hurt.maxHp-hurt.curHp,Math.round(hurt.maxHp*.52));hurt.curHp+=healed;playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)));log('💚 Сакура лечит '+hurt.name+' на '+healed+' HP')}
 }else if(unit.id==='sakura'&&action===1){
 own.filter(x=>x.curHp>0).forEach(x=>x.buff=2);
+playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(unit),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(unit)));
 log('✨ Сакура усиливает всю команду на 2 действия');
 }else if(unit.id==='hinata'&&action===2){
 const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
 if(hurt){healed=Math.round(hurt.maxHp*.27);hurt.curHp=Math.min(hurt.maxHp,hurt.curHp+healed)}
-log('🛡️ Хината защищает и восстанавливает союзника');
+playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)));log('🛡️ Хината защищает и восстанавливает союзника');
 }else{
 crit=Math.random()*100<Math.min(80,(own===allies?s.critChance:5)+(unit.bonusCrit||0));
 const multiplier=action===2?3.1:action===1?1.55:1;
@@ -461,8 +523,7 @@ target.curHp=Math.max(0,target.curHp-dmg);
 if(unit.buff>0)unit.buff--;
 const side=own===allies?'allyTeam':'foeTeam';
 if(el('battleFeed'))el('battleFeed').textContent=(ult?'🔥 УЛЬТА · ':'⚔️ ')+unit.name+' · '+skill;
-animateUnit(side,own.indexOf(unit),'striking');
-animateUnit(own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),'targeted');
+playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action);
 if(own===allies)showDamage(dmg,crit);
 log((ult?'🔥 УЛЬТА! ':'')+unit.name+' · '+skill+' → '+target.name+': −'+dmg+(crit?' 💥 КРИТ':''));
 }
