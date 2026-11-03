@@ -252,7 +252,7 @@ button:active{transform:translateY(2px)}
 @keyframes rasenganSpin{to{transform:rotate(360deg)}}
 @keyframes cutinPunch{0%{transform:translateX(-30px)}65%,100%{transform:translateX(40px)}}
 @keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
-</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style></head>
+</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -631,6 +631,51 @@ function openProfile(){if(started&&!paused)togglePause();el('profileModal').clas
 function closeProfile(){el('profileModal').classList.remove('open');initTeams();render();openTeam()}
 function selectProfile(id){selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
+
+let heroRenderer=null;
+function mountHero3D(hero){
+const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
+if(heroRenderer){try{heroRenderer.dispose()}catch(e){}heroRenderer=null}
+if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);return}
+try{
+host.innerHTML='';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
+const camera=new THREE.PerspectiveCamera(32,host.clientWidth/280,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(host.clientWidth,280);host.appendChild(renderer.domElement);heroRenderer=renderer;
+scene.add(new THREE.HemisphereLight(0xffffff,0x536485,2.2));const lamp=new THREE.DirectionalLight(0xffffff,2.1);lamp.position.set(3,6,5);scene.add(lamp);
+const group=new THREE.Group();scene.add(group);
+const palette={naruto:['#f28c23','#202938','#f8cf9d','#f2cf32'],sasuke:['#d6d8e4','#293553','#e7c7b1','#222432'],sakura:['#d85875','#f4bdcb','#f2d1bd','#ee8da9'],kakashi:['#4c6670','#1f3042','#e7c6b3','#c9d0d4'],hinata:['#c7b8dd','#252d49','#f1d2bf','#282941'],shikamaru:['#53744d','#333940','#dbbba5','#222b28'],gaara:['#7b3c38','#302c32','#ebc4a5','#ae4538'],itachi:['#272a31','#15171c','#dfc1b0','#1c2029'],pain:['#282c36','#16191f','#d8b8a5','#e58d44'],kisame:['#343b52','#262b35','#7185ad','#25364b'],deidara:['#292c32','#24262e','#f0cdb6','#e3c34f'],sasori:['#323438','#28262c','#e8c4a9','#bb493a']};
+const p=palette[hero.id]||palette.naruto;
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.84});
+const cloth=mat(p[0]),pants=mat(p[1]),skin=mat(p[2]),hair=mat(p[3]),dark=mat('#151e2c'),metal=mat('#9eaeb9');
+function shape(geo,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);group.add(o);return o}
+const ball=new THREE.SphereGeometry(1,18,14),box=new THREE.BoxGeometry(1,1,1),tube=new THREE.CylinderGeometry(.5,.5,1,12);
+shape(tube,pants,-.24,.49,0,.31,.95,.33);shape(tube,pants,.24,.49,0,.31,.95,.33);
+shape(box,dark,-.24,.11,.12,.36,.19,.62);shape(box,dark,.24,.11,.12,.36,.19,.62);
+shape(tube,cloth,0,1.51,0,1.02,1.15,.61);
+shape(ball,skin,0,2.47,0,.41,.48,.36);
+shape(ball,hair,0,2.79,-.04,.45,.24,.38);
+for(const s of [-1,1]){
+let arm=shape(tube,cloth,s*.68,1.51,0,.29,.85,.28);arm.rotation.z=s*.16;
+shape(ball,skin,s*.75,1.02,.03,.15,.18,.15);
+shape(ball,dark,s*.17,2.48,.335,.043,.04,.018);
+}
+if(['naruto','kakashi','hinata','sakura'].includes(hero.id)){shape(box,metal,0,2.66,.345,.64,.17,.07);shape(box,dark,0,2.66,.39,.18,.11,.02)}
+if(hero.id==='naruto'){for(let i=0;i<7;i++){const a=i*Math.PI*2/7;let spike=shape(tube,hair,Math.cos(a)*.29,2.96,Math.sin(a)*.25,.16,.31,.16);spike.rotation.z=Math.cos(a)*-.5}}
+if(hero.id==='gaara')shape(ball,mat('#a78356'),.52,1.47,-.39,.49,.62,.37);
+if(['itachi','pain','kisame','deidara','sasori'].includes(hero.id)){shape(tube,mat('#191b25'),0,1.47,.12,1.12,1.23,.7);for(let i=0;i<3;i++)shape(ball,mat('#b53943'),(i-1)*.28,1.6,.52,.13,.09,.04)}
+if(hero.id==='sakura')shape(ball,hair,0,2.73,-.03,.46,.29,.4);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(1.7,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
+let drag=false,last=0,angle=.35;
+renderer.domElement.style.touchAction='pan-y';
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.clientX-last)*.013;last=e.clientX;group.rotation.y=angle;renderer.render(scene,camera)}});
+group.rotation.y=angle;renderer.render(scene,camera);
+const note=document.createElement('span');note.className='model-credit';note.textContent='Встроенная 3D-фигурка · поверни пальцем';host.appendChild(note);
+}catch(err){host.innerHTML=ninjaSVG(hero);console.warn('3D fallback',err)}
+}
+
 function renderProfile(){
 const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
 el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
@@ -639,11 +684,12 @@ let bag=s.inventory.map(item=>{
 const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
 return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
 }).join('');
-el('profileContent').innerHTML='<div class="profile-hero">'+(c.id==='naruto'?'<div class="profile-model"><iframe title="Наруто 3D" loading="lazy" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen src="https://sketchfab.com/models/db14fc3de5b34b738e49ec3cdb83770a/embed?autostart=1&ui_infos=0&ui_controls=1"></iframe><span class="model-credit">3D: ronildo.facanha · Sketchfab · CC BY</span></div>':ninjaSVG(c))+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
+el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
 '<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
 '<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
 '<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
 '<div class="profile-hint" id="profileHint">Купленные вещи остаются в сумке после снятия. Улучшения сохраняются.</div>';
+setTimeout(()=>mountHero3D(c),0);
 }
 
 function openBag(){if(started&&!paused)togglePause();el('bagModal').classList.add('open');renderBag()}
