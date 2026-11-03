@@ -325,7 +325,7 @@ else if(typeof value==='number'&&!itemById(value)){delete p.gear[slot]}
 }
 save();
 }
-migrateOldGear();
+try{migrateOldGear()}catch(e){console.error("Inventory migration:",e)}
 function gearOwner(itemId){for(const [id,p] of Object.entries(s.heroProgress)){if(Object.values(p.gear||{}).some(v=>v===itemId))return id}return null}
 function heroBonuses(id){
 const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critDamage:0};
@@ -408,7 +408,7 @@ s.coins-=cost;item.quality++;save();initTeams();render();renderProfile();
 }
 let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 let started=false,paused=false,timer=null;
-function save(){localStorage.setItem('narutoSave',JSON.stringify(s))}
+function save(){try{localStorage.setItem('narutoSave',JSON.stringify(s))}catch(e){console.warn('Save unavailable',e)}}
 function render(){
 el('coins').textContent=s.coins;el('level').textContent=s.level;el('wave').textContent=s.wave;el('speed').textContent=s.speed;
 el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
@@ -463,13 +463,13 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 render();
 }
 function schedule(){clearTimeout(timer);if(!started||paused)return;timer=setTimeout(()=>{hit();schedule()},Math.max(350,1400-s.speed*35))}
-function startGame(){initTeams();started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';log('⚔️ Бой начался!');schedule()}
+function startGame(){started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
 function togglePause(){
 if(!started){startGame();return}
 paused=!paused;el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');schedule();
 }
-initTeams();render();
+try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
 </body>
 </html>
