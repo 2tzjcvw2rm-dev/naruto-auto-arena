@@ -330,7 +330,9 @@ const bounds=new T.Box3().setFromObject(loaded),size=bounds.getSize(new T.Vector
 const maxDimension=Math.max(size.x,size.y,size.z);
 if(!isFinite(maxDimension)||maxDimension<.00001)return;
 const holder=new T.Group();holder.add(loaded);loaded.position.sub(center);
-holder.scale.setScalar(2.4/maxDimension);
+holder.scale.setScalar(2.65/maxDimension);
+// Keep feet near the floor instead of centering the entire fighter at ground level.
+holder.position.y=1.28;
 body.clear();body.add(holder);
 });
 return {root,body,phase:Math.random()*6.28}
@@ -687,6 +689,7 @@ new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;for(
 let heroRenderer=null;
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
+// Reuse the same character GLB sources as the 5-on-5 arena; never change player progression.
 if(heroRenderer){try{heroRenderer.dispose()}catch(e){}heroRenderer=null}
 if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);host.insertAdjacentHTML('beforeend','<span class="model-credit">3D временно недоступно</span>');return}
 try{
@@ -719,13 +722,16 @@ if(['itachi','pain','kisame','deidara','sasori'].includes(hero.id)){shape(tube,m
 if(hero.id==='sakura')shape(ball,hair,0,2.73,-.03,.46,.29,.4);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(1.7,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
 let drag=false,last=0,angle=.35;
-renderer.domElement.style.touchAction='pan-y';
+renderer.domElement.style.touchAction='none';
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointercancel',()=>drag=false);
+renderer.domElement.addEventListener('lostpointercapture',()=>drag=false);
 renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.clientX-last)*.013;last=e.clientX;group.rotation.y=angle;renderer.render(scene,camera)}});
 group.rotation.y=angle;renderer.render(scene,camera);
 fetchHeroModel(hero.id,model=>{
-if(!model||heroRenderer!==renderer||!host.isConnected)return;
+if(heroRenderer!==renderer||!host.isConnected)return;
+if(!model){const note=host.querySelector('.model-credit');if(note)note.textContent='Модель недоступна · показан временный персонаж';return;}
 while(group.children.length)group.remove(group.children[0]);
 model.updateMatrixWorld(true);
 const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
@@ -741,13 +747,13 @@ const finalBox=new THREE.Box3().setFromObject(group);
 const finalSize=finalBox.getSize(new THREE.Vector3()),finalCenter=finalBox.getCenter(new THREE.Vector3());
 const fov=camera.fov*Math.PI/180,aspect=Math.max(.5,host.clientWidth/280);
 const fitDistance=Math.max(finalSize.y/(2*Math.tan(fov/2)),finalSize.x/(2*Math.tan(fov/2)*aspect));
-const distance=Math.max(7,fitDistance*2.2);
+const distance=Math.max(4.5,fitDistance*1.36);
 camera.position.set(finalCenter.x,finalCenter.y,distance+finalCenter.z);
 camera.lookAt(finalCenter);camera.near=.01;camera.far=10000;camera.updateProjectionMatrix();
 group.rotation.y=angle;renderer.render(scene,camera);
 const note=host.querySelector('.model-credit');if(note)note.textContent='3D-модель · поверни пальцем';
 });
-const note=document.createElement('span');note.className='model-credit';note.textContent='Встроенная 3D-фигурка · поверни пальцем';host.appendChild(note);
+const note=document.createElement('span');note.className='model-credit';note.textContent=remoteHeroModels[hero.id]?'Загружаю 3D-модель…':'Временная 3D-фигурка · поверни пальцем';host.appendChild(note);
 }catch(err){host.innerHTML=ninjaSVG(hero);console.warn('3D fallback',err)}
 }
 
