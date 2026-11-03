@@ -368,11 +368,11 @@ const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middl
 const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row).length;
 const bottom=total===1?24:(idx===0?43:8);
 const left=(side==='allyTeam'?allyXs:foeXs)[row];
-return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div></div>'
+return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
 }).join('');
 }
 el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
-if(arena3d)syncArena3d();
+
 }
 function renderFormationPreview(){
 ensureFormation();
