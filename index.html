@@ -579,7 +579,7 @@ function step(){
 if(!started||paused){roundInProgress=false;return}
 if(i<order.length&&allies.some(u=>u.curHp>0)&&foes.some(u=>u.curHp>0)){
 const a=order[i++];battleAction(a.u,a.own,a.enemy);render();
-actionTimer=setTimeout(()=>{renderTeams();step()},1450);return;
+actionTimer=setTimeout(()=>{renderTeams();step()},1750);return;
 }
 roundInProgress=false;
 if(!foes.some(u=>u.curHp>0))finishBattle(true);
@@ -755,12 +755,12 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 }
 render();
 }
-function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)return;timer=setTimeout(()=>battleRound(),1500)}
+function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)return;timer=setTimeout(()=>battleRound(),1800)}
 function startGame(){clearTimeout(actionTimer);roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
 function togglePause(){
 if(!started){startGame();return}
 paused=!paused;if(paused){clearTimeout(actionTimer);roundInProgress=false}else schedule();el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
-log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');schedule();
+log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
