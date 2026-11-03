@@ -227,7 +227,7 @@ button:active{transform:translateY(2px)}
 @keyframes ninjaCast{0%,100%{transform:translateX(-50%)}45%{transform:translateX(-50%) translateY(-9px) scale(1.1)}}
 @keyframes ninjaUltimate{0%,100%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.27) translateY(-9px)}65%{transform:translateX(calc(-50% + var(--strike,22px))) scale(1.15)}}
 @keyframes ninjaHeal{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(-8px);filter:drop-shadow(0 0 15px #4aff9e)}}
-@keyframes ninjaHurt{0%,100%{transform:translateX(-50%)}45%{transform:translateX(calc(-50% - var(--strike,22px)*.3)) rotate(7deg);filter:brightness(2)}}
+@keyframes ninjaHurt{0%,100%{transform:translateX(-50%)}45%{transform:translateX(calc(-50% - 6px)) rotate(7deg);filter:brightness(2)}}
 #jutsuFxLayer{position:absolute;inset:0;pointer-events:none;z-index:65;overflow:hidden}
 .jutsu-fx{position:absolute;width:38px;height:38px;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--fx,#5fbaff) 30%,transparent 72%);box-shadow:0 0 14px var(--fx,#5fbaff);animation:jutsuFly .65s ease-out forwards;--dx:0px;--dy:0px}
 .jutsu-fx::after{content:attr(data-icon);position:absolute;inset:0;display:grid;place-items:center;font-size:24px;text-shadow:0 0 8px #fff}
@@ -236,7 +236,7 @@ button:active{transform:translateY(2px)}
 .jutsu-fx.jutsu-shadow{border-radius:12px;transform:translate(-50%,-50%) skewX(-25deg)}
 .jutsu-fx.jutsu-clones::before,.jutsu-fx.jutsu-clones::after{content:'🥷';position:absolute;top:-12px;font-size:25px;opacity:.8}
 .jutsu-fx.jutsu-clones::before{left:-32px}.jutsu-fx.jutsu-clones::after{right:-32px}
-@keyframes jutsuFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1}70%{opacity:1;transform:translate(calc(-50% + var(--dx)*.8),calc(-50% + var(--dy)*.8)) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.6)}}
+@keyframes jutsuFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1}70%{opacity:1;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.6)}}
 @keyframes jutsuBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.25)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
 @keyframes jutsuSupport{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}45%{opacity:1}100%{opacity:0;transform:translate(-50%,-85%) scale(1.8)}}
 @media(prefers-reduced-motion:reduce){.mini-unit.jutsu-melee,.mini-unit.jutsu-cast,.mini-unit.jutsu-ultimate,.mini-unit.jutsu-heal,.mini-unit.jutsu-hurt{animation-duration:.1s!important}}
@@ -483,7 +483,7 @@ source.style.setProperty('--chakra',color);
 source.classList.remove('jutsu-melee','jutsu-cast','jutsu-ultimate','jutsu-heal');
 void source.offsetWidth;source.classList.add(cls);
 setTimeout(()=>source.classList.remove(cls),850);
-if(target!==source){target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),400)}
+if(target!==source&&kind!=='heal'&&kind!=='support'){target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),400)}
 const fx=document.createElement('div');
 fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
 fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
@@ -512,8 +512,7 @@ playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?
 log('✨ Сакура усиливает всю команду на 2 действия');
 }else if(unit.id==='hinata'&&action===2){
 const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
-if(hurt){healed=Math.round(hurt.maxHp*.27);hurt.curHp=Math.min(hurt.maxHp,hurt.curHp+healed)}
-playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)));log('🛡️ Хината защищает и восстанавливает союзника');
+if(hurt){healed=Math.round(hurt.maxHp*.27);hurt.curHp=Math.min(hurt.maxHp,hurt.curHp+healed);playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)))}log('🛡️ Хината защищает и восстанавливает союзника');
 }else{
 crit=Math.random()*100<Math.min(80,(own===allies?s.critChance:5)+(unit.bonusCrit||0));
 const multiplier=action===2?3.1:action===1?1.55:1;
