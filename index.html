@@ -204,7 +204,8 @@ button:active{transform:translateY(2px)}
 
 
 .arena.three-active .ground{opacity:.65}
-</style><script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+</style><script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/GLTFLoader.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -653,6 +654,23 @@ function closeProfile(){el('profileModal').classList.remove('open');initTeams();
 function selectProfile(id){selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
+const remoteHeroModels={"naruto":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Naruto%20Uzumaki/Naruto%20Uzumaki.glb",
+"sasuke":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sasuke%20Uchiha/Sasuke%20Uchiha.glb",
+"sakura":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sakura%20Haruno/Sakura%20Haruno.glb",
+"kakashi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kakashi%20Hatake/Kakashi%20Hatake.glb",
+"hinata":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Hinata%20Hy%C5%ABga/Hinata%20Hy%C5%ABga.glb",
+"shikamaru":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Shikamaru%20Nara/Shikamaru%20Nara.glb",
+"gaara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Gaara/Gaara.glb",
+"itachi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Itachi%20Uchiha/Itachi%20Uchiha.glb",
+"pain":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Pain/Pain.glb",
+"kisame":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kisame%20Hoshigaki/Kisame%20Hoshigaki.glb",
+"deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb"};
+const modelCache={};
+function fetchHeroModel(id,callback){
+if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
+if(modelCache[id]){callback(modelCache[id].clone(true));return}
+new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;callback(g.scene.clone(true))},undefined,e=>{console.warn('GLB not loaded',id,e);callback(null)});
+}
 let heroRenderer=null;
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
@@ -693,6 +711,14 @@ renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
 renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.clientX-last)*.013;last=e.clientX;group.rotation.y=angle;renderer.render(scene,camera)}});
 group.rotation.y=angle;renderer.render(scene,camera);
+fetchHeroModel(hero.id,model=>{
+if(!model||heroRenderer!==renderer||!host.isConnected)return;
+while(group.children.length)group.remove(group.children[0]);
+const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+const scale=2.65/Math.max(size.y,.01);model.scale.setScalar(scale);model.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);group.add(model);
+group.rotation.y=angle;renderer.render(scene,camera);
+const note=host.querySelector('.model-credit');if(note)note.textContent='3D-модель · поверни пальцем';
+});
 const note=document.createElement('span');note.className='model-credit';note.textContent='Встроенная 3D-фигурка · поверни пальцем';host.appendChild(note);
 }catch(err){host.innerHTML=ninjaSVG(hero);console.warn('3D fallback',err)}
 }
