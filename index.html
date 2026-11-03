@@ -175,7 +175,7 @@ button:active{transform:translateY(2px)}
 .damage-pop{position:absolute;top:22%;left:55%;z-index:1900;pointer-events:none;color:#fff6a6;font-weight:1000;font-size:clamp(32px,8vw,49px);white-space:nowrap;text-shadow:2px 3px #78381e,0 0 12px #ffc64d;animation:damagePop 1.15s ease-out forwards}
 .damage-pop.iscrit{color:#ff477a;font-size:clamp(31px,8vw,51px);text-shadow:3px 3px #550820,0 0 22px #ff184e}
 @keyframes damagePop{0%{opacity:0;transform:translateY(20px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.15)}75%{opacity:1;transform:translateY(-42px) scale(1)}100%{opacity:0;transform:translateY(-78px) scale(.95)}}
-</style></head>
+</style><style>.profile-open{background:#f5bd59!important;color:#1c2533!important;border:2px solid #ffe1a1!important}.team-card{display:block!important;text-align:center!important}.team-card svg{vertical-align:middle}.team-card button{font-size:12px;padding:9px 5px}</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -244,8 +244,9 @@ el(side).innerHTML=units.map((u,i)=>'<div class="mini-unit '+(side==='foeTeam'?'
 el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 }
 function renderTeamCards(){
-el('teamCards').innerHTML=roster.map(c=>'<button class="team-card '+(s.team.includes(c.id)?'chosen':'')+'" onclick="toggleMember(\''+c.id+'\')">'+ninjaSVG(c)+'<span><strong>'+(s.team.includes(c.id)?'✓ ':'')+c.name+'</strong><small>'+c.role+' · ⚔️ '+c.atk+' · ❤️ '+c.hp+'</small></span></button>').join('');
+el('teamCards').innerHTML=roster.map(c=>'<div class="team-card '+(s.team.includes(c.id)?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(s.team.includes(c.id)?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>').join('');
 }
+function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
 function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
 function closeTeam(){el('teamModal').classList.remove('open');renderTeams();render()}
 function toggleMember(id){
@@ -308,7 +309,7 @@ for(const g of gearCatalog)if(p.gear[g.slot])b[g.bonus]+=g.value;
 return b;
 }
 function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
-function closeProfile(){el('profileModal').classList.remove('open');initTeams();render()}
+function closeProfile(){el('profileModal').classList.remove('open');initTeams();render();openTeam()}
 function selectProfile(id){selectedProfile=id;renderProfile()}
 function renderProfile(){
 const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
