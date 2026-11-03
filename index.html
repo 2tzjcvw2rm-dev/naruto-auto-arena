@@ -328,8 +328,10 @@ if(remoteHeroModels[u.id])fetchHeroModel(u.id,loaded=>{
 if(!loaded||!root.parent)return;
 const bounds=new T.Box3().setFromObject(loaded),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
 const scale=2.2/Math.max(size.y,.01);
-loaded.scale.setScalar(scale);loaded.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
-body.clear();body.add(loaded);
+const holder=new T.Group();holder.add(loaded);holder.scale.setScalar(scale);
+const fit=new T.Box3().setFromObject(holder),mid=fit.getCenter(new T.Vector3());
+holder.position.set(-mid.x,-fit.min.y,-mid.z);
+body.clear();body.add(holder);
 });
 return {root,body,phase:Math.random()*6.28}
 }
@@ -726,7 +728,16 @@ fetchHeroModel(hero.id,model=>{
 if(!model||heroRenderer!==renderer||!host.isConnected)return;
 while(group.children.length)group.remove(group.children[0]);
 const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
-const scale=2.65/Math.max(size.y,.01);model.scale.setScalar(scale);model.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);group.add(model);
+const scale=2.65/Math.max(size.y,.01);
+const holder=new THREE.Group();holder.add(model);holder.scale.setScalar(scale);
+const fitted=new THREE.Box3().setFromObject(holder);
+const fittedCenter=fitted.getCenter(new THREE.Vector3());
+holder.position.set(-fittedCenter.x,-fitted.min.y,-fittedCenter.z);
+group.add(holder);
+const fov=camera.fov*Math.PI/180;
+const radius=Math.max(1.7,Math.max(fitted.getSize(new THREE.Vector3()).x,fitted.getSize(new THREE.Vector3()).y)*.72);
+const dist=Math.max(6.8,radius/Math.tan(fov/2)*1.6);
+camera.position.set(0,1.4,dist);camera.lookAt(0,1.4,0);
 group.rotation.y=angle;renderer.render(scene,camera);
 const note=host.querySelector('.model-credit');if(note)note.textContent='3D-модель · поверни пальцем';
 });
