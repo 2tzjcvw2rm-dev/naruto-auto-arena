@@ -290,7 +290,7 @@ try{
 const T=THREE,host=el('battle3d'),w=host.clientWidth||360,h=host.clientHeight||360;
 const renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(w,h);
-renderer.outputColorSpace=T.SRGBColorSpace;host.appendChild(renderer.domElement);
+if('outputColorSpace' in renderer)renderer.outputColorSpace=T.SRGBColorSpace;else renderer.outputEncoding=T.sRGBEncoding;host.appendChild(renderer.domElement);
 const scene=new T.Scene(),camera=new T.OrthographicCamera(-6,6,4,-4,.1,100);
 camera.position.set(0,5,16);camera.lookAt(0,1,0);
 scene.add(new T.HemisphereLight(0xffffff,0x6a6572,2.1));
@@ -324,6 +324,13 @@ if(u.id==='naruto'){for(let i=-2;i<=2;i++){const spike=box(i*.15,2.29+Math.abs(i
 else{ball(0,2.22,-.06,.32,colors[1]);box(0,2.3,.18,.58,.12,.16,colors[1])}
 box(-.13,1.9,.33,.07,.035,.035,0x25252d);box(.13,1.9,.33,.07,.035,.035,0x25252d);
 if(enemy)root.rotation.y=Math.PI;
+if(remoteHeroModels[u.id])fetchHeroModel(u.id,loaded=>{
+if(!loaded||!root.parent)return;
+const bounds=new T.Box3().setFromObject(loaded),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
+const scale=2.2/Math.max(size.y,.01);
+loaded.scale.setScalar(scale);loaded.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
+body.clear();body.add(loaded);
+});
 return {root,body,phase:Math.random()*6.28}
 }
 function syncArena3d(){
@@ -666,10 +673,13 @@ const remoteHeroModels={"naruto":"https://raw.githubusercontent.com/fchapoulliep
 "kisame":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kisame%20Hoshigaki/Kisame%20Hoshigaki.glb",
 "deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb"};
 const modelCache={};
+const pendingModels={};
 function fetchHeroModel(id,callback){
 if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
 if(modelCache[id]){callback(modelCache[id].clone(true));return}
-new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;callback(g.scene.clone(true))},undefined,e=>{console.warn('GLB not loaded',id,e);callback(null)});
+if(pendingModels[id]){pendingModels[id].push(callback);return}
+pendingModels[id]=[callback];
+new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
 }
 let heroRenderer=null;
 function mountHero3D(hero){
