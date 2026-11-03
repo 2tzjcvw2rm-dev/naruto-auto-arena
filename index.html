@@ -391,11 +391,26 @@ ensureFormation();save();initTeams();renderTeamCards();
 ensureFormation();
 let allies=[],foes=[];
 function initTeams(){
+renderedLayout='';
 allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25,rage:0,buff:0}});
 foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08)),rage:0,buff:0}));
 renderTeams();
 }
+let renderedLayout='';
 function renderTeams(){
+const layoutKey=JSON.stringify({a:allies.map(u=>u.id),f:foes.map(u=>u.id),formation:s.formation});
+if(renderedLayout===layoutKey&&el('allyTeam0')&&el('foeTeam0')){
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]])units.forEach((u,i)=>{
+const n=el(side+i);if(!n)return;
+const hpBar=n.querySelector('.unit-hp i'),rageBar=n.querySelector('.rage-bar i');
+if(hpBar)hpBar.style.width=Math.max(0,100*u.curHp/u.maxHp)+'%';
+if(rageBar)rageBar.style.width=Math.max(0,u.rage||0)+'%';
+n.classList.toggle('down',u.curHp<=0);
+});
+el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+return;
+}
+renderedLayout=layoutKey;
 const allyXs={front:43,middle:28,back:12},foeXs={front:57,middle:72,back:88};
 for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
 const counts={front:0,middle:0,back:0};
