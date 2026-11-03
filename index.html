@@ -374,7 +374,7 @@ const enemies=[
 {id:'pain',name:'Пейн',color:'#33343e',hair:'#ec8c4d',skin:'#d6b7a3',hp:125,atk:16,spd:11},
 {id:'kisame',name:'Кисаме',color:'#333c4e',hair:'#425b78',skin:'#7495ad',hp:145,atk:14,spd:9},
 {id:'deidara',name:'Дейдара',color:'#252c35',hair:'#e9cf79',skin:'#e4c0a1',hp:95,atk:19,spd:14},
-{id:'sasori',name:'Сасори',color:'#33303a',hair:'#b75c47',skin:'#d8b5a0',hp:115,atk:16,spd:12}
+{id:'konan',name:'Конан',color:'#33303a',hair:'#627da2',skin:'#d8b5a0',hp:115,atk:16,spd:12}
 ];
 function ninjaSVG(c){
 return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><path d="M21 115L16 65Q20 56 32 53H50Q62 56 65 66L60 115" fill="'+c.color+'" stroke="#252c39" stroke-width="3"/><path d="M31 91L29 116M50 91L51 116" stroke="#242c38" stroke-width="6"/><path d="M18 65L12 89L24 95M63 65L69 89L58 95" fill="none" stroke="'+c.color+'" stroke-width="11"/><ellipse cx="40" cy="34" rx="20" ry="25" fill="'+c.skin+'" stroke="#47352f" stroke-width="2"/><path d="M18 34L14 21L27 23L25 9L35 16L42 3L48 15L60 8L58 23L68 21L62 35L55 21L25 24Z" fill="'+c.hair+'" stroke="#30313b" stroke-width="2"/><path d="M23 34L57 34L56 43L24 43Z" fill="#2a3545"/><rect x="33" y="35" width="15" height="7" rx="2" fill="#b8c4cc"/><path d="M27 48L35 48M46 48L54 48" stroke="#272936" stroke-width="3"/><path d="M36 56Q40 59 45 56" fill="none" stroke="#a15c50" stroke-width="2"/></svg>';
@@ -671,7 +671,8 @@ const remoteHeroModels={"naruto":"https://raw.githubusercontent.com/fchapoulliep
 "itachi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Itachi%20Uchiha/Itachi%20Uchiha.glb",
 "pain":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Pain/Pain.glb",
 "kisame":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kisame%20Hoshigaki/Kisame%20Hoshigaki.glb",
-"deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb"};
+"deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb",
+"konan":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Konan/Konan.glb"};
 const modelCache={};
 const pendingModels={};
 function fetchHeroModel(id,callback){
