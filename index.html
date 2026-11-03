@@ -184,7 +184,21 @@ button:active{transform:translateY(2px)}
 #bagBtn{background:linear-gradient(#c69b5a,#86603c);border:2px solid #e9c58b;color:#fff;font-size:16px}
 .bag-dialog{background:#202b3c;border:2px solid #dfb56d;border-radius:15px;padding:14px;width:min(100%,530px);max-height:92vh;overflow:auto}
 .bag-dialog h2{color:#ffcf77;margin:0 0 8px}
-</style><style>.main-nav{display:flex;justify-content:flex-end;background:#172438;padding:9px 14px;border-bottom:2px solid #b78b4d}.main-nav #bagBtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;font-size:18px;background:linear-gradient(#d5a35a,#875c30);border:2px solid #ffe0a1;color:white;border-radius:12px;box-shadow:0 3px #493018}.main-nav #bagBtn small{font-size:10px;font-weight:500;color:#fff3dc}</style></head>
+</style><style>.main-nav{display:flex;justify-content:flex-end;background:#172438;padding:9px 14px;border-bottom:2px solid #b78b4d}.main-nav #bagBtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;font-size:18px;background:linear-gradient(#d5a35a,#875c30);border:2px solid #ffe0a1;color:white;border-radius:12px;box-shadow:0 3px #493018}.main-nav #bagBtn small{font-size:10px;font-weight:500;color:#fff3dc}</style><style>
+/* Side-view tactical battlefield */
+#allyTeam,#foeTeam{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;pointer-events:none;z-index:5}
+#allyTeam .mini-unit,#foeTeam .mini-unit{position:absolute!important;margin:0!important;width:16%!important;max-width:76px!important;height:104px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:flex-end;transition:left .3s,bottom .3s;transform:translateX(-50%);pointer-events:none}
+#allyTeam .mini-unit svg,#foeTeam .mini-unit svg{width:100%!important;height:75px!important;max-height:75px!important;object-fit:contain}
+#foeTeam .mini-unit svg{transform:scaleX(-1)}
+#allyTeam .mini-unit .unit-name,#foeTeam .mini-unit .unit-name{font-size:10px!important;white-space:nowrap;line-height:1.1;text-shadow:0 1px 3px #000,0 1px 3px #000}
+#allyTeam .mini-unit .unit-hp,#foeTeam .mini-unit .unit-hp{width:95%!important;height:5px!important}
+#allyTeam .mini-unit.striking{animation:sideStrike .35s ease-out!important}
+#foeTeam .mini-unit.striking{animation:sideCounter .35s ease-out!important}
+@keyframes sideStrike{50%{transform:translateX(5px) scale(1.16)}}
+@keyframes sideCounter{50%{transform:translateX(-18px) scale(1.14)}}
+#hero,#enemy{display:none!important}
+.formation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}.formation-col{background:#1a2a3d;border:1px solid #7084a0;border-radius:10px;padding:8px 4px}.formation-col h3{font-size:12px;margin:0 0 8px;color:#ffd27b}.formation-unit{padding:7px 3px;margin:5px 0;border-radius:8px;background:#31475c;font-size:12px;min-height:40px}.formation-empty{color:#8797a8;border:1px dashed #70839a;background:transparent}.formation-choice{display:flex;gap:4px;margin-top:6px}.formation-choice button{flex:1;padding:8px 1px;font-size:11px;border-radius:7px}.formation-choice button.active{background:#63dca0;border-color:#bbffe0}.team-card .formation-choice{width:100%}
+</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -212,7 +226,7 @@ button:active{transform:translateY(2px)}
 </div>
 <div id="teamStatus">Команда: 1/5</div><div id="log">⚔️ Автобой начался</div>
 </div>
-<div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя. Нажми на персонажа, чтобы поставить или убрать его с поля. Наруто всегда в команде.</p><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
+<div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя и назначь линию: передняя (танки), средняя (урон), задняя (хилы и поддержка). Можно 1–2 бойца на каждой линии.</p><div id="formationPreview"></div><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
 let s;
 try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
@@ -240,6 +254,14 @@ return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><path d="M2
 s.team=Array.isArray(s.team)?s.team.filter(id=>roster.some(r=>r.id===id)):['naruto'];
 if(!s.team.includes('naruto'))s.team.unshift('naruto');
 s.team=[...new Set(s.team)].slice(0,5);
+s.formation=s.formation||{};
+const formationRows=['front','middle','back'];
+const rowNames={front:'🛡️ Передняя',middle:'⚔️ Средняя',back:'💚 Задняя'};
+function ensureFormation(){
+const counts={front:0,middle:0,back:0};
+for(const id of s.team){let row=s.formation[id];if(!formationRows.includes(row)||counts[row]>=2){row=formationRows.find(r=>counts[r]<2)||'back';s.formation[id]=row}counts[row]++}
+}
+ensureFormation();
 let allies=[],foes=[];
 function initTeams(){
 allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25}});
@@ -247,13 +269,35 @@ foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.roun
 renderTeams();
 }
 function renderTeams(){
-for(let [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
-el(side).innerHTML=units.map((u,i)=>'<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div></div>').join('');
+const allyXs={front:43,middle:28,back:12},foeXs={front:57,middle:72,back:88};
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+const counts={front:0,middle:0,back:0};
+el(side).innerHTML=units.map((u,i)=>{
+const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
+const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row).length;
+const bottom=total===1?24:(idx===0?43:8);
+const left=(side==='allyTeam'?allyXs:foeXs)[row];
+return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div></div>'
+}).join('');
 }
 el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 }
+function renderFormationPreview(){
+const counts={front:[],middle:[],back:[]};
+for(const id of s.team){const row=s.formation[id]||'front';(counts[row]||counts.front).push(roster.find(x=>x.id===id)?.name||id)}
+el('formationPreview').innerHTML='<div class="formation-grid">'+formationRows.map(row=>'<div class="formation-col"><h3>'+rowNames[row]+'</h3>'+counts[row].map(name=>'<div class="formation-unit">'+name+'</div>').join('')+Array.from({length:Math.max(0,2-counts[row].length)},()=>'<div class="formation-unit formation-empty">+ место</div>').join('')+'</div>').join('')+'</div>';
+}
+function setFormation(id,row){
+if(!s.team.includes(id))return;
+if(s.team.filter(x=>x!==id&&s.formation[x]===row).length>=2){el('teamStatus').textContent='На этой линии уже 2 ниндзя';return}
+s.formation[id]=row;save();initTeams();renderTeamCards();
+}
 function renderTeamCards(){
-el('teamCards').innerHTML=roster.map(c=>'<div class="team-card '+(s.team.includes(c.id)?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(s.team.includes(c.id)?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>').join('');
+renderFormationPreview();
+el('teamCards').innerHTML=roster.map(c=>{
+const chosen=s.team.includes(c.id),row=s.formation[c.id]||'front';
+return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div>'+(chosen?'<div class="formation-choice">'+formationRows.map(r=>'<button class="'+(row===r?'active':'')+'" onclick="setFormation(\''+c.id+'\',\''+r+'\')">'+(r==='front'?'🛡️ Перед':r==='middle'?'⚔️ Центр':'💚 Тыл')+'</button>').join('')+'</div>':'')+'</div>'
+}).join('');
 }
 function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
 function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
@@ -263,14 +307,16 @@ if(id==='naruto'){log('Наруто — лидер команды');return}
 if(s.team.includes(id)){s.team=s.team.filter(x=>x!==id)}
 else if(s.team.length>=5){el('teamStatus').textContent='Максимум 5 ниндзя!';return}
 else s.team.push(id);
-save();initTeams();renderTeamCards();
+ensureFormation();save();initTeams();renderTeamCards();
 }
 function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330)}
 function battleRound(){
 let livingA=allies.filter(u=>u.curHp>0),livingE=foes.filter(u=>u.curHp>0);
 if(!livingA.length){allies.forEach(u=>u.curHp=u.maxHp);log('💚 Команда восстановилась!');renderTeams();return}
 if(!livingE.length){winWave();return}
-let attacker=livingA[Math.floor(Math.random()*livingA.length)],target=livingE[Math.floor(Math.random()*livingE.length)];
+let attacker=livingA[Math.floor(Math.random()*livingA.length)];
+const enemyFront=livingE.filter(e=>foes.indexOf(e)<2);
+let target=(enemyFront.length?enemyFront:livingE)[Math.floor(Math.random()*(enemyFront.length?enemyFront:livingE).length)];
 let ai=allies.indexOf(attacker),ei=foes.indexOf(target);
 let crit=Math.random()*100<Math.min(100,s.critChance+(attacker.bonusCrit||0));
 let base=attacker.atk+(attacker.id==='naruto'?s.damage:Math.round(s.damage*.3));
@@ -289,7 +335,9 @@ if(foes.every(u=>u.curHp<=0)){winWave();return}
 let retaliation=foes.filter(u=>u.curHp>0);
 if(retaliation.length){
 let foe=retaliation[Math.floor(Math.random()*retaliation.length)];
-let victim=allies.filter(u=>u.curHp>0)[Math.floor(Math.random()*allies.filter(u=>u.curHp>0).length)];
+let alive=allies.filter(u=>u.curHp>0),front=alive.filter(u=>s.formation[u.id]==='front'),middle=alive.filter(u=>s.formation[u.id]==='middle');
+let candidates=front.length?front:middle.length?middle:alive;
+let victim=candidates[Math.floor(Math.random()*candidates.length)];
 victim.curHp=Math.max(0,victim.curHp-Math.max(2,Math.round(foe.atk*.45-s.speed*.12)));
 animateUnit('foeTeam',foes.indexOf(foe),'striking');
 }
