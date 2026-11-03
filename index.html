@@ -198,7 +198,13 @@ button:active{transform:translateY(2px)}
 @keyframes sideCounter{50%{transform:translateX(-18px) scale(1.14)}}
 #hero,#enemy{display:none!important}
 .formation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}.formation-col{background:#1a2a3d;border:1px solid #7084a0;border-radius:10px;padding:8px 4px}.formation-col h3{font-size:12px;margin:0 0 8px;color:#ffd27b}.formation-unit{padding:7px 3px;margin:5px 0;border-radius:8px;background:#31475c;font-size:12px;min-height:40px}.formation-empty{color:#8797a8;border:1px dashed #70839a;background:transparent}.formation-choice{display:flex;gap:4px;margin-top:6px}.formation-choice button{flex:1;padding:8px 1px;font-size:11px;border-radius:7px}.formation-choice button.active{background:#63dca0;border-color:#bbffe0}.team-card .formation-choice{width:100%}
-</style><style>.preset-options{display:flex;gap:6px;margin:8px 0}.preset-options button{flex:1;padding:10px 2px;font-size:12px}.preset-options button.active{background:#5bd99a;color:#132c24}.formation-slot{width:100%;margin:5px 0;padding:8px 3px;background:#30485d;border:1px solid #7895b2;border-radius:8px;color:#fff;font-size:12px;min-height:41px}.formation-slot.empty{border-style:dashed;color:#b3c6d7}.formation-col{min-width:0}.formation-col h3{font-size:11px}.formation-help{font-size:12px;color:#e8c992}</style><style>#modelModal{display:none;position:fixed;inset:0;z-index:3000;background:#07101def;align-items:center;justify-content:center;padding:12px}#modelModal.open{display:flex}.model-dialog{background:#202c3f;border:2px solid #e7b569;border-radius:15px;width:min(100%,530px);padding:12px;max-height:95vh;overflow:auto}.model-frame{width:100%;height:min(57vh,420px);border:0;border-radius:10px;background:#101826}.model-note{font-size:12px;color:#d3ddeb}</style></head>
+</style><style>.preset-options{display:flex;gap:6px;margin:8px 0}.preset-options button{flex:1;padding:10px 2px;font-size:12px}.preset-options button.active{background:#5bd99a;color:#132c24}.formation-slot{width:100%;margin:5px 0;padding:8px 3px;background:#30485d;border:1px solid #7895b2;border-radius:8px;color:#fff;font-size:12px;min-height:41px}.formation-slot.empty{border-style:dashed;color:#b3c6d7}.formation-col{min-width:0}.formation-col h3{font-size:11px}.formation-help{font-size:12px;color:#e8c992}</style><style>#modelModal{display:none;position:fixed;inset:0;z-index:3000;background:#07101def;align-items:center;justify-content:center;padding:12px}#modelModal.open{display:flex}.model-dialog{background:#202c3f;border:2px solid #e7b569;border-radius:15px;width:min(100%,530px);padding:12px;max-height:95vh;overflow:auto}.model-frame{width:100%;height:min(57vh,420px);border:0;border-radius:10px;background:#101826}.model-note{font-size:12px;color:#d3ddeb}</style><style>
+#battle3d{position:absolute;inset:0;z-index:4;pointer-events:none;display:none}
+.arena.three-active #battle3d{display:block}
+.arena.three-active #allyTeam .mini-unit svg,.arena.three-active #foeTeam .mini-unit svg{visibility:hidden}
+.arena.three-active #allyTeam .mini-unit,.arena.three-active #foeTeam .mini-unit{z-index:6}
+.arena.three-active .ground{opacity:.65}
+</style><script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js" defer></script></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -208,7 +214,7 @@ button:active{transform:translateY(2px)}
 <div class="sun"></div>
 <div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
 <div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
-<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="battle3d"></div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -228,6 +234,69 @@ button:active{transform:translateY(2px)}
 </div>
 <div id="modelModal"><div class="model-dialog"><h2>🥷 Наруто — тест 3D</h2><div id="modelFrameHolder"></div><p class="model-note">Настоящая модель автора ronildo.facanha со скелетом и анимацией бега. Пока это отдельный 3D-просмотр, бой продолжает работать на прежних персонажах. Модель загружается с Sketchfab.</p><button onclick="closeModelPreview()">Закрыть 3D-просмотр</button><p class="model-note">Модель: CC BY, автор ronildo.facanha / Sketchfab.</p></div></div><div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя и назначь линию: передняя (танки), средняя (урон), задняя (хилы и поддержка). Можно 1–2 бойца на каждой линии.</p><div id="formationPreview"></div><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
+let arena3d=null,arena3dUnits=[],arena3dClock=0;
+function initArena3d(){
+if(arena3d||!window.THREE)return;
+try{
+const T=THREE,host=el('battle3d'),w=host.clientWidth||360,h=host.clientHeight||360;
+const renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(w,h);
+renderer.outputColorSpace=T.SRGBColorSpace;host.appendChild(renderer.domElement);
+const scene=new T.Scene(),camera=new T.OrthographicCamera(-6,6,4,-4,.1,100);
+camera.position.set(0,5,16);camera.lookAt(0,1,0);
+scene.add(new T.HemisphereLight(0xffffff,0x6a6572,2.1));
+const light=new T.DirectionalLight(0xffffff,2);light.position.set(-4,9,8);scene.add(light);
+arena3d={renderer,scene,camera,host};
+function draw(){
+if(!arena3d)return;
+arena3dClock+=.027;
+for(const a of arena3dUnits){
+a.body.position.y=Math.sin(arena3dClock*1.7+a.phase)*.055;
+a.body.rotation.z=Math.sin(arena3dClock*1.3+a.phase)*.035;
+}
+renderer.render(scene,camera);requestAnimationFrame(draw)
+}
+requestAnimationFrame(draw);
+window.addEventListener('resize',()=>{if(!arena3d)return;const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.left=-6;camera.right=6;camera.top=6*h/w;camera.bottom=-6*h/w;camera.updateProjectionMatrix()});
+host.parentElement.classList.add('three-active');syncArena3d();
+}catch(e){console.warn('3D disabled, keeping 2D fighters',e);arena3d=null}
+}
+function ninjaMesh(u,enemy){
+const T=THREE,root=new T.Group(),body=new T.Group();root.add(body);
+const palette={naruto:[0xf28d23,0xf4d331],sasuke:[0x343c78,0x20202c],sakura:[0xe46983,0xef8caa],kakashi:[0x3f655e,0xd7d9d8],hinata:[0xb3a4cc,0x292e65],shikamaru:[0x5b775a,0x222222],gaara:[0x884b4b,0x9b342a],itachi:[0x29232b,0x20202b],pain:[0x342d42,0xf37b36],kisame:[0x293c5c,0x435e75],deidara:[0x343036,0xe8d179],sasori:[0x53403c,0xb53a32]};
+const colors=palette[u.id]||[0x5c637b,0x333344],mat=c=>new T.MeshStandardMaterial({color:c,roughness:.85});
+function box(x,y,z,w,h,d,color,parent=body){const o=new T.Mesh(new T.BoxGeometry(w,h,d),mat(color));o.position.set(x,y,z);parent.add(o);return o}
+function ball(x,y,z,r,color){const o=new T.Mesh(new T.SphereGeometry(r,9,7),mat(color));o.position.set(x,y,z);body.add(o);return o}
+box(0,1.1,0,.62,.85,.35,colors[0]);box(-.18,.43,0,.24,.8,.27,0x242a3c);box(.18,.43,0,.24,.8,.27,0x242a3c);
+box(-.43,1.1,0,.23,.77,.28,colors[0]);box(.43,1.1,0,.23,.77,.28,colors[0]);
+ball(0,1.88,0,.36,0xe9b89a);
+box(0,2.04,.29,.65,.14,.11,0x263749);
+if(u.id==='naruto'){for(let i=-2;i<=2;i++){const spike=box(i*.15,2.29+Math.abs(i)*-.035,0,.18,.32,.23,colors[1]);spike.rotation.z=i*.17}}
+else{ball(0,2.22,-.06,.32,colors[1]);box(0,2.3,.18,.58,.12,.16,colors[1])}
+box(-.13,1.9,.33,.07,.035,.035,0x25252d);box(.13,1.9,.33,.07,.035,.035,0x25252d);
+if(enemy)root.rotation.y=Math.PI;
+return {root,body,phase:Math.random()*6.28}
+}
+function syncArena3d(){
+if(!arena3d)return;
+const {scene}=arena3d;
+for(const a of arena3dUnits)scene.remove(a.root);
+arena3dUnits=[];
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+const counts={front:0,middle:0,back:0};
+units.forEach((u,i)=>{
+if(u.curHp<=0)return;
+const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
+const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row&&v.curHp>0).length;
+const mesh=ninjaMesh(u,side==='foeTeam');
+const pos={front:3.8,middle:2.4,back:1.05}[row];
+mesh.root.position.set((side==='allyTeam'?-1:1)*pos,total===1?-.3:(idx===0?.65:-1.05),idx===0?-1:1);
+mesh.root.scale.setScalar(.68);
+scene.add(mesh.root);arena3dUnits.push(mesh);
+});
+}
+}
+
 function openModelPreview(){el('modelModal').classList.add('open');el('modelFrameHolder').innerHTML='<iframe class="model-frame" title="3D Naruto by ronildo.facanha" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen src="https://sketchfab.com/models/db14fc3de5b34b738e49ec3cdb83770a/embed?autostart=1&ui_infos=0"></iframe>'}
 function closeModelPreview(){el('modelModal').classList.remove('open');el('modelFrameHolder').innerHTML=''}
 
@@ -303,6 +372,7 @@ return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?
 }).join('');
 }
 el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+if(arena3d)syncArena3d();
 }
 function renderFormationPreview(){
 ensureFormation();
@@ -548,7 +618,7 @@ if(!started){startGame();return}
 paused=!paused;el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');schedule();
 }
-try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
+try{initTeams();render();window.addEventListener('load',initArena3d)}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
 </body>
 </html>
