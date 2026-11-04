@@ -428,6 +428,17 @@ function bindBattleImages(){
 }
 function mountTurntable(host,hero){
   host.innerHTML='';
+  if(hero.id==='kakashi'||hero.id==='hinata'){
+    // Do not replace the full GLB with the old one-leg / low-detail sprite.
+    const retry=document.createElement('button');
+    retry.type='button';
+    retry.className='model-retry';
+    retry.textContent='3D-модель '+hero.name+' не загрузилась. Нажмите для повтора';
+    retry.style.cssText='display:block;max-width:85%;margin:130px auto 0;padding:13px;border:1px solid #f3c775;color:#ffe2af;background:#1c2438;border-radius:12px;line-height:1.45;';
+    retry.addEventListener('click',()=>{delete modelCache[hero.id];mountHero3D(hero)});
+    host.appendChild(retry);
+    return;
+  }
   if(hero.id==='itachi'){
     // Never silently replace the author's original character with a synthetic sprite.
     const retry=document.createElement('button');
@@ -461,6 +472,16 @@ function normalizedFighter(model){
   return pivot;
 }
 function makeHeroMotion(id,figure){
+  if(id==='kakashi'||id==='hinata'){
+    // Static upright copies preserve their original geometry and bind pose.
+    // Animate only the complete character, not the old bone skeleton.
+    const baseY=figure.position.y;
+    return (dt,time,attacking,progress=-1)=>{
+      const strike=progress>=0?Math.sin(Math.PI*Math.max(0,Math.min(1,progress))):0;
+      figure.position.y=baseY+.003*Math.sin(time*.0016);
+      figure.rotation.z=.006*Math.sin(time*.0012)+.04*strike;
+    };
+  }
   if(id==='itachi'){
     // Source has no animation tracks: keep exact original proportions and bind pose.
     const y=figure.position.y;
@@ -1113,7 +1134,7 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const customModelVersions={kakashi:'ff1',pain:'ff1',itachi:'original2',hinata:'ff1'};
+const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3'};
 const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./test-3d/models/sakura-team7.glb?v=20261104team7':'./test-3d/models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
@@ -1195,7 +1216,7 @@ try{
 host.innerHTML='';
 const scene=new THREE.Scene();scene.background=null;
 const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,hero.id==='itachi'?2:1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(hero.id==='itachi'||hero.id==='kakashi'||hero.id==='hinata')?2:1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
 let drag=false,last=0,angle=.10;
@@ -1250,7 +1271,7 @@ fetchHeroModel(hero.id,model=>{
   fit();
   if(window.ResizeObserver){releaseResize=new ResizeObserver(fit);releaseResize.observe(host)}
   host.dataset.modelSource='local-glb';
-  if(hero.id==='itachi')note.textContent='3D · оригинальная модель Итачи · поверни пальцем';else if(hero.id==='naruto'||hero.id==='sasuke')note.remove();else note.textContent='Поверни персонажа пальцем';
+  if(hero.id==='kakashi'||hero.id==='hinata')note.remove();else if(hero.id==='itachi')note.textContent='3D · оригинальная модель Итачи · поверни пальцем';else if(hero.id==='naruto'||hero.id==='sasuke')note.remove();else note.textContent='Поверни персонажа пальцем';
   } catch(err) {
     console.warn('3D profile initialization failed',hero.id,err);
     if(heroRenderer===renderer){releaseProfile();mountTurntable(host,hero)}
