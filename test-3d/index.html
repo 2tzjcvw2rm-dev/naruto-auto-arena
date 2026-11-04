@@ -353,8 +353,13 @@ function makeHeroMotion(id,figure){
       if(upper||fore)arms.push({bone,upper,sign:left?1:-1,x:bone.rotation.x,z:bone.rotation.z});
     });
   }
+  const originalScaleY=figure.scale.y;
   return (dt,time,attacking)=>{
     if(mixer)mixer.update(Math.max(0,Math.min(dt,.08)));
+    if(!mixer&&id!=='naruto'&&id!=='sasuke'){
+      figure.scale.y=originalScaleY*(1+.009*Math.sin(time*.0023));
+      if(!arms.length)figure.rotation.x=.013*Math.sin(time*.0013);
+    }
     if(arms.length){
       const breath=Math.sin(time*.0025)*.025;
       for(const a of arms){
