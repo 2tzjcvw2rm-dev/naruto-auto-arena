@@ -720,8 +720,38 @@ const slot=s.formationSlots.findIndex((x,i)=>formationRowForSlot(i)===row&&x===n
 if(slot<0){el('teamStatus').textContent='В этой линии нет свободного места — поменяй бойцов в схеме';return}
 putInSlot(slot,id);
 }
+// Fan prototype: external anime art, NOT the old in-game GLB snapshots.
+// Keep a local character render as a network-failure fallback.
+const portraitAtlas={
+  official:'https://cmsapi-frontend.naruto-official.com/site/api/naruto/Image/get?path=%2Fnaruto%2Fjp%2Fnews%2F2024%2F02%2F15%2FXq6cf34ilRuV37wK%2FN+acmag+556x556.jpg',
+  badge:'https://eeo.today/store/101/html/upload/save_image/686de107da702.jpg',
+  akatsuki:'https://i.quotev.com/3x75nr4t5sua.jpg'
+};
+const portraitFrames={
+  naruto:['official','0% 0%','440% 405%'],
+  sasuke:['official','50% 0%','440% 405%'],
+  kakashi:['official','100% 0%','440% 405%'],
+  gaara:['official','0% 50%','440% 405%'],
+  itachi:['official','50% 50%','440% 405%'],
+  deidara:['official','100% 50%','440% 405%'],
+  sakura:['badge','88% 12%','395% 395%'],
+  shikamaru:['badge','50% 50%','395% 395%'],
+  hinata:['badge','88% 50%','395% 395%'],
+  pain:['akatsuki','0% 0%','300% 300%'],
+  kisame:['akatsuki','50% 50%','300% 300%'],
+  konan:['akatsuki','100% 0%','300% 300%']
+};
 function heroAvatarHTML(c){
-  return '<span class="team-avatar" role="img" aria-label="Портрет '+c.name+'" style="background-image:url(\'./models/'+c.id+'.webp\')"></span>';
+  return '<span class="team-avatar" data-portrait="'+c.id+'" role="img" aria-label="Аниме-портрет '+c.name+'"></span>';
+}
+function applyExternalPortraits(scope=document){
+  scope.querySelectorAll('[data-portrait]').forEach(node=>{
+    const id=node.dataset.portrait,frame=portraitFrames[id];if(!frame)return;
+    node.style.backgroundImage='url("'+portraitAtlas[frame[0]]+'"),url("./models/'+id+'.webp")';
+    node.style.backgroundPosition=frame[1]+',7.7% 2%';
+    node.style.backgroundSize=frame[2]+',auto 1550%';
+    node.style.backgroundRepeat='no-repeat,no-repeat';
+  });
 }
 function renderTeamCards(){
   renderFormationPreview();
@@ -729,6 +759,7 @@ function renderTeamCards(){
     const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id),p=heroData(c.id);
     return '<div class="team-card '+(chosen?'chosen':'')+'"><div class="team-card-header">'+heroAvatarHTML(c)+'<div class="team-avatar-name"><strong>'+c.name+'</strong><small>⭐ Уровень '+p.level+' · '+c.role+(chosen?' · Место '+(slot+1):'')+'</small><span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="team-card-actions"><button onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>';
   }).join('');
+  applyExternalPortraits(el('teamCards'));
 }
 function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
 function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
