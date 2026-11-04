@@ -177,61 +177,124 @@ const CombatProfile = (() => {
     return update;
   }
   function lions(root,view) {
-    const sparks=particles(view.battle?8:18,0x79dcff,.006);
-    // One draw for the entire crown. Each tongue tapers along the knuckles,
-    // with a broad translucent foot and an independently drifting tip.
-    const positions=[],coords=[],indices=[];
-    const lanes=view.battle?5:8,steps=10;
-    for(let i=0;i<lanes;i++){
-      const angle=i*2.39996;
-      for(let j=0;j<=steps;j++){
-        const u=j/steps, width=(.022+.006*Math.cos(i))*Math.pow(1-u,.8);
-        const radius=.027+.009*Math.sin(u*Math.PI)+.012*u;
-        const height=(.075+.032*(.5+.5*Math.cos(5*i)))*u-.022;
-        for(const side of [-1,1]){
-          const a=angle+u*.92;
-          positions.push(radius*Math.cos(a)-side*width*Math.sin(a),height,
-            radius*Math.sin(a)+side*width*Math.cos(a));
-          coords.push(side,u,angle);
-        }
-        if(j<steps){const k=(i*(steps+1)+j)*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
+    // Restore the original sculpted twin-lion fists from the first combat pass.
+    // mount() attaches this effect to EACH actual hand, so each root needs ONE lion.
+    // Batch the sculpted facets into one colored mesh per fist.
+    const vertices=[], colors=[];
+    function sculpt(geometry, xyz, scale, tint, rotation=0) {
+      if(geometry.index) geometry=geometry.toNonIndexed();
+      geometry.scale(...scale);geometry.rotateZ(rotation);geometry.translate(...xyz);
+      const pts=geometry.attributes.position, color=new THREE.Color(tint).convertSRGBToLinear();
+      for(let i=0;i<pts.count;i++){
+        vertices.push(pts.getX(i),pts.getY(i),pts.getZ(i));
+        colors.push(color.r,color.g,color.b);
       }
+      geometry.dispose();
     }
-    const geo=new THREE.BufferGeometry();
-    geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-    geo.setAttribute('strand',new THREE.Float32BufferAttribute(coords,3));geo.setIndex(indices);
-    const mat=new THREE.ShaderMaterial({
-      uniforms:{clock:{value:0}},transparent:true,depthWrite:false,side:THREE.DoubleSide,
-      vertexShader:`attribute vec3 strand; varying vec3 v;uniform float clock;
-      void main(){
-        v=strand;vec3 p=position;float u=v.y,a=v.z;
-        p.x+=.020*u*u*sin(clock*5.+a+u*4.);
-        p.z+=.016*u*u*cos(clock*4.-a+u*3.);
-        p.y+=.012*u*sin(clock*6.+a);
-        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
-      }`,
-      fragmentShader:`varying vec3 v;uniform float clock;
-      void main(){
-        float core=1.-abs(v.x+.12*sin(10.*v.y-clock*5.+v.z));
-        float alpha=smoothstep(0.,.58,core)*(.97-.50*v.y);
-        vec3 blue=mix(vec3(.12,.24,.98),vec3(.12,.72,1.),core);
-        blue=mix(blue,vec3(.72,.98,1.),smoothstep(.44,1.,core)*(1.-v.y*.65));
-        gl_FragColor=vec4(blue,alpha);
-      }`
-    });
-    const veil=halo('rgba(50,134,255,.95)',.13);
-    root.add(new THREE.Mesh(geo,mat),veil,sparks.points);
+    const oval=(xyz,scale,color,roll=0)=>sculpt(new THREE.SphereBufferGeometry(1,12,8),xyz,scale,color,roll);
+    const tuft=(xyz,scale,color,roll)=>sculpt(new THREE.ConeBufferGeometry(1,1,5),xyz,scale,color,roll);
+    // Mane with tapered locks, rounded ears, whisker pads and a short square jaw.
+    oval([0,0,-.14],[.87,.91,.56],0x5b65df);
+    for(let i=0;i<13;i++){
+      const a=i*2*Math.PI/13;
+      tuft([-.77*Math.sin(a),.78*Math.cos(a),-.10],[.25,.60,.29],
+        i%2?0x7376ef:0x648bfa,a+.29);
+    }
+    oval([0,.03,.16],[.65,.70,.51],0x689cef);
+    for(const k of [-1,1]){
+      oval([k*.46,.61,.12],[.245,.245,.15],0x8facee);
+      oval([k*.46,.64,.246],[.14,.13,.04],0x454caf);
+      oval([k*.27,.20,.60],[.225,.084,.075],0x263b88,k*.26);
+      oval([k*.26,.20,.66],[.141,.045,.04],0xa5fcff,k*.26);
+      oval([k*.27,.30,.58],[.23,.075,.08],0xaabaff,k*.27);
+    }
+    oval([0,-.26,.54],[.36,.24,.18],0x323e91);
+    oval([0,-.40,.53],[.27,.11,.16],0x98adfc);
+    for(const k of [-1,1]){
+      oval([k*.16,-.11,.67],[.237,.168,.14],0xb2dbff);
+      tuft([k*.21,-.27,.66],[.044,.14,.055],0xe5ffff,Math.PI);
+    }
+    oval([0,.012,.79],[.155,.092,.085],0x17295d);
+    for(const k of [-1,1]){
+      oval([k*.36,-.13,.72],[.15,.016,.018],0x5772bb,k*.13);
+      oval([k*.36,-.18,.70],[.16,.012,.018],0x5772bb,-k*.16);
+    }
+    const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+    geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+    geometry.computeVertexNormals();
+
+    const head=new THREE.Group();
+    head.position.set(0,.012,.052);
+    root.add(head);
+    const face=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
+      vertexColors:true,transparent:true,opacity:.91,depthWrite:true
+    }));
+    face.scale.setScalar(.080);
+    head.add(face);
+
+    const haze=halo('rgba(75,145,255,.65)',.16);
+    haze.position.z=-.036;
+    head.add(haze);
+
+    // A tiny concentric Shinra-Tensei-style chakra pressure field around
+    // each lion. No tall flame tongues or full-screen postprocessing.
+    const shell=new THREE.Mesh(new THREE.SphereBufferGeometry(1,24,16),
+      new THREE.ShaderMaterial({
+        uniforms:{clock:{value:0}},
+        transparent:true,depthWrite:false,
+        vertexShader:`varying float rim; varying float height;
+          void main(){
+            height=position.y;
+            vec4 eye=modelViewMatrix*vec4(position,1.);
+            rim=1.-abs(dot(normalize(normalMatrix*normal),normalize(-eye.xyz)));
+            gl_Position=projectionMatrix*eye;
+          }`,
+        fragmentShader:`varying float rim; varying float height; uniform float clock;
+          void main(){
+            float band=pow(.5+.5*cos(height*19.-clock*4.),6.);
+            float alpha=pow(rim,2.5)*(.065+.115*band);
+            gl_FragColor=vec4(.48,.74,1.,alpha);
+          }`
+      }));
+    shell.scale.set(.112,.120,.105);
+    shell.position.z=.008;
+    head.add(shell);
+
+    const waves=[];
+    for(let i=0;i<2;i++){
+      const wave=new THREE.Mesh(new THREE.TorusGeometry(1,.035,5,48),
+        new THREE.MeshBasicMaterial({
+          color:0x9edcff,transparent:true,opacity:.18,
+          blending:THREE.AdditiveBlending,depthWrite:false
+        }));
+      wave.position.z=.086;
+      head.add(wave);
+      waves.push(wave);
+    }
+    const dust=particles(view.battle?8:14,0x9cdfff,.0045);
+    head.add(dust.points);
     return t=>{
-      mat.uniforms.clock.value=t;
-      veil.material.opacity=.56+.13*Math.sin(t*5.);
-      for(let i=0;i<sparks.position.count;i++){
-        const u=(t*.9+i*.618)%1,a=i*2.4+u;
-        sparks.position.setXYZ(i,(.025+.019*u)*Math.cos(a),-.005+.117*u,(.023+.021*u)*Math.sin(a));
+      head.position.y=.012+.003*Math.sin(t*2.1);
+      face.rotation.y=.08*Math.sin(t*1.9);
+      face.rotation.z=.02*Math.sin(t*1.4);
+      face.material.opacity=.88+.045*Math.sin(t*2.7);
+      haze.material.opacity=.45+.09*Math.sin(t*2.3);
+      shell.material.uniforms.clock.value=t;
+      waves.forEach((wave,i)=>{
+        const phase=(t*.78+i*.50)%1;
+        wave.scale.setScalar(.065+.14*phase);
+        wave.position.z=.075+.09*phase;
+        wave.material.opacity=.25*Math.sin(Math.PI*phase);
+      });
+      for(let i=0;i<dust.position.count;i++){
+        const p=(t*.65+i*.379)%1,a=i*2.4+p*3.1;
+        dust.position.setXYZ(i,.055*Math.sin(a),.054*Math.cos(a),-.025+p*.12);
       }
-      sparks.position.needsUpdate=true;
+      dust.position.needsUpdate=true;
     };
   }
-  function mount(id, fighter, view) {
+    function mount(id, fighter, view) {
     if (!techniques[id]) return null;
     const parent = fighter.parent, root = new THREE.Group();
     const roots=[root];
