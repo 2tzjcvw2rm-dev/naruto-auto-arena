@@ -1115,6 +1115,7 @@ const note=document.createElement('span');note.className='model-credit';note.tex
 if(!upgradedFighters.has(hero.id)){note.textContent='Поверни персонажа пальцем';return}
 fetchHeroModel(hero.id,model=>{
   if(heroRenderer!==renderer||!host.isConnected)return;
+  try {
   const fighter=model&&normalizedFighter(model);
   if(!fighter){if(upgradedFighters.has(hero.id))mountTurntable(host,hero);else note.textContent='3D-модель не загрузилась';return}
   while(group.children.length)group.remove(group.children[0]);
@@ -1154,6 +1155,10 @@ fetchHeroModel(hero.id,model=>{
   fit();
   if(window.ResizeObserver){releaseResize=new ResizeObserver(fit);releaseResize.observe(host)}
   if(hero.id==='naruto'||hero.id==='sasuke')note.remove();else note.textContent='Поверни персонажа пальцем';
+  } catch(err) {
+    console.warn('3D profile initialization failed',hero.id,err);
+    if(heroRenderer===renderer){releaseProfile();mountTurntable(host,hero)}
+  }
 });
 }catch(err){mountTurntable(host,hero);console.warn('3D fallback',err)}
 }
