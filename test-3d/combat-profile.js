@@ -1,7 +1,7 @@
 // Profile-only GLBs have a repaired skeleton and a posed rest frame.
 // Keep effect coordinates in the normalized fighter's parent space.
 const CombatProfile = (() => {
-  const techniques = {itachi: katon, kakashi: chidori, pain: shinra};
+  const techniques = {itachi: katon, kakashi: chidori, pain: shinra, hinata: lions};
   function modelKey(id, urls) {
     if (!techniques[id]) return id;
     const key = id + '-combat';
@@ -143,6 +143,76 @@ const CombatProfile = (() => {
     };
     update.dispose=()=>target.dispose();
     return update;
+  }
+  function lions(root) {
+    // Batch the sculpted facets into one colored mesh per fist.
+    const vertices=[], colors=[];
+    function sculpt(geometry, xyz, scale, tint, rotation=0) {
+      if(geometry.index) geometry=geometry.toNonIndexed();
+      geometry.scale(...scale);geometry.rotateZ(rotation);geometry.translate(...xyz);
+      const pts=geometry.attributes.position, color=new THREE.Color(tint).convertSRGBToLinear();
+      for(let i=0;i<pts.count;i++){
+        vertices.push(pts.getX(i),pts.getY(i),pts.getZ(i));
+        colors.push(color.r,color.g,color.b);
+      }
+      geometry.dispose();
+    }
+    const oval=(xyz,scale,color,roll=0)=>sculpt(new THREE.SphereBufferGeometry(1,12,8),xyz,scale,color,roll);
+    const tuft=(xyz,scale,color,roll)=>sculpt(new THREE.ConeBufferGeometry(1,1,5),xyz,scale,color,roll);
+    // Mane with tapered locks, rounded ears, whisker pads and a short square jaw.
+    oval([0,0,-.14],[.87,.91,.56],0x5b65df);
+    for(let i=0;i<13;i++){
+      const a=i*2*Math.PI/13;
+      tuft([-.77*Math.sin(a),.78*Math.cos(a),-.10],[.25,.60,.29],
+        i%2?0x7376ef:0x648bfa,a+.29);
+    }
+    oval([0,.03,.16],[.65,.70,.51],0x689cef);
+    for(const k of [-1,1]){
+      oval([k*.46,.61,.12],[.245,.245,.15],0x8facee);
+      oval([k*.46,.64,.246],[.14,.13,.04],0x454caf);
+      oval([k*.27,.20,.60],[.225,.084,.075],0x263b88,k*.26);
+      oval([k*.26,.20,.66],[.141,.045,.04],0xa5fcff,k*.26);
+      oval([k*.27,.30,.58],[.23,.075,.08],0xaabaff,k*.27);
+    }
+    oval([0,-.26,.54],[.36,.24,.18],0x323e91);
+    oval([0,-.40,.53],[.27,.11,.16],0x98adfc);
+    for(const k of [-1,1]){
+      oval([k*.16,-.11,.67],[.237,.168,.14],0xb2dbff);
+      tuft([k*.21,-.27,.66],[.044,.14,.055],0xe5ffff,Math.PI);
+    }
+    oval([0,.012,.79],[.155,.092,.085],0x17295d);
+    for(const k of [-1,1]){
+      oval([k*.36,-.13,.72],[.15,.016,.018],0x5772bb,k*.13);
+      oval([k*.36,-.18,.70],[.16,.012,.018],0x5772bb,-k*.16);
+    }
+    const geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+    geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+    geometry.computeVertexNormals();
+    const heads=[];
+    for(const side of [-1,1]){
+      const head=new THREE.Group();root.add(head);
+      const face=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({vertexColors:true,
+        transparent:true,opacity:.86,depthWrite:true}));
+      face.scale.setScalar(.072);head.add(face);
+      const haze=halo('rgba(82,128,255,.82)',.17);haze.position.z=-.02;head.add(haze);
+      const streams=particles(14,0x96c9ff,.005);head.add(streams.points);
+      heads.push({head,face,haze,streams,side});
+    }
+    return (t,right,left)=>{
+      for(const {head,face,haze,streams,side} of heads){
+        head.position.copy(side===-1?right:left);
+        head.position.z+=.040;head.position.y+=.012;
+        face.rotation.y=side*.16+.06*Math.sin(t*2+side);
+        face.material.opacity=.81+.075*Math.sin(3*t+side);
+        haze.material.opacity=.72+.16*Math.sin(2*t+side);
+        for(let i=0;i<14;i++){
+          const p=(t*.95+i*.379)%1, a=7*p+i*2.4;
+          streams.position.setXYZ(i,.064*Math.sin(a),.064*Math.cos(a),-.07+p*.12);
+        }
+        streams.position.needsUpdate=true;
+      }
+    };
   }
   function mount(id, fighter, view) {
     if (!techniques[id]) return null;
