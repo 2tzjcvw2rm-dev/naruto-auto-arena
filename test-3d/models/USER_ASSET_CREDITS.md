@@ -16,3 +16,12 @@ The original user-provided files were renamed to their respective in-game IDs. `
 `kakashi.glb` and `hinata.glb` are static display/battle copies of the exact user-supplied Sketchfab GLBs. Their original model geometry, UVs, normals, indices, materials and embedded PNG textures remain byte-for-byte unchanged in the GLB binary chunks. The exports contained skin bindings with large incompatible bone transforms plus an inverted mesh orientation. Their unused skin references were removed, and a parent scene node adds an X-axis 180° rotation for upright full-body display on iPhone Safari. Original rest poses are preserved; the game applies only whole-body idle/battle movement, not skeletal deformation.
 
 Original SHA-256: Kakashi `0942fafd01d7a784324dee7d684910237e1b231cfe54458435d849981ab6e639`, Hinata `1464c67e049d85353646ee80591d74199363c9a3b136216afad16e0259d756e1`. Both originals remain available in the user's conversation uploads. Itachi, Pain, Naruto and Sasuke models were not changed by this correction.
+
+## Konan / Конан (4 November 2026)
+
+- Game file: `konan.glb` (replaces only the previous Konan asset; other fighters remain unchanged).
+- Original model: **Konan_pre-_akatsuki**, by **renjurenji679** — https://sketchfab.com/3d-models/konan-pre--akatsuki-39d1b5f5333f4b70abfe1fe832006c34
+- Embedded source licence: [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). Attribution must be retained.
+- Source: user-provided `konan_pre-_akatsuki.glb`, copied byte-for-byte to `konan.glb`; the GLB contains its original textures and geometry, without skeletal animation tracks.
+- The game's loader scales only its dedicated `Object_16` paper-wing mesh to 68% in X, so Konan stays readable in the existing iPhone profile and 5v5 scenes. The GLB file itself is not altered.
+- Naruto anime and character intellectual-property rights are separate from the model author's CC licence.

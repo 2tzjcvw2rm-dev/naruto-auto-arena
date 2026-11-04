@@ -1181,7 +1181,7 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3'};
+const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1'};
 const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./test-3d/models/sakura-team7.glb?v=20261104team7':'./test-3d/models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
@@ -1212,6 +1212,13 @@ function fetchHeroModel(id,callback){
   }
   new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{
     modelAnimationClips[id]=g.animations||[];
+    // The new Konan has dramatic paper wings extending 2x her height; bring them
+    // closer to her silhouette so her face and body stay visible on iPhone.
+    // Only transform the dedicated wing mesh; preserve the uploaded GLB itself.
+    if(id==='konan'){
+      const paperWings=g.scene.getObjectByName('Object_16');
+      if(paperWings)paperWings.scale.x=.68;
+    }
     modelCache[id]=g.scene;
     deliver(g.scene);
   },undefined,error=>{console.warn('GLB not loaded',id,error);deliver(null)});
@@ -1517,7 +1524,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
-<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Геометрия и расцветка остальных десяти моделей созданы для Naruto Auto Arena.</footer></body>
+<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Конан — <a href="https://sketchfab.com/3d-models/konan-pre--akatsuki-39d1b5f5333f4b70abfe1fe832006c34">renjurenji679</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Другие авторы указаны в документации игровых моделей.</footer></body>
 </html>
 
 
