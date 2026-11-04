@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Naruto Auto Arena</title>
+<meta name="theme-color" content="#10192e">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10192e;color:white;font-family:Arial;text-align:center}
+header{background:#18263e;padding:18px;color:#ffa52c}
+h1{font-size:27px;margin:5px}
+.arena{height:310px;background:linear-gradient(#293c63,#546c91);position:relative;overflow:hidden}
+.sun{position:absolute;right:35px;top:30px;background:#ffcb75;border-radius:50%;width:65px;height:65px}
+.ground{position:absolute;bottom:0;width:100%;height:70px;background:#345c47}
+.fighter{position:absolute;bottom:65px;font-size:75px;transition:transform .25s}
+#hero{left:12%}#enemy{right:12%}
+.attack{transform:translateX(45px) scale(1.15)!important}
+.hurt{filter:brightness(2)}
+.effect{position:absolute;top:100px;width:100%;font-size:48px;pointer-events:none}
+.panel{padding:16px}
+.bars{display:flex;gap:15px;justify-content:space-between}
+.unit{width:48%}
+.bar{background:#712c38;border-radius:20px;height:16px;overflow:hidden;margin-top:8px}
+.fill{height:100%;background:#39d68c;width:100%;transition:width .3s}
+button{background:#ffa52c;color:#152037;border:0;border-radius:14px;padding:16px 8px;font-weight:bold;font-size:14px}
+.upgrades{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+#log{min-height:65px;color:#b9d1fa;margin-top:18px}
+.stats{margin-top:15px;font-size:17px}
+</style>
+<style>
+body{background:#10151d;font-family:system-ui,-apple-system,sans-serif}
+header{background:linear-gradient(120deg,#171c29,#392b2c);border-bottom:2px solid #dc852d;padding:14px}
+h1{font-size:clamp(21px,5vw,30px);text-shadow:0 2px 3px #111}
+.arena{height:min(58vh,460px);min-height:340px;background:linear-gradient(#8ac2dc,#e9c69b 58%,#9d8e74 59%,#64754c);isolation:isolate}
+.sun{right:14%;top:11%;background:#fff0b5;box-shadow:0 0 55px #fff4b0}
+.mountain{position:absolute;inset:7% 0 32%;background:linear-gradient(#9e9d91,#7c827d);clip-path:polygon(0 75%,15% 45%,28% 57%,44% 15%,57% 45%,72% 8%,100% 50%,100% 100%,0 100%)}
+.hokage{position:absolute;top:23%;left:23%;font-size:clamp(25px,8vw,50px);letter-spacing:8px;color:#615f59;opacity:.55;font-weight:900;text-shadow:2px 3px #c4baac}
+.village{position:absolute;bottom:25%;height:30%;width:100%;display:flex;justify-content:space-around;align-items:end}
+.house{height:60%;width:21%;border:3px solid #9c6349;border-radius:6px;background:linear-gradient(#e1b47f,#bf7956);position:relative}
+.house:before{content:"";position:absolute;top:-16%;left:-12%;width:124%;height:24%;background:#a95239;border-radius:50% 50% 15% 15%}
+.house:nth-child(2){height:90%;width:25%;border-radius:40% 40% 6px 6px}
+.house:nth-child(3){height:72%}
+.ground{height:27%;background:linear-gradient(#758a5d,#6b7957 25%,#70664e);border-top:5px solid #b2a07d}
+.fighter{bottom:11%;font-size:unset;width:34%;height:55%;max-width:190px;filter:drop-shadow(2px 8px 5px #0008);z-index:3}
+.fighter svg{width:100%;height:100%;overflow:visible}
+#hero{left:5%}#enemy{right:4%;transform:scaleX(-1)}
+#enemy.hurt{filter:brightness(1.8) drop-shadow(0 0 12px #fff)}
+.clones{position:absolute;bottom:18%;left:18%;width:40%;height:34%;z-index:2;display:none;opacity:.65}
+.clones.active{display:flex;animation:clonepop .6s ease-out}
+.clones svg{width:50%;height:100%}
+@keyframes clonepop{from{opacity:0;transform:scale(.7)}to{opacity:.65;transform:scale(1)}}
+.rasengan{position:absolute;left:32%;bottom:37%;width:65px;height:65px;z-index:6;border-radius:50%;display:none;background:radial-gradient(circle,#fff,#8cf5ff 25%,#2da9fa 53%,#0054bf 75%,transparent 80%);box-shadow:0 0 24px 10px #69dfff}
+.rasengan.active{display:block;animation:rasfly .7s ease-in forwards}
+@keyframes rasfly{from{transform:translateX(0) scale(.6)}to{transform:translateX(180%) scale(1.5);opacity:0}}
+.panel{background:linear-gradient(#23283a,#111725);padding:15px}
+button{background:linear-gradient(#ffc35b,#e8902e);box-shadow:0 3px 0 #90531e;border:1px solid #ffd17d}
+button:active{transform:translateY(2px)}
+#log{color:#ffdfae}
+@media(min-width:650px){body{max-width:650px;margin:auto}}
+</style><style>
+/* Visual update: richer village, shadows, battle motion */
+.arena{background:linear-gradient(180deg,#7fc4e3 0%,#c9d9c3 48%,#e4c19b 72%,#83946e 100%)}
+.mountain{background:linear-gradient(145deg,#c2b8a4,#777e79 68%,#646f6b);filter:drop-shadow(0 5px 2px #4c5a5577)}
+.village{filter:drop-shadow(0 5px 3px #513f3580)}
+.house{box-shadow:inset -14px 0 0 #754c3c44,0 4px 2px #4c483c55}
+.house:after{content:"";position:absolute;left:37%;top:40%;height:26%;width:25%;border:4px solid #765449;background:#b8d6d4;box-shadow:inset 0 0 0 2px #f5d9a5}
+.ground{background:linear-gradient(180deg,#6c9d64,#536f49 22%,#73634b 24%,#85734d 65%,#6b7047);box-shadow:inset 0 12px 15px #0002}
+.fighter{transform-origin:50% 100%;animation:breathe 1.5s ease-in-out infinite;will-change:transform}
+#enemy{animation:enemybreathe 1.7s ease-in-out infinite}
+.fighter:after{content:"";position:absolute;left:13%;right:13%;bottom:-8px;height:13px;background:#172b1d66;border-radius:50%;filter:blur(5px);z-index:-1}
+#hero.attack{animation:heroStrike .34s ease-in-out!important}
+#enemy.hurt{animation:enemyHit .3s ease-out!important;filter:brightness(1.9) drop-shadow(0 0 12px #ff5959)}
+@keyframes breathe{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+@keyframes enemybreathe{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-5px)}}
+@keyframes heroStrike{0%{transform:translateX(0)}45%{transform:translateX(80px) rotate(7deg) scale(1.08)}100%{transform:translateX(0)}}
+@keyframes enemyHit{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(-20px) rotate(-7deg)}100%{transform:scaleX(-1) translateX(0)}}
+.arena:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:7;background:radial-gradient(ellipse at center,transparent 52%,#252b3844 100%)}
+.rasengan.active{animation:rasfly .7s cubic-bezier(.25,.6,.6,1) forwards;box-shadow:0 0 12px 6px #a7f9ff,0 0 45px 18px #348cfa}
+#log{font-weight:600}
+@media(max-width:400px){.fighter{width:39%}#hero{left:1%}#enemy{right:1%}}
+</style><style>
+/* Combat effects v4 */
+.arena{overflow:hidden}
+.speedlines{position:absolute;inset:0;pointer-events:none;z-index:5;opacity:0;background:repeating-linear-gradient(170deg,transparent 0 17px,#fff8 19px 21px,transparent 23px 47px)}
+.speedlines.active{animation:speedFlash .42s ease-out}
+@keyframes speedFlash{0%{opacity:0}35%{opacity:.8}100%{opacity:0}}
+.hitnumber{position:absolute;top:38%;left:69%;z-index:9;font-weight:1000;font-size:clamp(25px,6vw,42px);color:#fff4ac;text-shadow:2px 3px #a82e25,-1px -1px #7b2d1a;opacity:0;pointer-events:none}
+.hitnumber.active{animation:damageFloat .65s ease-out forwards}
+@keyframes damageFloat{0%{opacity:1;transform:translateY(12px) scale(.6)}25%{opacity:1;transform:translateY(-5px) scale(1.25)}100%{opacity:0;transform:translateY(-52px) scale(.95)}}
+.shockwave{position:absolute;left:68%;top:48%;width:16px;height:16px;border:5px solid #e5faff;border-radius:50%;z-index:8;opacity:0;pointer-events:none}
+.shockwave.active{animation:shock .5s ease-out}
+@keyframes shock{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(9)}}
+.jutsu-label{position:absolute;left:0;right:0;top:8%;z-index:9;text-align:center;font-size:clamp(18px,4.5vw,29px);font-weight:1000;color:#fff;text-shadow:0 2px #0b477b,0 0 15px #36bcff;opacity:0;pointer-events:none}
+.jutsu-label.active{animation:jutsuShow .9s ease-out}
+@keyframes jutsuShow{0%{opacity:0;transform:scale(.6)}20%,70%{opacity:1;transform:scale(1.05)}100%{opacity:0;transform:scale(1.2)}}
+.rasengan{background:repeating-conic-gradient(from 20deg,#5ce1ff 0 25deg,#c8ffff 25deg 50deg,#1479df 50deg 75deg);border:4px solid #b9ffff}
+.rasengan.active{animation:rasfly .7s cubic-bezier(.25,.6,.6,1) forwards,chakraSpin .14s linear infinite}
+@keyframes chakraSpin{to{filter:hue-rotate(35deg)}}
+</style><style>
+#hitnumber{position:absolute!important;top:29%!important;left:58%!important;z-index:999!important;display:block!important;opacity:0;font-size:46px!important;color:#fff36a!important;font-weight:1000!important;text-shadow:3px 3px 0 #9b1c17,0 0 18px #ff6d00!important;pointer-events:none}
+#hitnumber.active{animation:floatHit .9s ease-out forwards!important}
+#hitnumber.critical{color:#ffcf21!important;font-size:58px!important;text-shadow:3px 3px #ae1515,0 0 24px #ff4a00!important}
+@keyframes floatHit{0%{opacity:0;transform:translateY(18px) scale(.5)}15%{opacity:1;transform:translateY(0) scale(1.2)}70%{opacity:1;transform:translateY(-35px) scale(1)}100%{opacity:0;transform:translateY(-70px) scale(.9)}}
+#startOverlay{position:absolute;inset:0;background:#0b1420e8;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#startOverlay h2{font-size:32px;color:#ffb341;margin:0;text-shadow:0 3px #673a1a}
+#startOverlay p{margin:0;color:#e4e6f0}
+#startButton,#pauseButton{font-size:18px;padding:15px 26px;border-radius:14px;cursor:pointer}
+#pauseButton{background:#26394d;color:white;border:1px solid #6883a0;box-shadow:none}
+.controls{display:flex;justify-content:center;gap:12px;margin-top:12px}
+#criticalStats{color:#ffdb8a;font-size:15px;margin-top:9px}
+.upgrades{grid-template-columns:repeat(2,minmax(0,1fr))}
+.upgrades button{min-height:64px}
+</style><style>
+/* 5v5 team update */
+.arena{height:440px;min-height:440px}
+#hero,#enemy{display:none!important}
+.team-side{position:absolute;bottom:14%;width:45%;height:58%;z-index:4;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);align-items:end;gap:0}
+#allyTeam{left:2%}#foeTeam{right:2%;direction:rtl}
+.mini-unit{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:end;min-width:0;filter:drop-shadow(0 5px 3px #17221a88);animation:breathe 1.6s ease-in-out infinite}
+.mini-unit svg{height:92px;width:100%;max-width:80px;overflow:visible}
+.mini-unit.enemy-unit svg{transform:scaleX(-1)}
+.mini-unit .unit-name{font-size:10px;font-weight:900;color:white;background:#101b2dc9;padding:2px 3px;border-radius:4px;white-space:nowrap;max-width:100%;overflow:hidden}
+.mini-unit .unit-hp{width:85%;height:5px;border-radius:6px;background:#601d29;margin:3px auto}
+.mini-unit .unit-hp i{display:block;height:100%;background:#4ef18b;border-radius:6px}
+.mini-unit.down{opacity:.22;filter:grayscale(1)}
+.mini-unit.striking{animation:miniStrike .34s ease-in-out!important}
+.mini-unit.targeted{filter:brightness(1.8) drop-shadow(0 0 8px #f55)}
+@keyframes miniStrike{50%{transform:translateX(15px) scale(1.18)}}
+#foeTeam .mini-unit.striking{animation:miniEnemyStrike .34s ease-in-out!important}
+@keyframes miniEnemyStrike{50%{transform:translateX(-15px) scale(1.18)}}
+#teamBtn{background:#547ab0;color:white;box-shadow:0 3px #28436a;border-color:#9cc1f3}
+#teamModal{position:fixed;inset:0;z-index:2000;background:#07111bea;display:none;align-items:center;justify-content:center;padding:12px}
+#teamModal.open{display:flex}
+.team-dialog{width:min(100%,530px);max-height:92vh;overflow:auto;border:2px solid #cf8b39;border-radius:16px;background:#1b2638;padding:16px;text-align:left}
+.team-dialog h2{text-align:center;color:#ffb347;margin:0 0 8px}
+.team-dialog p{font-size:13px;color:#c4d2e3;margin:7px 0 12px}
+.team-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.team-card{display:flex;gap:8px;align-items:center;text-align:left;background:#2c3a4d;color:white;border:2px solid #4b5e77;border-radius:10px;padding:8px;box-shadow:none;font-size:12px;min-height:74px}
+.team-card.chosen{border-color:#ffbd56;background:#59432c}
+.team-card svg{width:46px;height:65px;flex-shrink:0}
+.team-card strong{font-size:13px}
+.team-card small{display:block;color:#c8d3e3;font-size:11px;margin-top:3px}
+.team-close{width:100%;margin-top:12px}
+#teamStatus{color:#ffcd7d;text-align:center;font-weight:700;font-size:14px;margin:6px 0}
+#hitnumber{left:55%!important;top:23%!important}
+@media(max-width:390px){.arena{height:405px;min-height:405px}.mini-unit svg{height:76px}.mini-unit .unit-name{font-size:9px}}
+</style><style>
+#teamBtn{display:inline-flex!important;align-items:center;justify-content:center;min-width:145px;min-height:52px;background:linear-gradient(#7298ed,#355cb7)!important;border:2px solid #b9d5ff!important;color:white!important;font-weight:900;font-size:17px;box-shadow:0 4px #1b3575!important}
+.controls{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px!important;justify-content:center!important;margin:16px 0!important}
+#hitnumber.critical{color:#ff4d69!important;font-size:clamp(34px,9vw,58px)!important;text-shadow:3px 3px #5d0920,0 0 22px #ff224f!important}
+#hitnumber{color:#ffe36a!important}
+.teamQuick{position:absolute;top:10px;left:10px;z-index:1050;padding:10px 13px;background:linear-gradient(#7298ed,#355cb7);color:white;border:2px solid #b9d5ff;border-radius:12px;font-weight:900;font-size:14px;box-shadow:0 3px #1b3575}
+#startOverlay .teamQuick{position:static;min-width:190px}
+</style><style>
+.upgrades{display:none!important}
+#criticalStats{display:none}
+#heroProfileBtn{background:linear-gradient(#ffcf68,#e38b27);border:2px solid #ffe0a0;color:#28202a;font-size:16px}
+#profileModal{position:fixed;inset:0;z-index:2400;background:#07101deF;display:none;align-items:center;justify-content:center;padding:12px}
+#profileModal.open{display:flex}
+.profile-dialog{background:linear-gradient(#3d3d40,#1a2838);border:2px solid #c7a265;border-radius:16px;padding:15px;width:min(100%,510px);max-height:92vh;overflow:auto;color:#f7ead4}
+.profile-dialog h2{margin:4px 0 10px;color:#ffcf6c}
+.profile-hero{display:flex;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#6e9eb7,#dfc38f);border-radius:12px;padding:12px}
+.profile-hero svg{width:110px;height:145px}
+.profile-hero .hero-details{color:#252b37;text-align:left;font-weight:800}
+.equip-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.equip-slot{min-height:77px;background:#222e40;border:2px solid #8c7b64;border-radius:9px;color:#f9dfab;padding:7px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:none;font-size:12px}
+.equip-slot.equipped{border-color:#ffca5e;background:#3b3b39}
+.equip-slot b{font-size:24px}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;text-align:left}
+.profile-stats span{background:#2c3543;padding:8px;border-radius:7px;font-size:13px}
+.profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.profile-actions button{padding:12px 6px}
+.profile-hint{font-size:12px;color:#d8c9a9;min-height:20px;margin-top:9px}
+.damage-pop{position:absolute;top:22%;left:55%;z-index:1900;pointer-events:none;color:#fff6a6;font-weight:1000;font-size:clamp(32px,8vw,49px);white-space:nowrap;text-shadow:2px 3px #78381e,0 0 12px #ffc64d;animation:damagePop 1.15s ease-out forwards}
+.damage-pop.iscrit{color:#ff477a;font-size:clamp(31px,8vw,51px);text-shadow:3px 3px #550820,0 0 22px #ff184e}
+@keyframes damagePop{0%{opacity:0;transform:translateY(20px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.15)}75%{opacity:1;transform:translateY(-42px) scale(1)}100%{opacity:0;transform:translateY(-78px) scale(.95)}}
+</style><style>.profile-open{background:#f5bd59!important;color:#1c2533!important;border:2px solid #ffe1a1!important}.team-card{display:block!important;text-align:center!important}.team-card svg{vertical-align:middle}.team-card button{font-size:12px;padding:9px 5px}</style><style>
+.quality-0{border-color:#d6dce6!important;color:#f0f4fc!important}.quality-1{border-color:#4ee784!important;color:#75ffa0!important}.quality-2{border-color:#479cff!important;color:#77baff!important}.quality-3{border-color:#bc75ff!important;color:#d5a3ff!important}.quality-4{border-color:#ffd34e!important;color:#ffe37b!important}.quality-5{border-color:#ff4b58!important;color:#ff8991!important}
+.bag-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}.bag-item{background:#202e42;border:2px solid #788397;border-radius:9px;padding:9px 5px;color:#fff;box-shadow:none;font-size:12px;min-height:76px}.bag-item b{font-size:23px}.bag-section{border-top:1px solid #65728a;margin-top:14px;padding-top:10px}.bag-section h3{margin:4px 0;color:#ffcf70}.bag-actions{display:flex;gap:5px;margin-top:6px}.bag-actions button{flex:1;padding:9px 4px;font-size:12px}.equip-slot small{font-size:11px}.profile-dialog{max-height:93vh}
+</style><style>
+#bagModal{position:fixed;inset:0;z-index:2600;background:#07101def;display:none;align-items:center;justify-content:center;padding:12px}
+#bagModal.open{display:flex}
+#bagBtn{background:linear-gradient(#c69b5a,#86603c);border:2px solid #e9c58b;color:#fff;font-size:16px}
+.bag-dialog{background:#202b3c;border:2px solid #dfb56d;border-radius:15px;padding:14px;width:min(100%,530px);max-height:92vh;overflow:auto}
+.bag-dialog h2{color:#ffcf77;margin:0 0 8px}
+</style><style>.main-nav{display:flex;justify-content:flex-end;background:#172438;padding:9px 14px;border-bottom:2px solid #b78b4d}.main-nav #bagBtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;font-size:18px;background:linear-gradient(#d5a35a,#875c30);border:2px solid #ffe0a1;color:white;border-radius:12px;box-shadow:0 3px #493018}.main-nav #bagBtn small{font-size:10px;font-weight:500;color:#fff3dc}</style><style>
+/* Side-view tactical battlefield */
+#allyTeam,#foeTeam{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;pointer-events:none;z-index:5}
+#allyTeam .mini-unit,#foeTeam .mini-unit{position:absolute!important;margin:0!important;width:16%!important;max-width:76px!important;height:104px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:flex-end;transition:left .3s,bottom .3s;transform:translateX(-50%);pointer-events:none}
+#allyTeam .mini-unit svg,#foeTeam .mini-unit svg{width:100%!important;height:75px!important;max-height:75px!important;object-fit:contain}
+#foeTeam .mini-unit svg{transform:scaleX(-1)}
+#allyTeam .mini-unit .unit-name,#foeTeam .mini-unit .unit-name{font-size:10px!important;white-space:nowrap;line-height:1.1;text-shadow:0 1px 3px #000,0 1px 3px #000}
+#allyTeam .mini-unit .unit-hp,#foeTeam .mini-unit .unit-hp{width:95%!important;height:5px!important}
+#allyTeam .mini-unit.striking{animation:sideStrike .35s ease-out!important}
+#foeTeam .mini-unit.striking{animation:sideCounter .35s ease-out!important}
+@keyframes sideStrike{50%{transform:translateX(5px) scale(1.16)}}
+@keyframes sideCounter{50%{transform:translateX(-18px) scale(1.14)}}
+#hero,#enemy{display:none!important}
+.formation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}.formation-col{background:#1a2a3d;border:1px solid #7084a0;border-radius:10px;padding:8px 4px}.formation-col h3{font-size:12px;margin:0 0 8px;color:#ffd27b}.formation-unit{padding:7px 3px;margin:5px 0;border-radius:8px;background:#31475c;font-size:12px;min-height:40px}.formation-empty{color:#8797a8;border:1px dashed #70839a;background:transparent}.formation-choice{display:flex;gap:4px;margin-top:6px}.formation-choice button{flex:1;padding:8px 1px;font-size:11px;border-radius:7px}.formation-choice button.active{background:#63dca0;border-color:#bbffe0}.team-card .formation-choice{width:100%}
+</style><style>.preset-options{display:flex;gap:6px;margin:8px 0}.preset-options button{flex:1;padding:10px 2px;font-size:12px}.preset-options button.active{background:#5bd99a;color:#132c24}.formation-slot{width:100%;margin:5px 0;padding:8px 3px;background:#30485d;border:1px solid #7895b2;border-radius:8px;color:#fff;font-size:12px;min-height:41px}.formation-slot.empty{border-style:dashed;color:#b3c6d7}.formation-col{min-width:0}.formation-col h3{font-size:11px}.formation-help{font-size:12px;color:#e8c992}</style><style>#modelModal{display:none;position:fixed;inset:0;z-index:3000;background:#07101def;align-items:center;justify-content:center;padding:12px}#modelModal.open{display:flex}.model-dialog{background:#202c3f;border:2px solid #e7b569;border-radius:15px;width:min(100%,530px);padding:12px;max-height:95vh;overflow:auto}.model-frame{width:100%;height:min(57vh,420px);border:0;border-radius:10px;background:#101826}.model-note{font-size:12px;color:#d3ddeb}</style><style>
+#battle3d{position:absolute;inset:0;z-index:4;pointer-events:none;display:none}
+.arena.three-active #battle3d{display:block}
+
+
+.arena.three-active .ground{opacity:.65}
+</style><script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/GLTFLoader.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+.arena .mini-unit svg{visibility:visible!important}
+.arena .mini-unit{z-index:6}
+.arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
+.arena .rage-bar i{display:block!important;height:100%!important;background:#ed3249!important;transition:width .4s}
+#roundIndicator{position:absolute!important;top:8px!important;right:8px!important;z-index:80!important;display:block!important;background:#101b30ed!important;color:#fff!important;font-weight:bold!important}
+.arena .mini-unit.striking{filter:drop-shadow(0 0 7px #ffdb65)}
+.arena .mini-unit.targeted{filter:brightness(1.6) sepia(.4)}
+.arena .mini-unit.ultimate{filter:drop-shadow(0 0 12px #fb4757)}
+#battleFeed{position:absolute;top:42px;left:50%;transform:translateX(-50%);z-index:90;background:#101b30de;border:1px solid #e7b569;border-radius:9px;color:#fff;padding:5px 8px;font-size:12px;max-width:80%;pointer-events:none}
+</style><style>
+/* Character-specific combat animations */
+.arena{isolation:isolate}
+.mini-unit{transform-origin:50% 80%}
+.mini-unit.jutsu-melee{animation:ninjaLunge .62s cubic-bezier(.2,.8,.2,1)!important}
+.mini-unit.jutsu-cast{animation:ninjaCast .66s ease-in-out!important}
+.mini-unit.jutsu-ultimate{animation:ninjaUltimate .8s ease-in-out!important;filter:drop-shadow(0 0 9px var(--chakra,#6ecaff))}
+.mini-unit.jutsu-heal{animation:ninjaHeal .85s ease-in-out!important}
+.mini-unit.jutsu-hurt{animation:ninjaHurt .38s ease-out!important}
+@keyframes ninjaLunge{0%,100%{transform:translateX(-50%)}40%{transform:translateX(calc(-50% + var(--strike,22px))) scale(1.14)}}
+@keyframes ninjaCast{0%,100%{transform:translateX(-50%)}45%{transform:translateX(-50%) translateY(-9px) scale(1.1)}}
+@keyframes ninjaUltimate{0%,100%{transform:translateX(-50%) scale(1)}35%{transform:translateX(-50%) scale(1.27) translateY(-9px)}65%{transform:translateX(calc(-50% + var(--strike,22px))) scale(1.15)}}
+@keyframes ninjaHeal{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(-8px);filter:drop-shadow(0 0 15px #4aff9e)}}
+@keyframes ninjaHurt{0%,100%{transform:translateX(-50%)}45%{transform:translateX(calc(-50% - 6px)) rotate(7deg);filter:brightness(2)}}
+#jutsuFxLayer{position:absolute;inset:0;pointer-events:none;z-index:65;overflow:hidden}
+.jutsu-fx{position:absolute;width:38px;height:38px;left:var(--x);top:var(--y);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#fff 0%,var(--fx,#5fbaff) 30%,transparent 72%);box-shadow:0 0 14px var(--fx,#5fbaff);animation:jutsuFly .65s ease-out forwards;--dx:0px;--dy:0px}
+.jutsu-fx::after{content:attr(data-icon);position:absolute;inset:0;display:grid;place-items:center;font-size:24px;text-shadow:0 0 8px #fff}
+.jutsu-fx.jutsu-area{width:85px;height:85px;animation:jutsuBurst .85s ease-out forwards}
+.jutsu-fx.jutsu-support{width:60px;height:60px;animation:jutsuSupport .95s ease-out forwards}
+.jutsu-fx.jutsu-shadow{border-radius:12px;transform:translate(-50%,-50%) skewX(-25deg)}
+.jutsu-fx.jutsu-clones::before,.jutsu-fx.jutsu-clones::after{content:'🥷';position:absolute;top:-12px;font-size:25px;opacity:.8}
+.jutsu-fx.jutsu-clones::before{left:-32px}.jutsu-fx.jutsu-clones::after{right:-32px}
+@keyframes jutsuFly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1}70%{opacity:1;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.6)}}
+@keyframes jutsuBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.25)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+@keyframes jutsuSupport{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}45%{opacity:1}100%{opacity:0;transform:translate(-50%,-85%) scale(1.8)}}
+@media(prefers-reduced-motion:reduce){.mini-unit.jutsu-melee,.mini-unit.jutsu-cast,.mini-unit.jutsu-ultimate,.mini-unit.jutsu-heal,.mini-unit.jutsu-hurt{animation-duration:.1s!important}}
+</style><style>
+#battleFeed{min-width:190px;text-align:center;line-height:1.45;font-size:13px!important;border-color:#89cfff!important;box-shadow:0 4px 12px #0009}
+#battleFeed.ult-label{border-color:#ffba55!important;color:#ffe39b!important;box-shadow:0 0 15px #ff9d3999}
+#rasenganCutin{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(230px,65%);height:155px;z-index:95;border:2px solid #6cdbff;border-radius:15px;background:radial-gradient(circle at 65% 40%,#174f86,#06172c 70%);box-shadow:0 0 24px #53cfff;pointer-events:none;overflow:hidden}
+#rasenganCutin.visible{display:block;animation:cutinAppear 1.3s ease-out both}
+.cutin-naruto{position:absolute;left:15px;top:22px;font-size:74px;filter:drop-shadow(0 0 8px #4fbfff);animation:cutinPunch 1.25s ease-in forwards}
+.cutin-orb{position:absolute;right:28px;top:24px;width:84px;height:84px;border-radius:50%;background:repeating-conic-gradient(from 15deg,#fff 0 9deg,#47bdff 11deg 28deg,#114cb9 31deg 42deg);box-shadow:0 0 15px 7px #56d9ff, inset 0 0 16px #fff;animation:rasenganSpin .25s linear infinite}
+.orb-core{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,white,#5ce4ff 35%,#0862d6 80%);box-shadow:0 0 16px white}
+#rasenganCutin strong{position:absolute;bottom:7px;left:0;right:0;color:#fff;font-size:13px;text-shadow:0 2px 5px #000}
+@keyframes rasenganSpin{to{transform:rotate(360deg)}}
+@keyframes cutinPunch{0%{transform:translateX(-30px)}65%,100%{transform:translateX(40px)}}
+@keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
+</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style></head>
+<body>
+<header>
+<h1>🍥 Naruto Auto Arena</h1>
+<div>Командные сражения • Техники ниндзя</div>
+</header>
+<nav class="main-nav"><button id="bagBtn" onclick="openBag()">🎒 Сумка <small>Предметы и ресурсы</small></button></nav><div class="arena">
+<div class="sun"></div>
+<div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
+<div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="roundIndicator" class="round-indicator">Раунд 1 / 12</div><div id="jutsuFxLayer" aria-hidden="true"></div><div id="rasenganCutin" aria-hidden="true"><div class="cutin-naruto">🥷</div><div class="cutin-orb"><div class="orb-core"></div></div><strong>НАРУТО · РАСЕНГАН!</strong></div><div id="battleFeed" aria-live="polite">⚔️ Приготовься к бою</div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="effect" class="effect"></div>
+</div>
+<div class="panel">
+<div class="bars">
+<div class="unit">Наруто ур. <span id="level">1</span>
+<div class="bar"><div id="hpbar" class="fill"></div></div></div>
+<div class="unit">Противник <span id="wave">1</span>
+<div class="bar"><div id="enemybar" class="fill"></div></div></div>
+</div>
+<div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🥷 Персонажи</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
+<button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
+<button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
+<button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
+</div>
+<div id="teamStatus">Команда: 1/5</div><div id="log">⚔️ Автобой начался</div>
+</div>
+<div id="modelModal"><div class="model-dialog"><h2>🥷 Наруто — тест 3D</h2><div id="modelFrameHolder"></div><p class="model-note">Настоящая модель автора ronildo.facanha со скелетом и анимацией бега. Пока это отдельный 3D-просмотр, бой продолжает работать на прежних персонажах. Модель загружается с Sketchfab.</p><button onclick="closeModelPreview()">Закрыть 3D-просмотр</button><p class="model-note">Модель: CC BY, автор ronildo.facanha / Sketchfab.</p></div></div><div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя и назначь линию: передняя (танки), средняя (урон), задняя (хилы и поддержка). Можно 1–2 бойца на каждой линии.</p><div id="formationPreview"></div><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
+const el=id=>document.getElementById(id);
+let arena3d=null,arena3dUnits=[],arena3dClock=0;
+function initArena3d(){
+if(arena3d||!window.THREE)return;
+try{
+const T=THREE,host=el('battle3d'),w=host.clientWidth||360,h=host.clientHeight||360;
+const renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(w,h);
+if('outputColorSpace' in renderer)renderer.outputColorSpace=T.SRGBColorSpace;else renderer.outputEncoding=T.sRGBEncoding;host.appendChild(renderer.domElement);
+const scene=new T.Scene(),camera=new T.OrthographicCamera(-6,6,4,-4,.1,100);
+camera.position.set(0,5,16);camera.lookAt(0,1,0);
+scene.add(new T.HemisphereLight(0xffffff,0x6a6572,2.1));
+const light=new T.DirectionalLight(0xffffff,2);light.position.set(-4,9,8);scene.add(light);
+arena3d={renderer,scene,camera,host};
+function draw(){
+if(!arena3d)return;
+arena3dClock+=.027;
+for(const a of arena3dUnits){
+a.body.position.y=Math.sin(arena3dClock*1.7+a.phase)*.055;
+a.body.rotation.z=Math.sin(arena3dClock*1.3+a.phase)*.035;
+}
+renderer.render(scene,camera);requestAnimationFrame(draw)
+}
+requestAnimationFrame(draw);
+window.addEventListener('resize',()=>{if(!arena3d)return;const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.left=-6;camera.right=6;camera.top=6*h/w;camera.bottom=-6*h/w;camera.updateProjectionMatrix()});
+host.parentElement.classList.add('three-active');syncArena3d();
+}catch(e){console.warn('3D disabled, keeping 2D fighters',e);arena3d=null}
+}
+function ninjaMesh(u,enemy){
+const T=THREE,root=new T.Group(),body=new T.Group();root.add(body);
+const palette={naruto:[0xf28d23,0xf4d331],sasuke:[0x343c78,0x20202c],sakura:[0xe46983,0xef8caa],kakashi:[0x3f655e,0xd7d9d8],hinata:[0xb3a4cc,0x292e65],shikamaru:[0x5b775a,0x222222],gaara:[0x884b4b,0x9b342a],itachi:[0x29232b,0x20202b],pain:[0x342d42,0xf37b36],kisame:[0x293c5c,0x435e75],deidara:[0x343036,0xe8d179],sasori:[0x53403c,0xb53a32]};
+const colors=palette[u.id]||[0x5c637b,0x333344],mat=c=>new T.MeshStandardMaterial({color:c,roughness:.85});
+function box(x,y,z,w,h,d,color,parent=body){const o=new T.Mesh(new T.BoxGeometry(w,h,d),mat(color));o.position.set(x,y,z);parent.add(o);return o}
+function ball(x,y,z,r,color){const o=new T.Mesh(new T.SphereGeometry(r,9,7),mat(color));o.position.set(x,y,z);body.add(o);return o}
+box(0,1.1,0,.62,.85,.35,colors[0]);box(-.18,.43,0,.24,.8,.27,0x242a3c);box(.18,.43,0,.24,.8,.27,0x242a3c);
+box(-.43,1.1,0,.23,.77,.28,colors[0]);box(.43,1.1,0,.23,.77,.28,colors[0]);
+ball(0,1.88,0,.36,0xe9b89a);
+box(0,2.04,.29,.65,.14,.11,0x263749);
+if(u.id==='naruto'){for(let i=-2;i<=2;i++){const spike=box(i*.15,2.29+Math.abs(i)*-.035,0,.18,.32,.23,colors[1]);spike.rotation.z=i*.17}}
+else{ball(0,2.22,-.06,.32,colors[1]);box(0,2.3,.18,.58,.12,.16,colors[1])}
+box(-.13,1.9,.33,.07,.035,.035,0x25252d);box(.13,1.9,.33,.07,.035,.035,0x25252d);
+if(enemy)root.rotation.y=Math.PI;
+if(remoteHeroModels[u.id])fetchHeroModel(u.id,loaded=>{
+if(!loaded||!root.parent)return;
+const bounds=new T.Box3().setFromObject(loaded),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
+const maxDimension=Math.max(size.x,size.y,size.z);
+if(!isFinite(maxDimension)||maxDimension<.00001)return;
+const holder=new T.Group();holder.add(loaded);loaded.position.sub(center);
+holder.scale.setScalar(2.4/maxDimension);
+body.clear();body.add(holder);
+});
+return {root,body,phase:Math.random()*6.28}
+}
+function syncArena3d(){
+if(!arena3d)return;
+const {scene}=arena3d;
+for(const a of arena3dUnits)scene.remove(a.root);
+arena3dUnits=[];
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+const counts={front:0,middle:0,back:0};
+units.forEach((u,i)=>{
+if(u.curHp<=0)return;
+const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
+const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row&&v.curHp>0).length;
+const mesh=ninjaMesh(u,side==='foeTeam');
+const pos={front:3.8,middle:2.4,back:1.05}[row];
+mesh.root.position.set((side==='allyTeam'?-1:1)*pos,total===1?-.3:(idx===0?.65:-1.05),idx===0?-1:1);
+mesh.root.scale.setScalar(.68);
+scene.add(mesh.root);arena3dUnits.push(mesh);
+});
+}
+}
+
+function openModelPreview(){el('modelModal').classList.add('open');el('modelFrameHolder').innerHTML='<iframe class="model-frame" title="3D Naruto by ronildo.facanha" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen src="https://sketchfab.com/models/db14fc3de5b34b738e49ec3cdb83770a/embed?autostart=1&ui_infos=0"></iframe>'}
+function closeModelPreview(){el('modelModal').classList.remove('open');el('modelFrameHolder').innerHTML=''}
+
+let s;
+try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
+s=Object.assign({coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100,critChance:5,critDamage:150},s||{});
+s.critChance=Number(s.critChance)||5;s.critDamage=Number(s.critDamage)||150;
+const roster=[
+{id:'naruto',name:'Наруто',role:'Атака',color:'#f19b2c',hair:'#f8d13d',skin:'#f4bd8c',hp:125,atk:16,spd:12},
+{id:'sasuke',name:'Саске',role:'Урон',color:'#4e5793',hair:'#1c2232',skin:'#e7bba0',hp:105,atk:21,spd:15},
+{id:'sakura',name:'Сакура',role:'Лечение',color:'#d45d77',hair:'#f6a0b7',skin:'#f4c1aa',hp:115,atk:12,spd:11},
+{id:'kakashi',name:'Какаши',role:'Скорость',color:'#556b7b',hair:'#d8e3e9',skin:'#e0b9a4',hp:110,atk:19,spd:18},
+{id:'hinata',name:'Хината',role:'Защита',color:'#a99bd1',hair:'#262a47',skin:'#efd1c0',hp:135,atk:13,spd:10},
+{id:'shikamaru',name:'Шикамару',role:'Контроль',color:'#697c57',hair:'#292b2c',skin:'#d9ad87',hp:120,atk:15,spd:12},
+{id:'gaara',name:'Гаара',role:'Защита',color:'#a05c44',hair:'#c95743',skin:'#f2c6a8',hp:145,atk:17,spd:9}
+];
+const enemies=[
+{id:'itachi',name:'Итачи',color:'#272b34',hair:'#16151d',skin:'#d9b7aa',hp:110,atk:16,spd:13},
+{id:'pain',name:'Пейн',color:'#33343e',hair:'#ec8c4d',skin:'#d6b7a3',hp:125,atk:16,spd:11},
+{id:'kisame',name:'Кисаме',color:'#333c4e',hair:'#425b78',skin:'#7495ad',hp:145,atk:14,spd:9},
+{id:'deidara',name:'Дейдара',color:'#252c35',hair:'#e9cf79',skin:'#e4c0a1',hp:95,atk:19,spd:14},
+{id:'konan',name:'Конан',color:'#33303a',hair:'#627da2',skin:'#d8b5a0',hp:115,atk:16,spd:12}
+];
+function ninjaSVG(c){
+return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><path d="M21 115L16 65Q20 56 32 53H50Q62 56 65 66L60 115" fill="'+c.color+'" stroke="#252c39" stroke-width="3"/><path d="M31 91L29 116M50 91L51 116" stroke="#242c38" stroke-width="6"/><path d="M18 65L12 89L24 95M63 65L69 89L58 95" fill="none" stroke="'+c.color+'" stroke-width="11"/><ellipse cx="40" cy="34" rx="20" ry="25" fill="'+c.skin+'" stroke="#47352f" stroke-width="2"/><path d="M18 34L14 21L27 23L25 9L35 16L42 3L48 15L60 8L58 23L68 21L62 35L55 21L25 24Z" fill="'+c.hair+'" stroke="#30313b" stroke-width="2"/><path d="M23 34L57 34L56 43L24 43Z" fill="#2a3545"/><rect x="33" y="35" width="15" height="7" rx="2" fill="#b8c4cc"/><path d="M27 48L35 48M46 48L54 48" stroke="#272936" stroke-width="3"/><path d="M36 56Q40 59 45 56" fill="none" stroke="#a15c50" stroke-width="2"/></svg>';
+}
+s.team=Array.isArray(s.team)?s.team.filter(id=>roster.some(r=>r.id===id)):['naruto'];
+if(!s.team.includes('naruto'))s.team.unshift('naruto');
+s.team=[...new Set(s.team)].slice(0,5);
+s.formation=s.formation||{};
+const formationRows=['front','middle','back'];
+const rowNames={front:'🛡️ Передняя',middle:'⚔️ Средняя',back:'💚 Задняя'};
+const formationPresets=[[1,2,2],[2,1,2],[2,2,1]];
+s.formationPreset=Number.isInteger(s.formationPreset)&&s.formationPreset>=0&&s.formationPreset<3?s.formationPreset:0;
+s.formationSlots=Array.isArray(s.formationSlots)?s.formationSlots.slice(0,5):[];
+function formationSizes(){return formationPresets[s.formationPreset]}
+function formationRowForSlot(i){let n=formationSizes();return i<n[0]?'front':i<n[0]+n[1]?'middle':'back'}
+function ensureFormation(){
+let used=new Set();
+s.formationSlots=s.formationSlots.slice(0,5).map(id=>{if(!s.team.includes(id)||used.has(id))return null;used.add(id);return id});
+while(s.formationSlots.length<5)s.formationSlots.push(null);
+for(const id of s.team){if(!used.has(id)){let i=s.formationSlots.indexOf(null);if(i>=0){s.formationSlots[i]=id;used.add(id)}}}
+s.formation={};
+s.formationSlots.forEach((id,i)=>{if(id)s.formation[id]=formationRowForSlot(i)});
+}
+function selectPreset(index){s.formationPreset=index;ensureFormation();save();initTeams();renderTeamCards()}
+function putInSlot(slot,id){
+if(slot<0||slot>=5)return;
+ensureFormation();
+const old=s.formationSlots[slot];
+const other=s.formationSlots.indexOf(id);
+if(other>=0)s.formationSlots[other]=old||null;
+s.formationSlots[slot]=id||null;
+ensureFormation();save();initTeams();renderTeamCards();
+}
+ensureFormation();
+let allies=[],foes=[];
+function initTeams(){
+renderedLayout='';
+allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25,rage:0,buff:0}});
+foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08)),rage:0,buff:0}));
+renderTeams();
+}
+let renderedLayout='';
+function renderTeams(){
+const layoutKey=JSON.stringify({a:allies.map(u=>u.id),f:foes.map(u=>u.id),formation:s.formation});
+if(renderedLayout===layoutKey&&el('allyTeam0')&&el('foeTeam0')){
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]])units.forEach((u,i)=>{
+const n=el(side+i);if(!n)return;
+const hpBar=n.querySelector('.unit-hp i'),rageBar=n.querySelector('.rage-bar i');
+if(hpBar)hpBar.style.width=Math.max(0,100*u.curHp/u.maxHp)+'%';
+if(rageBar)rageBar.style.width=Math.max(0,u.rage||0)+'%';
+n.classList.toggle('down',u.curHp<=0);
+});
+el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+return;
+}
+renderedLayout=layoutKey;
+const allyXs={front:43,middle:28,back:12},foeXs={front:57,middle:72,back:88};
+for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+const counts={front:0,middle:0,back:0};
+el(side).innerHTML=units.map((u,i)=>{
+const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
+const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row).length;
+const bottom=total===1?24:(idx===0?43:8);
+const left=(side==='allyTeam'?allyXs:foeXs)[row];
+return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
+}).join('');
+}
+el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+
+}
+function renderFormationPreview(){
+ensureFormation();
+const sizes=formationSizes();
+let offset=0;
+const columns=formationRows.map((row,i)=>{
+const cells=Array.from({length:sizes[i]},(_,j)=>{
+const slot=offset+j,current=s.formationSlots[slot]||'';
+return '<select class="formation-slot '+(current?'':'empty')+'" aria-label="Позиция '+(slot+1)+'" onchange="putInSlot('+slot+',this.value)"><option value="">＋ Место '+(slot+1)+'</option>'+s.team.map(id=>'<option value="'+id+'" '+(id===current?'selected':'')+'>'+roster.find(x=>x.id===id).name+'</option>').join('')+'</select>'
+}).join('');
+offset+=sizes[i];
+return '<div class="formation-col"><h3>'+rowNames[row]+'</h3>'+cells+'</div>';
+}).join('');
+el('formationPreview').innerHTML='<p class="formation-help">Выбери схему, затем назначь любого ниндзя в каждую ячейку. Можно менять их местами.</p><div class="preset-options">'+formationPresets.map((p,i)=>'<button class="'+(s.formationPreset===i?'active':'')+'" onclick="selectPreset('+i+')">'+p.join('–')+'</button>').join('')+'</div><div class="formation-grid">'+columns+'</div>';
+}
+function setFormation(id,row){
+const slot=s.formationSlots.findIndex((x,i)=>formationRowForSlot(i)===row&&x===null);
+if(slot<0){el('teamStatus').textContent='В этой линии нет свободного места — поменяй бойцов в схеме';return}
+putInSlot(slot,id);
+}
+function renderTeamCards(){
+renderFormationPreview();
+el('teamCards').innerHTML=roster.map(c=>{
+const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id);
+return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+(chosen?' · Место '+(slot+1):'')+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>'
+}).join('');
+}
+function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
+function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
+function closeTeam(){el('teamModal').classList.remove('open');renderTeams();render()}
+function toggleMember(id){
+if(id==='naruto'){log('Наруто — лидер команды');return}
+if(s.team.includes(id)){s.team=s.team.filter(x=>x!==id)}
+else if(s.team.length>=5){el('teamStatus').textContent='Максимум 5 ниндзя!';return}
+else s.team.push(id);
+ensureFormation();save();initTeams();renderTeamCards();
+}
+function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330)}
+let battleRoundNumber=0;
+const skills={
+naruto:['Удар','Теневые клоны','Расенган'],sasuke:['Удар','Огненный шар','Чидори'],sakura:['Удар','Усиление команды','Великое исцеление'],
+kakashi:['Кунай','Копирующая техника','Райкири'],hinata:['Мягкий кулак','Восемь триграмм','Защитная ладонь'],
+shikamaru:['Удар','Теневая ловушка','Теневое связывание'],gaara:['Песчаный удар','Песчаный щит','Песчаная буря'],
+itachi:['Кунай','Огненная техника','Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
+kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
+sasori:['Кукла','Ядовитые иглы','Сотня кукол']
+};
+const jutsuVisuals={
+naruto:[['melee','#ffb34c','👊'],['clones','#f5f5ff','🥷'],['orb','#4ec7ff','🌀']],
+sasuke:[['melee','#a6aaff','⚔️'],['fire','#ff6a22','🔥'],['lightning','#77baff','⚡']],
+sakura:[['melee','#f6a0ba','💥'],['support','#ffdb8c','✨'],['heal','#53ffa3','💚']],
+kakashi:[['melee','#d2d9de','🗡️'],['clones','#a9d4e5','🥷'],['lightning','#5bbcff','⚡']],
+hinata:[['melee','#b4a7ff','👊'],['orb','#aa8cff','☯️'],['heal','#8de8ff','🛡️']],
+shikamaru:[['melee','#b5d4a6','🗡️'],['shadow','#55576f','🌑'],['shadow','#8d83c2','🕸️']],
+gaara:[['sand','#d7ae6e','🏜️'],['support','#e5bf79','🛡️'],['sand','#f0b85d','🌪️']],
+itachi:[['melee','#dd7272','🗡️'],['fire','#f65d22','🔥'],['fire','#30263e','🖤']],
+pain:[['melee','#b6a1df','👊'],['orb','#9b78e6','🌀'],['orb','#d2a5ff','💥']],
+kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
+deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
+sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']]
+};
+let rasengan3d=null;
+function drawRasengan3D(box){
+if(typeof THREE==='undefined')return;
+const target=box.querySelector('.cutin-orb');if(!target)return;
+try{
+if(rasengan3d){rasengan3d.renderer.dispose();rasengan3d=null}
+const w=100,h=100;
+const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});renderer.setSize(w,h);renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+target.replaceChildren(renderer.domElement);
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.z=4;
+scene.add(new THREE.AmbientLight(0xffffff,1.5));
+const light=new THREE.PointLight(0x78dfff,25,10);light.position.set(2,2,3);scene.add(light);
+const core=new THREE.Mesh(new THREE.SphereGeometry(.8,32,20),new THREE.MeshStandardMaterial({color:0x25bfff,emissive:0x168aff,emissiveIntensity:1.8,transparent:true,opacity:.9,roughness:.25}));scene.add(core);
+const rings=[];for(let i=0;i<4;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.92+i*.08,.024,8,64),new THREE.MeshBasicMaterial({color:i%2?0xffffff:0x57e7ff,transparent:true,opacity:.85}));ring.rotation.set(i*.7,i*.9,0);scene.add(ring);rings.push(ring)}
+rasengan3d={renderer};const startedAt=performance.now();
+function tick(now){if(rasengan3d?.renderer!==renderer||!box.classList.contains('visible'))return;const t=(now-startedAt)/1000;core.rotation.y=t*3;rings.forEach((r,i)=>{r.rotation.x+=.045+i*.008;r.rotation.y-=.05+i*.006});renderer.render(scene,camera);requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+}catch(e){console.warn('Rasengan 3D unavailable',e)}
+}
+
+function showRasenganCutin(){
+let box=el('rasenganCutin');if(!box)return;
+box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible');drawRasengan3D(box);
+clearTimeout(window.rasenganCutinTimer);
+window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350);
+}
+function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
+const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
+const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
+if(!source||!target||!layer||!arena)return;
+const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
+const sx=from.left+from.width/2-box.left,sy=from.top+from.height*.43-box.top;
+const tx=to.left+to.width/2-box.left,ty=to.top+to.height*.4-box.top;
+const cls=kind==='melee'?'jutsu-melee':kind==='heal'||kind==='support'?'jutsu-heal':action===2?'jutsu-ultimate':'jutsu-cast';
+source.style.setProperty('--strike',side==='allyTeam'?'22px':'-22px');
+source.style.setProperty('--chakra',color);
+source.classList.remove('jutsu-melee','jutsu-cast','jutsu-ultimate','jutsu-heal');
+const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin='50% 75%';sprite.animate([{transform:'translateY(0) rotate(0deg)'},{transform:action===2?'translateY(-16px) rotate(-9deg)':'translateY(-7px) rotate(-6deg)'},{transform:action===0?'translateX(14px) rotate(12deg)':'translateX(5px) rotate(5deg)'},{transform:'translateY(0) rotate(0deg)'}],{duration:1500,easing:'ease-in-out'});}
+void source.offsetWidth;source.classList.add(cls);
+setTimeout(()=>source.classList.remove(cls),1300);
+if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
+const fx=document.createElement('div');
+fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
+fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
+fx.style.setProperty('--dx',(tx-sx)+'px');fx.style.setProperty('--dy',(ty-sy)+'px');fx.style.setProperty('--fx',color);
+fx.dataset.icon=icon;layer.appendChild(fx);
+setTimeout(()=>fx.remove(),1350);
+}
+function battleAction(unit,own,opponents){
+if(unit.curHp<=0||!opponents.some(x=>x.curHp>0))return;
+const enemy=own===allies?foes:allies;
+const alive=opponents.filter(x=>x.curHp>0);
+const front=alive.filter(x=>own===allies?foes.indexOf(x)<2:s.formation[x.id]==='front');
+const middle=alive.filter(x=>s.formation[x.id]==='middle');
+const pool=front.length?front:own===foes&&middle.length?middle:alive;
+const target=pool[Math.floor(Math.random()*pool.length)];
+const ult=unit.rage>=100,secondary=!ult&&((battleRoundNumber+own.indexOf(unit))%3===0);
+const action=ult?2:secondary?1:0,skill=(skills[unit.id]||['Удар','Техника','Ульта'])[action];
+let dmg=0,healed=0,crit=false;
+document.querySelectorAll('.mini-unit').forEach(n=>n.classList.remove('acting-now'));const acting=el((own===allies?'allyTeam':'foeTeam')+own.indexOf(unit));if(acting)acting.classList.add('acting-now');
+const feed=el('battleFeed');if(feed){feed.textContent=(ult?'🔥 УЛЬТА · ':action===1?'✨ ТЕХНИКА · ':'⚔️ АТАКА · ')+unit.name+' · '+skill;feed.classList.toggle('ult-label',ult)}
+if(ult)unit.rage=0;else unit.rage=Math.min(100,(unit.rage||0)+(secondary?26:17));
+if(unit.id==='sakura'&&action===2){
+const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
+if(hurt){healed=Math.min(hurt.maxHp-hurt.curHp,Math.round(hurt.maxHp*.52));hurt.curHp+=healed;playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)));log('💚 Сакура лечит '+hurt.name+' на '+healed+' HP')}
+}else if(unit.id==='sakura'&&action===1){
+own.filter(x=>x.curHp>0).forEach(x=>x.buff=2);
+playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(unit),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(unit)));
+log('✨ Сакура усиливает всю команду на 2 действия');
+}else if(unit.id==='hinata'&&action===2){
+const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
+if(hurt){healed=Math.round(hurt.maxHp*.27);hurt.curHp=Math.min(hurt.maxHp,hurt.curHp+healed);playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)))}log('🛡️ Хината защищает и восстанавливает союзника');
+}else{
+crit=Math.random()*100<Math.min(80,(own===allies?s.critChance:5)+(unit.bonusCrit||0));
+const multiplier=action===2?3.1:action===1?1.55:1;
+const base=unit.atk+(own===allies?(unit.id==='naruto'?s.damage:s.damage*.25):0);
+dmg=Math.max(1,Math.round(base*multiplier*(unit.buff>0?1.25:1)*(crit?(own===allies?(s.critDamage+(unit.bonusCritDamage||0))/100:1.5):1)));
+target.curHp=Math.max(0,target.curHp-dmg);
+if(unit.buff>0)unit.buff--;
+const side=own===allies?'allyTeam':'foeTeam';
+if(unit.id==='naruto'&&ult)showRasenganCutin();
+playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action);
+if(own===allies)showDamage(dmg,crit);
+log((ult?'🔥 УЛЬТА! ':'')+unit.name+' · '+skill+' → '+target.name+': −'+dmg+(crit?' 💥 КРИТ':''));
+}
+}
+function finishBattle(won){clearTimeout(actionTimer);roundInProgress=false;
+if(won){winWave();battleRoundNumber=0;return}
+log('⌛ 12 раундов закончились. Команда восстанавливается!');
+battleRoundNumber=0;initTeams();if(el('roundIndicator'))el('roundIndicator').textContent='Раунд 1 / 12';
+}
+let roundInProgress=false,actionTimer=null;
+function battleRound(){
+if(roundInProgress)return;
+if(!allies.some(u=>u.curHp>0)){finishBattle(false);return}
+if(!foes.some(u=>u.curHp>0)){finishBattle(true);return}
+roundInProgress=true;
+battleRoundNumber++;
+el('roundIndicator').textContent='Раунд '+battleRoundNumber+' / 12';
+const order=[...allies.map(u=>({u,own:allies,enemy:foes})),...foes.map(u=>({u,own:foes,enemy:allies}))].sort((a,b)=>b.u.spd-a.u.spd);
+let i=0;
+function step(){
+if(!started||paused){roundInProgress=false;return}
+if(i<order.length&&allies.some(u=>u.curHp>0)&&foes.some(u=>u.curHp>0)){
+const a=order[i++];battleAction(a.u,a.own,a.enemy);render();
+actionTimer=setTimeout(()=>{renderTeams();step()},2450);return;
+}
+roundInProgress=false;
+if(!foes.some(u=>u.curHp>0))finishBattle(true);
+else if(!allies.some(u=>u.curHp>0)||battleRoundNumber>=12)finishBattle(false);
+else schedule();
+}
+step();
+}
+function winWave(){
+s.coins+=15+s.wave*5;s.level++;s.wave++;save();initTeams();log('🏆 Команда победила! Волна '+s.wave+' · монеты получены');render();
+}
+const gearCatalog=[
+{slot:'weapon',label:'Оружие',icon:'⚔️',bonus:'atk',value:8,cost:60},
+{slot:'head',label:'Повязка',icon:'🥷',bonus:'hp',value:30,cost:45},
+{slot:'body',label:'Броня',icon:'🦺',bonus:'hp',value:55,cost:80},
+{slot:'feet',label:'Обувь',icon:'👟',bonus:'speed',value:4,cost:50},
+{slot:'ring',label:'Кольцо',icon:'💍',bonus:'crit',value:5,cost:100},
+{slot:'scroll',label:'Свиток',icon:'📜',bonus:'critDamage',value:25,cost:110}
+];
+
+s.heroProgress=s.heroProgress||{};
+s.inventory=Array.isArray(s.inventory)?s.inventory:[];
+s.nextItemId=Number(s.nextItemId)||1;
+const qualities=[{name:'Белый',color:'#e8edf5'},{name:'Зелёный',color:'#4ee784'},{name:'Синий',color:'#479cff'},{name:'Фиолетовый',color:'#bc75ff'},{name:'Жёлтый',color:'#ffd34e'},{name:'Красный',color:'#ff4b58'}];
+let selectedProfile='naruto';
+function heroData(id){if(!s.heroProgress[id])s.heroProgress[id]={level:1,gear:{}};const p=s.heroProgress[id];p.gear=p.gear||{};return p}
+function itemById(id){return s.inventory.find(x=>x.id===Number(id))}
+function newItem(slot,quality=0){let item={id:s.nextItemId++,slot:slot,quality:quality};s.inventory.push(item);return item}
+function migrateOldGear(){
+for(const [id,p] of Object.entries(s.heroProgress)){
+p.gear=p.gear||{};
+for(const [slot,value] of Object.entries(p.gear)){
+if(value===true){p.gear[slot]=newItem(slot).id}
+else if(typeof value==='number'&&!itemById(value)){delete p.gear[slot]}
+}
+}
+save();
+}
+try{migrateOldGear()}catch(e){console.error("Inventory migration:",e)}
+function gearOwner(itemId){for(const [id,p] of Object.entries(s.heroProgress)){if(Object.values(p.gear||{}).some(v=>v===itemId))return id}return null}
+function heroBonuses(id){
+const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critDamage:0};
+for(const g of gearCatalog){const item=itemById(p.gear[g.slot]);if(item)b[g.bonus]+=g.value*(1+item.quality)}
+return b;
+}
+function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
+function closeProfile(){el('profileModal').classList.remove('open');initTeams();render();openTeam()}
+function selectProfile(id){selectedProfile=id;renderProfile()}
+function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
+
+const remoteHeroModels={"naruto":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Naruto%20Uzumaki/Naruto%20Uzumaki.glb",
+"sasuke":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sasuke%20Uchiha/Sasuke%20Uchiha.glb",
+"sakura":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sakura%20Haruno/Sakura%20Haruno.glb",
+"kakashi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kakashi%20Hatake/Kakashi%20Hatake.glb",
+"hinata":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Hinata%20Hy%C5%ABga/Hinata%20Hy%C5%ABga.glb",
+"shikamaru":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Shikamaru%20Nara/Shikamaru%20Nara.glb",
+"gaara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Gaara/Gaara.glb",
+"itachi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Itachi%20Uchiha/Itachi%20Uchiha.glb",
+"pain":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Pain/Pain.glb",
+"kisame":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kisame%20Hoshigaki/Kisame%20Hoshigaki.glb",
+"deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb",
+"konan":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Konan/Konan.glb"};
+const modelCache={};
+const pendingModels={};
+function fetchHeroModel(id,callback){
+if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
+if(modelCache[id]){callback(modelCache[id].clone(true));return}
+if(pendingModels[id]){pendingModels[id].push(callback);return}
+pendingModels[id]=[callback];
+new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
+}
+let heroRenderer=null;
+function mountHero3D(hero){
+const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
+if(heroRenderer){try{heroRenderer.dispose()}catch(e){}heroRenderer=null}
+if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);host.insertAdjacentHTML('beforeend','<span class="model-credit">3D временно недоступно</span>');return}
+try{
+host.innerHTML='';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
+const camera=new THREE.PerspectiveCamera(32,host.clientWidth/280,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(host.clientWidth,280);host.appendChild(renderer.domElement);heroRenderer=renderer;
+scene.add(new THREE.HemisphereLight(0xffffff,0x536485,2.2));const lamp=new THREE.DirectionalLight(0xffffff,2.1);lamp.position.set(3,6,5);scene.add(lamp);
+const group=new THREE.Group();scene.add(group);
+const palette={naruto:['#f28c23','#202938','#f8cf9d','#f2cf32'],sasuke:['#d6d8e4','#293553','#e7c7b1','#222432'],sakura:['#d85875','#f4bdcb','#f2d1bd','#ee8da9'],kakashi:['#4c6670','#1f3042','#e7c6b3','#c9d0d4'],hinata:['#c7b8dd','#252d49','#f1d2bf','#282941'],shikamaru:['#53744d','#333940','#dbbba5','#222b28'],gaara:['#7b3c38','#302c32','#ebc4a5','#ae4538'],itachi:['#272a31','#15171c','#dfc1b0','#1c2029'],pain:['#282c36','#16191f','#d8b8a5','#e58d44'],kisame:['#343b52','#262b35','#7185ad','#25364b'],deidara:['#292c32','#24262e','#f0cdb6','#e3c34f'],sasori:['#323438','#28262c','#e8c4a9','#bb493a']};
+const p=palette[hero.id]||palette.naruto;
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.84});
+const cloth=mat(p[0]),pants=mat(p[1]),skin=mat(p[2]),hair=mat(p[3]),dark=mat('#151e2c'),metal=mat('#9eaeb9');
+function shape(geo,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);group.add(o);return o}
+const ball=new THREE.SphereGeometry(1,18,14),box=new THREE.BoxGeometry(1,1,1),tube=new THREE.CylinderGeometry(.5,.5,1,12);
+shape(tube,pants,-.24,.49,0,.31,.95,.33);shape(tube,pants,.24,.49,0,.31,.95,.33);
+shape(box,dark,-.24,.11,.12,.36,.19,.62);shape(box,dark,.24,.11,.12,.36,.19,.62);
+shape(tube,cloth,0,1.51,0,1.02,1.15,.61);
+shape(ball,skin,0,2.47,0,.41,.48,.36);
+shape(ball,hair,0,2.79,-.04,.45,.24,.38);
+for(const s of [-1,1]){
+let arm=shape(tube,cloth,s*.68,1.51,0,.29,.85,.28);arm.rotation.z=s*.16;
+shape(ball,skin,s*.75,1.02,.03,.15,.18,.15);
+shape(ball,dark,s*.17,2.48,.335,.043,.04,.018);
+}
+if(['naruto','kakashi','hinata','sakura'].includes(hero.id)){shape(box,metal,0,2.66,.345,.64,.17,.07);shape(box,dark,0,2.66,.39,.18,.11,.02)}
+if(hero.id==='naruto'){for(let i=0;i<7;i++){const a=i*Math.PI*2/7;let spike=shape(tube,hair,Math.cos(a)*.29,2.96,Math.sin(a)*.25,.16,.31,.16);spike.rotation.z=Math.cos(a)*-.5}}
+if(hero.id==='gaara')shape(ball,mat('#a78356'),.52,1.47,-.39,.49,.62,.37);
+if(['itachi','pain','kisame','deidara','sasori'].includes(hero.id)){shape(tube,mat('#191b25'),0,1.47,.12,1.12,1.23,.7);for(let i=0;i<3;i++)shape(ball,mat('#b53943'),(i-1)*.28,1.6,.52,.13,.09,.04)}
+if(hero.id==='sakura')shape(ball,hair,0,2.73,-.03,.46,.29,.4);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(1.7,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
+let drag=false,last=0,angle=.35;
+renderer.domElement.style.touchAction='pan-y';
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.clientX-last)*.013;last=e.clientX;group.rotation.y=angle;renderer.render(scene,camera)}});
+group.rotation.y=angle;renderer.render(scene,camera);
+fetchHeroModel(hero.id,model=>{
+if(!model||heroRenderer!==renderer||!host.isConnected)return;
+while(group.children.length)group.remove(group.children[0]);
+model.updateMatrixWorld(true);
+const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+if(!isFinite(size.x+size.y+size.z)||Math.max(size.x,size.y,size.z)<.00001)return;
+const holder=new THREE.Group();holder.add(model);
+model.position.sub(center);model.updateMatrixWorld(true);
+const centered=new THREE.Box3().setFromObject(model);
+const centeredSize=centered.getSize(new THREE.Vector3());
+const maxDimension=Math.max(centeredSize.x,centeredSize.y,centeredSize.z);
+holder.scale.setScalar(2.7/maxDimension);
+group.add(holder);group.updateMatrixWorld(true);
+const finalBox=new THREE.Box3().setFromObject(group);
+const finalSize=finalBox.getSize(new THREE.Vector3()),finalCenter=finalBox.getCenter(new THREE.Vector3());
+const fov=camera.fov*Math.PI/180,aspect=Math.max(.5,host.clientWidth/280);
+const fitDistance=Math.max(finalSize.y/(2*Math.tan(fov/2)),finalSize.x/(2*Math.tan(fov/2)*aspect));
+const distance=Math.max(7,fitDistance*2.2);
+camera.position.set(finalCenter.x,finalCenter.y,distance+finalCenter.z);
+camera.lookAt(finalCenter);camera.near=.01;camera.far=10000;camera.updateProjectionMatrix();
+group.rotation.y=angle;renderer.render(scene,camera);
+const note=host.querySelector('.model-credit');if(note)note.textContent='3D-модель · поверни пальцем';
+});
+const note=document.createElement('span');note.className='model-credit';note.textContent='Встроенная 3D-фигурка · поверни пальцем';host.appendChild(note);
+}catch(err){host.innerHTML=ninjaSVG(hero);console.warn('3D fallback',err)}
+}
+
+function renderProfile(){
+const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
+el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+let slots=gearCatalog.map(g=>{const item=itemById(p.gear[g.slot]);return '<button class="equip-slot '+(item?'equipped quality-'+item.quality:'')+'" onclick="slotClick(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(item?qualities[item.quality].name+' ✓':'Пусто · выбрать')+'</small></button>'}).join('');
+let bag=s.inventory.map(item=>{
+const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
+return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
+}).join('');
+el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
+'<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
+'<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
+'<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
+'<div class="profile-hint" id="profileHint">Купленные вещи остаются в сумке после снятия. Улучшения сохраняются.</div>';
+setTimeout(()=>mountHero3D(c),0);
+}
+
+function openBag(){if(started&&!paused)togglePause();el('bagModal').classList.add('open');renderBag()}
+function closeBag(){el('bagModal').classList.remove('open');initTeams();render()}
+function bagAction(id,hero){
+const item=itemById(id);if(!item)return;
+const owner=gearOwner(id);
+if(owner===hero)delete heroData(owner).gear[item.slot];
+else{if(owner)delete heroData(owner).gear[item.slot];delete heroData(hero).gear[item.slot];heroData(hero).gear[item.slot]=id}
+save();initTeams();render();renderBag();
+}
+function bagUpgrade(id){
+const item=itemById(id);if(!item||item.quality>=5)return;
+const cost=upgradeCost(item);
+if(s.coins<cost){el('bagHint').textContent='Не хватает монет! Нужно '+cost;return}
+s.coins-=cost;item.quality++;save();initTeams();render();renderBag();
+}
+function renderBag(){
+const available=s.inventory.filter(i=>!gearOwner(i.id));
+el('bagContent').innerHTML='<p style="color:#e8d7b7">🪙 Монеты: '+s.coins+' · Свободно: '+available.length+' · Всего: '+s.inventory.length+'</p>'+
+'<div class="bag-grid">'+(s.inventory.map(item=>{
+const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id);
+return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+qualities[item.quality].name+'</div><small>'+(owner?'Надето: '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="bagAction('+item.id+',document.getElementById(\'bagHero\').value)">'+(owner?'Снять / надеть':'Надеть')+'</button><button '+(item.quality===5?'disabled':'')+' onclick="bagUpgrade('+item.id+')">'+(item.quality===5?'MAX':'⬆️ '+upgradeCost(item)+' 🪙')+'</button></div></div>'
+}).join('')||'<p>Сумка пуста. Купи предмет ниже.</p>')+'</div>'+
+'<p style="margin:12px 0 5px;color:#f5dba5">На какого ниндзя надевать:</p><select id="bagHero" style="width:100%;padding:11px;border-radius:8px;background:#34445a;color:white">'+roster.map(x=>'<option value="'+x.id+'">'+x.name+'</option>').join('')+'</select>'+
+'<div class="bag-section"><h3>🛒 Магазин</h3><div class="bag-grid">'+gearCatalog.map(g=>'<button class="bag-item" onclick="bagBuy(\''+g.slot+'\')"><b>'+g.icon+'</b><div>'+g.label+'</div><small>Белый · '+g.cost+' 🪙</small></button>').join('')+'</div></div><p id="bagHint" style="color:#ffcf77;font-size:13px">Предметы остаются в сумке после снятия.</p>';
+}
+function bagBuy(slot){const g=gearCatalog.find(x=>x.slot===slot);if(s.coins<g.cost){el('bagHint').textContent='Не хватает монет!';return}s.coins-=g.cost;newItem(slot);save();render();renderBag()}
+function levelCost(p){return 30+p.level*20}
+function levelHero(){let p=heroData(selectedProfile),cost=levelCost(p);if(s.coins<cost){showGearHint('Не хватает монет! Нужно '+cost);return}s.coins-=cost;p.level++;save();initTeams();render();renderProfile()}
+function buyGear(slot){const g=gearCatalog.find(x=>x.slot===slot);if(!g)return;if(s.coins<g.cost){showGearHint('Не хватает монет! Нужно '+g.cost);return}s.coins-=g.cost;newItem(slot);save();render();renderProfile()}
+function equipItem(id){
+const item=itemById(id);if(!item)return;
+const owner=gearOwner(id);
+if(owner===selectedProfile){delete heroData(owner).gear[item.slot]}
+else{
+if(owner)delete heroData(owner).gear[item.slot];
+const p=heroData(selectedProfile);delete p.gear[item.slot];p.gear[item.slot]=item.id;
+}
+save();initTeams();render();renderProfile();
+}
+function slotClick(slot){
+const p=heroData(selectedProfile),equipped=itemById(p.gear[slot]);
+if(equipped){equipItem(equipped.id);return}
+const free=s.inventory.find(i=>i.slot===slot&&!gearOwner(i.id));
+if(free){equipItem(free.id);return}
+showGearHint('Нет свободного предмета этого типа. Купи его в магазине ниже.');
+}
+function unequipAll(){heroData(selectedProfile).gear={};save();initTeams();render();renderProfile()}
+function resetHeroGear(){unequipAll()}
+function upgradeCost(item){return 35*(item.quality+1)}
+function improveItem(id){
+const item=itemById(id);if(!item||item.quality>=5)return;
+const cost=upgradeCost(item);
+if(s.coins<cost){showGearHint('Для улучшения нужно '+cost+' монет');return}
+s.coins-=cost;item.quality++;save();initTeams();render();renderProfile();
+}
+let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
+let started=false,paused=false,timer=null;
+function save(){try{localStorage.setItem('narutoSave',JSON.stringify(s))}catch(e){console.warn('Save unavailable',e)}}
+function render(){
+el('coins').textContent=s.coins;el('level').textContent=s.level;el('wave').textContent=s.wave;el('speed').textContent=s.speed;
+el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
+el('critChance').textContent=s.critChance+'%';el('critDamage').textContent=s.critDamage+'%';
+}
+function log(t){el('log').textContent=t}
+function pulse(id,duration=700){const node=el(id);if(!node)return;node.classList.remove('active');void node.offsetWidth;node.classList.add('active');setTimeout(()=>node.classList.remove('active'),duration)}
+function effect(t){let special=t.includes('Расенган');pulse(special?'rasengan':'clones');pulse('speedlines',450);el('jutsulabel').textContent=special?'螺旋丸 • РАСЕНГАН!':'影分身 • ТЕНЕВЫЕ КЛОНЫ!';pulse('jutsulabel',950)}
+function showDamage(d,critical){
+const arena=document.querySelector('.arena');
+const n=document.createElement('div');
+n.className='damage-pop'+(critical?' iscrit':'');
+n.textContent=critical?'КРИТ! −'+d:'−'+d;
+n.style.left=(critical?'45%':'57%');
+n.style.top=(18+Math.floor(Math.random()*13))+'%';
+arena.appendChild(n);
+setTimeout(()=>n.remove(),1200);
+pulse('shockwave',500);
+}
+function upgrade(type){
+let cost=type==='speed'?25:(type==='critChance'||type==='critDamage'?40:20);
+if(s.coins<cost){log('Недостаточно монет! Нужно '+cost+' 🪙');return}
+if(type==='critChance'&&s.critChance>=75){log('Максимальный крит. шанс 75%');return}
+s.coins-=cost;
+if(type==='damage')s.damage+=5;
+if(type==='speed')s.speed+=3;
+if(type==='hp'){s.maxHp+=25;hp+=25}
+if(type==='critChance')s.critChance=Math.min(75,s.critChance+2);
+if(type==='critDamage')s.critDamage+=15;
+save();render();log('Улучшение куплено!');
+}
+function hit(){
+turn++;battleRound();return;let dmg=s.damage;
+let crit=Math.random()*100<s.critChance;
+el('hero').classList.add('attack');el('enemy').classList.add('hurt');
+setTimeout(()=>el('enemy').classList.remove('hurt'),200);
+setTimeout(()=>el('hero').classList.remove('attack'),260);
+let skill='';
+if(turn%7===0){dmg*=4;skill='Расенган';effect('Расенган')}
+else if(turn%3===0){dmg*=2;skill='Теневые клоны';effect('Клоны')}
+if(crit)dmg=Math.round(dmg*(s.critDamage+(attacker.bonusCritDamage||0))/100);
+dmg=Math.round(dmg);enemyHp-=dmg;
+showDamage(dmg,crit);
+log((skill?skill+'! ':'Наруто атакует! ')+(crit?'💥 КРИТ! ':'')+'−'+dmg+' HP');
+if(enemyHp<=0){
+s.coins+=15+s.wave*5;s.level++;s.wave++;maxEnemy=100+s.wave*25;enemyHp=maxEnemy;hp=s.maxHp;
+save();log('🏆 Победа! Волна '+s.wave+' · награда получена!');
+}else{
+hp-=Math.max(2,14-Math.floor(s.speed/5));
+if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
+}
+render();
+}
+function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)return;timer=setTimeout(()=>battleRound(),2200)}
+function startGame(){clearTimeout(actionTimer);roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
+function togglePause(){
+if(!started){startGame();return}
+paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInProgress=false}else{roundInProgress=false;schedule()}el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
+log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
+}
+try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
+</script>
+</body>
+</html>
