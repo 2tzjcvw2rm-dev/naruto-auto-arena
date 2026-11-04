@@ -449,12 +449,13 @@ const el=id=>document.getElementById(id);
 // Render the upgraded fighters over their existing formation slots. Slot transforms
 // carry movement and combat effects, while HP, targeting and turn logic stay in the game.
 function turnFrame(element,frame){
+  if(element.dataset.staticPortrait==='true'){element.style.backgroundPosition='center';return;}
   const n=(frame%16+16)%16;
   element.style.backgroundPosition=(n%4)*100/3+'% '+Math.floor(n/4)*100/3+'%';
 }
 function fighterImage(id){
   const image=document.createElement('span');
-  image.className='fighter-image';image.style.backgroundImage=(id==='madara'||id==='obito')?'url("./test-3d/assets/'+id+'-avatar.svg")':'url("./test-3d/models/'+id+'.webp")';if(id==='madara'||id==='obito'){image.style.backgroundSize='cover';image.style.backgroundPosition='center'}
+  image.className='fighter-image';image.style.backgroundImage=(id==='madara'||id==='obito')?'url("./test-3d/assets/'+id+'-avatar.svg")':'url("./test-3d/models/'+id+'.webp")';if(id==='madara'||id==='obito'){image.dataset.staticPortrait='true';image.style.backgroundSize='cover';image.style.backgroundPosition='center'}
   return image;
 }
 function showBattleImage(unit,id,side){
