@@ -1307,7 +1307,7 @@ fetchHeroModel(CombatProfile.modelKey(hero.id,remoteHeroModels),model=>{
     });
   }
   group.add(fighter);group.position.y=.5;
-  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):(CombatProfile.mount(hero.id,fighter)||makeHeroMotion(hero.id,fighter));
+  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):(CombatProfile.mount(hero.id,fighter,{renderer,scene,camera})||makeHeroMotion(hero.id,fighter));
   if(motion.dispose)profileCleanup=()=>motion.dispose();
   // Cinematic roster view: no technique buttons, no spin controls.
   let prevFrame=0;

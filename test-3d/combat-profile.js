@@ -1,7 +1,7 @@
 // Profile-only GLBs have a repaired skeleton and a posed rest frame.
 // Keep effect coordinates in the normalized fighter's parent space.
 const CombatProfile = (() => {
-  const techniques = {itachi: katon, kakashi: chidori};
+  const techniques = {itachi: katon, kakashi: chidori, pain: shinra};
   function modelKey(id, urls) {
     if (!techniques[id]) return id;
     const key = id + '-combat';
@@ -84,7 +84,67 @@ const CombatProfile = (() => {
       sparks.position.needsUpdate=data.needsUpdate=true;
     };
   }
-  function mount(id, fighter) {
+  function shinra(root, view) {
+    const {renderer,scene,camera}=view;
+    const target=new THREE.WebGLRenderTarget(1,1,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});
+    const viewport=new THREE.Vector2();
+    let nextCapture=0;
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(1,36,22),
+      new THREE.ShaderMaterial({
+        uniforms:{clock:{value:0},field:{value:target.texture},resolution:{value:viewport}},
+        vertexShader:`uniform float clock;
+          varying float rim; varying float height;
+          void main() {
+            height = position.y;
+            float wave = sin(height*21.-clock*3.);
+            vec4 eye = modelViewMatrix*vec4(position+normal*.012*wave,1.);
+            rim = 1.-abs(dot(normalize(normalMatrix*normal),normalize(-eye.xyz)));
+            gl_Position = projectionMatrix*eye;
+          }`,
+        fragmentShader:`uniform sampler2D field; uniform vec2 resolution; varying float rim; varying float height; uniform float clock;
+          void main() {
+            float band=pow(.5+.5*cos(height*21.-clock*3.),6.);
+            vec2 uv=gl_FragCoord.xy/resolution;
+            vec2 offset=.004*band*vec2(sin(height*12.+clock),cos(height*14.-clock));
+            vec4 bent=texture2D(field,uv+offset);
+            float edge=pow(rim,2.5)*(.09+.16*band);
+            gl_FragColor=vec4(mix(vec3(.66,.78,1.),bent.rgb,bent.a),edge+bent.a*.14*band);
+          }`,transparent:true,depthWrite:false}));
+    shell.scale.set(.55,.58,.43); root.add(shell);
+    const rings=[];
+    for(let i=0;i<3;i++){
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(1,.009,5,64),
+        new THREE.MeshBasicMaterial({color:0xbedbff,transparent:true,depthWrite:false}));
+      ring.rotation.x=Math.PI*.47;root.add(ring);rings.push(ring);
+    }
+    const dust=particles(32,0xb7ccdf,.006); root.add(dust.points);
+    const update=t=>{
+      renderer.getDrawingBufferSize(viewport);
+      if(t>=nextCapture && viewport.x && viewport.y){
+        target.setSize(Math.max(1,Math.round(viewport.x/3)),Math.max(1,Math.round(viewport.y/3)));
+        const previous=renderer.getRenderTarget();
+        root.visible=false;
+        try {renderer.setRenderTarget(target);renderer.render(scene,camera);}
+        finally {renderer.setRenderTarget(previous);root.visible=true;}
+        nextCapture=t+.10;
+      }
+      shell.material.uniforms.clock.value=t;
+      rings.forEach((ring,i)=>{
+        const phase=(t*.44+i/3)%1;
+        ring.scale.setScalar(.14+.49*phase);
+        ring.position.y=-.29+i*.23+phase*.07;
+        ring.material.opacity=.28*Math.sin(Math.PI*phase);
+      });
+      for(let i=0;i<32;i++){
+        const p=(t*.50+i*.618)%1, r=.18+.40*p, a=i*2.4;
+        dust.position.setXYZ(i,r*Math.cos(a),.44*Math.sin(i*6.2)+p*.06,r*Math.sin(a));
+      }
+      dust.position.needsUpdate=true;
+    };
+    update.dispose=()=>target.dispose();
+    return update;
+  }
+  function mount(id, fighter, view) {
     if (!techniques[id]) return null;
     const parent = fighter.parent, root = new THREE.Group();
     parent.add(root);
@@ -94,7 +154,7 @@ const CombatProfile = (() => {
     const breath = new THREE.Quaternion(), axis = new THREE.Vector3(1,0,0);
     const a = new THREE.Vector3(), b = new THREE.Vector3();
     const emberOffset = new THREE.Vector3(.01,.048,.025);
-    const update = techniques[id](root);
+    const update = techniques[id](root, view);
     function frame(dt, ms) {
       const t = ms*.001;
       if (spine) spine.quaternion.copy(rest).multiply(breath.setFromAxisAngle(axis,.014*Math.sin(t*1.8)));
@@ -107,6 +167,7 @@ const CombatProfile = (() => {
     frame(0,0);
     frame.dispose = () => {
       root.traverse(o => {o.geometry?.dispose(); if(o.material){o.material.map?.dispose();o.material.dispose();}});
+      update.dispose?.();
       parent.remove(root);
     };
     return frame;
