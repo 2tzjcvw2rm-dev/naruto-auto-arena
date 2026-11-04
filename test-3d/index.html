@@ -1182,7 +1182,8 @@ fetchHeroModel(hero.id,model=>{
     renderer.setSize(w,h);camera.aspect=w/h;
     const box=new THREE.Box3().setFromObject(fighter);
     const sphere=box.getBoundingSphere(new THREE.Sphere());
-    const aperture=Math.atan(Math.tan(camera.fov*Math.PI/360)*Math.min(1,camera.aspect));
+    // Keep Naruto large inside the tall iPhone panel while preserving full-body framing.
+    const aperture=Math.atan(Math.tan(camera.fov*Math.PI/360)*Math.min(1,Math.max(.78,camera.aspect)));
     camera.position.set(0,.5,1.05*sphere.radius/Math.sin(aperture));
     camera.lookAt(0,.5,0);camera.updateProjectionMatrix();renderer.render(scene,camera);
   }
