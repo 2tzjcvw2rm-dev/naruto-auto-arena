@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1120" width="900" height="1120" role="img" aria-label="Мрачный храм Учиха, багровая луна и призывной змей">
+<defs>
+ <linearGradient id="sky" x2=".25" y2="1"><stop stop-color="#111126"/><stop offset=".34" stop-color="#34305d"/><stop offset=".7" stop-color="#4b3758"/><stop offset="1" stop-color="#1b1c35"/></linearGradient>
+ <radialGradient id="moon"><stop stop-color="#f7b2aa"/><stop offset=".32" stop-color="#ea5f67"/><stop offset=".73" stop-color="#a72e56"/><stop offset="1" stop-color="#792449"/></radialGradient>
+ <radialGradient id="moonGlow"><stop stop-color="#e43d69" stop-opacity=".6"/><stop offset="1" stop-color="#f13d70" stop-opacity="0"/></radialGradient>
+ <linearGradient id="tower" x2="0" y2="1"><stop stop-color="#302e4b"/><stop offset="1" stop-color="#11182b"/></linearGradient>
+ <linearGradient id="terrain" x2=".3" y2="1"><stop stop-color="#55465f"/><stop offset=".7" stop-color="#282942"/><stop offset="1" stop-color="#131a2b"/></linearGradient>
+ <linearGradient id="snake" x2=".7" y2="1"><stop stop-color="#aa95be"/><stop offset=".32" stop-color="#756b9c"/><stop offset=".66" stop-color="#514b83"/><stop offset="1" stop-color="#262849"/></linearGradient>
+ <linearGradient id="snakeFace" x2="0" y2="1"><stop stop-color="#b3a7c9"/><stop offset=".5" stop-color="#8178a9"/><stop offset="1" stop-color="#49436e"/></linearGradient>
+ <linearGradient id="purpleFog" x2="0" y2="1"><stop stop-color="#9e75ab" stop-opacity="0"/><stop offset="1" stop-color="#c6a0c6" stop-opacity=".54"/></linearGradient>
+ <radialGradient id="eye"><stop stop-color="#fff4d9"/><stop offset=".45" stop-color="#e78bff"/><stop offset="1" stop-color="#8f36f4"/></radialGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="22"/></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="6"/></filter>
+ <pattern id="scales" width="31" height="30" patternUnits="userSpaceOnUse"><path d="M0 0Q15 22 31 0M-15 13Q0 32 15 13M16 13Q31 32 46 13" fill="none" stroke="#ddd0e0" stroke-opacity=".19" stroke-width="2"/></pattern>
+</defs>
+<path fill="url(#sky)" d="M0 0H900V1120H0Z"/>
+<g opacity=".35" fill="#9a81ac" filter="url(#blur)"><ellipse cx="180" cy="150" rx="180" ry="45"/><ellipse cx="575" cy="245" rx="280" ry="63"/><ellipse cx="820" cy="610" rx="230" ry="80"/></g>
+<circle cx="405" cy="258" r="258" fill="url(#moonGlow)"/>
+<circle cx="403" cy="257" r="153" fill="url(#moon)" stroke="#f06b8b" stroke-opacity=".27" stroke-width="5"/>
+<path d="M261 246Q286 163 355 145M395 105Q455 100 513 155" stroke="#fed4c3" stroke-width="5" stroke-linecap="round" opacity=".2" fill="none"/>
+<g transform="translate(400 248) scale(.94)" opacity=".76">
+ <path d="M-95-18A95 95 0 0 1 95-18L95 10Q77 58 0 78Q-80 56-95 9Z" fill="#cf254d" stroke="#4d193e" stroke-width="9"/>
+ <path d="M-95 8Q-22-17 95 8L95 24Q60 63 0 70Q-57 60-95 24Z" fill="#f6dcd7"/>
+ <path d="M-13 65H13V133H-13Z" fill="#f6dcd7" stroke="#62204c" stroke-width="5"/>
+</g>
+<path d="M0 444Q95 320 191 392T373 397Q493 278 625 380T900 330V720H0Z" fill="#242a48" opacity=".8"/>
+<path d="M0 520Q110 440 204 488T417 477Q564 418 715 465T900 430V750H0Z" fill="#313452" opacity=".9"/>
+<g fill="url(#tower)" stroke="#171a2a" stroke-width="7">
+ <path d="M78 624V440H300V630Z"/><path d="M48 462Q172 408 327 460L286 480H95Z"/>
+ <path d="M100 416V390H278V421Z"/><path d="M64 398Q190 333 309 400L271 413H102Z"/>
+ <path d="M380 690V477H578V690Z"/><path d="M354 500Q478 433 607 499L567 514H397Z"/>
+ <path d="M420 454V419H542V459Z"/><path d="M390 433Q480 384 572 433L537 448H422Z"/>
+ <path d="M700 740V530H861V740Z"/><path d="M677 550Q784 494 891 550L855 565H708Z"/>
+</g>
+<g fill="#f17887" opacity=".38">
+ <rect x="155" y="485" width="24" height="64" rx="3"/><rect x="204" y="485" width="24" height="64" rx="3"/>
+ <rect x="446" y="533" width="20" height="62" rx="3"/><rect x="502" y="533" width="20" height="62" rx="3"/>
+ <rect x="752" y="583" width="19" height="48" rx="3"/><rect x="797" y="583" width="19" height="48" rx="3"/>
+</g>
+<g stroke="#9c5784" stroke-width="5" opacity=".6"><path d="M0 590H900M0 634H900"/><path d="M44 590V700M312 590V710M624 590V744M862 590V750"/></g>
+<path d="M0 681Q106 635 240 670T487 680T900 648V1120H0Z" fill="url(#terrain)"/>
+<g transform="translate(15 24)" opacity=".92">
+ <!-- Serpent coils from the cliff, behind the fighter -->
+ <path d="M888 828C799 695 649 751 633 852C622 923 817 956 810 1040C802 1092 666 1154 555 1079" fill="none" stroke="#25243d" stroke-width="106" stroke-linecap="round"/>
+ <path d="M887 812C785 682 633 743 614 846C600 934 801 957 782 1038C771 1087 665 1129 560 1061" fill="none" stroke="url(#snake)" stroke-width="92" stroke-linecap="round"/>
+ <path d="M887 812C785 682 633 743 614 846C600 934 801 957 782 1038C771 1087 665 1129 560 1061" fill="none" stroke="url(#scales)" stroke-width="84" stroke-linecap="round"/>
+ <path d="M777 755C845 663 910 555 828 470C797 434 739 455 715 480" stroke="#27253f" stroke-width="112" stroke-linecap="round" fill="none"/>
+ <path d="M777 755C845 663 906 548 817 468C786 432 736 455 704 487" stroke="url(#snake)" stroke-width="99" stroke-linecap="round" fill="none"/>
+ <path d="M777 755C845 663 906 548 817 468C786 432 736 455 704 487" stroke="url(#scales)" stroke-width="88" stroke-linecap="round" fill="none"/>
+ <!-- Head with flared temples and eyes -->
+ <path d="M654 466Q637 423 688 385Q743 358 801 391Q848 412 833 471Q800 505 753 504Q705 546 657 526Q622 515 636 486Z" fill="url(#snakeFace)" stroke="#343151" stroke-width="10"/>
+ <path d="M638 488Q683 464 751 495Q811 483 833 464Q800 549 724 568Q664 569 636 523Z" fill="#262039" stroke="#4b426c" stroke-width="7"/>
+ <path d="M666 501Q701 512 723 528L748 505Q725 542 703 558Q671 548 666 501Z" fill="#b85a8b" opacity=".9"/>
+ <path d="M657 497L677 520L671 481M799 479L791 509L779 490" fill="#fff8e8" stroke="#ece3e4" stroke-width="4"/>
+ <path d="M665 436Q691 422 716 446L702 460Q680 460 667 447ZM762 439Q789 420 813 442L802 460Q777 458 762 448Z" fill="#302b47"/>
+ <ellipse cx="687" cy="448" rx="11" ry="8" fill="url(#eye)" filter="url(#glow)"/>
+ <ellipse cx="789" cy="447" rx="11" ry="8" fill="url(#eye)" filter="url(#glow)"/>
+ <ellipse cx="687" cy="448" rx="9" ry="6" fill="#d78fff"/><ellipse cx="789" cy="447" rx="9" ry="6" fill="#d78fff"/>
+ <path d="M687 441V456M789 440V455" stroke="#21192e" stroke-width="3"/>
+ <path d="M724 392Q742 408 745 421M755 398L766 424M684 402L687 416" stroke="#d1c4db" stroke-width="4" fill="none" opacity=".35"/>
+</g>
+<path d="M0 904Q195 853 407 900Q635 940 900 863V1120H0Z" fill="url(#purpleFog)" opacity=".75"/>
+<g stroke="#d0afd5" stroke-width="3" opacity=".23" fill="none"><path d="M0 977Q190 934 404 991T900 962M0 1028Q202 988 421 1026T900 996M37 1089Q232 1045 426 1087"/></g>
+<g fill="#efb2c6" opacity=".74"><circle cx="100" cy="225" r="2"/><circle cx="628" cy="192" r="2"/><circle cx="235" cy="366" r="2"/><circle cx="860" cy="256" r="2"/><circle cx="83" cy="735" r="2"/><circle cx="564" cy="660" r="2"/></g>
+</svg>
