@@ -394,12 +394,17 @@ function makeNarutoProfileSeal(figure){
         smooth((y-.90)/.14)*(1-smooth((y-1.66)/.09));
       const grip=Math.pow(axial,1.28)*weight,sign=x<0?-1:1;
       const i=k*3;
-      open[i]=x-sign*(.47*grip);
-      open[i+1]=y+(.13*grip-.018*weight);
-      open[i+2]=z+.33*grip;
-      closed[i]=x-sign*(.55*grip);
-      closed[i+1]=y+(.165*grip-.018*weight);
-      closed[i+2]=z+.42*grip;
+      // The old values barely moved the wrists. Bring both palms genuinely
+      // together at chest-height while preventing the meshes from crossing
+      // through the torso or passing the centre line.
+      const openInward=Math.min(.72*grip,Math.max(0,a-.13));
+      const closedInward=Math.min(.86*grip,Math.max(0,a-.065));
+      open[i]=x-sign*openInward;
+      open[i+1]=y+(.18*grip-.018*weight);
+      open[i+2]=z+.40*grip;
+      closed[i]=x-sign*closedInward;
+      closed[i+1]=y+(.22*grip-.018*weight);
+      closed[i+2]=z+.50*grip;
       weights[k]=weight;sides[k]=sign;
     }
     // Start IN the folded-seal pose even before animation frames arrive.
