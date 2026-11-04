@@ -253,7 +253,9 @@ button:active{transform:translateY(2px)}
 @keyframes rasenganSpin{to{transform:rotate(360deg)}}
 @keyframes cutinPunch{0%{transform:translateX(-30px)}65%,100%{transform:translateX(40px)}}
 @keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
-</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style><style>.fighter-image{display:block;background-repeat:no-repeat;background-size:400% 400%;aspect-ratio:2/3}.profile-model>.fighter-image{height:96%;max-width:100%;margin:1% auto}.battle-image{height:75px;max-width:100%;flex-shrink:1}.model-credits{font-size:12px;color:#cad7ea;margin:12px}.model-credits a{color:#ffd486}#battle3d{z-index:8}.arena .mini-unit.has-model svg{visibility:hidden!important}.profile-model canvas{display:block;width:100%;height:100%}</style></head>
+</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style><style>.fighter-image{display:block;background-repeat:no-repeat;background-size:400% 400%;aspect-ratio:2/3}.profile-model>.fighter-image{height:96%;max-width:100%;margin:1% auto}.battle-image{height:75px;max-width:100%;flex-shrink:1}.model-credits{font-size:12px;color:#cad7ea;margin:12px}.model-credits a{color:#ffd486}#battle3d{z-index:8}.arena .mini-unit.has-model svg{visibility:hidden!important}.profile-model canvas{display:block;width:100%;height:100%}.model-technique{position:absolute!important;right:8px;bottom:8px;z-index:6!important;background:#16223ae8!important;color:#e5f5ff!important;border:1px solid #7dbedf!important;border-radius:9px!important;font-size:12px!important;line-height:1.1!important;padding:9px 12px!important;box-shadow:0 2px 12px #0005!important;cursor:pointer!important}
+.profile-model .model-credit{bottom:8px!important;left:8px!important;right:auto!important;max-width:45%!important}
+</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -334,37 +336,107 @@ function normalizedFighter(model){
 // Use the actual GLB animation when present. For compatible skeletons without
 // clips, move arm bones into a restrained combat guard instead of a T-pose.
 function makeHeroMotion(id,figure){
+  // Both original Sketchfab meshes are static and unrigged. Preserve all
+  // textures and add two lightweight morph targets for a combat-ready pose.
+  const featured=id==='naruto'||id==='sasuke';
   let mixer=null;
   const clips=modelAnimationClips[id]||[];
   if(clips.length){
     const clip=clips.find(c=>/idle|stand|combat|fight|guard|ready/i.test(c.name))||clips[0];
-    try{mixer=new THREE.AnimationMixer(figure);mixer.clipAction(clip).play()}catch(err){console.warn('Animation fallback',id,err);mixer=null}
+    try{mixer=new THREE.AnimationMixer(figure);mixer.clipAction(clip).play()}
+    catch(err){console.warn('Animation fallback',id,err);mixer=null}
   }
-  const arms=[];
-  if(!mixer&&id!=='naruto'&&id!=='sasuke'){
-    figure.traverse(bone=>{
-      if(!bone.isBone)return;
-      const name=bone.name.toLowerCase().replace(/[^a-z0-9]/g,'');
-      const left=name.includes('left')||name.startsWith('lupper')||name.startsWith('lfore');
-      const right=name.includes('right')||name.startsWith('rupper')||name.startsWith('rfore');
-      if(!left&&!right)return;
-      const upper=/upperarm|shoulder/.test(name)&&!/forearm/.test(name);
-      const fore=/forearm|lowerarm/.test(name);
-      if(upper||fore)arms.push({bone,upper,sign:left?1:-1,x:bone.rotation.x,z:bone.rotation.z});
-    });
+  const arms=[],morphMeshes=[];
+  if(!mixer){
+    if(featured){
+      figure.traverse(mesh=>{
+        if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.attributes.position)return;
+        const src=mesh.geometry.attributes.position;
+        if(src.count>65000||src.count<20)return;
+        const guard=new Float32Array(src.count*3),strike=new Float32Array(src.count*3);
+        for(let i=0;i<src.count;i++){
+          const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
+          const abs=Math.abs(x),sign=x<0?-1:1;
+          const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
+          const reach=smooth((abs-.16)/.34);
+          const torsoGate=smooth((y-.93)/.19)*(1-smooth((y-1.52)/.18));
+          const q=reach*torsoGate,hand=smooth((abs-.37)/.29)*q;
+          // Gradually bend the arms down and forward from their static T pose.
+          const gx=x-sign*(.18*q+.08*hand);
+          const gy=y-.10*q-.09*hand;
+          const gz=z+.14*q+.05*hand;
+          // Right arm extends for Rasengan / Chidori while left stays guarding.
+          const attackSide=x>0?1:0;
+          const sx=gx-sign*.055*q*attackSide;
+          const sy=gy+.08*hand*attackSide;
+          const sz=gz+.37*hand*attackSide+.08*q*attackSide;
+          const k=i*3;
+          guard[k]=gx;guard[k+1]=gy;guard[k+2]=gz;
+          strike[k]=sx;strike[k+1]=sy;strike[k+2]=sz;
+        }
+        // Never overwrite the cached source geometry shared by other fighters.
+        const geo=mesh.geometry.clone();
+        geo.morphAttributes.position=[
+          new THREE.Float32BufferAttribute(guard,3),
+          new THREE.Float32BufferAttribute(strike,3)
+        ];
+        geo.morphTargetsRelative=false;
+        mesh.geometry=geo;
+        mesh.updateMorphTargets();
+        if(mesh.morphTargetInfluences){
+          mesh.morphTargetInfluences[0]=1;mesh.morphTargetInfluences[1]=0;
+          morphMeshes.push(mesh);
+        }
+      });
+    }else{
+      figure.traverse(bone=>{
+        if(!bone.isBone)return;
+        const name=bone.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+        const left=name.includes('left')||name.startsWith('lupper')||name.startsWith('lfore');
+        const right=name.includes('right')||name.startsWith('rupper')||name.startsWith('rfore');
+        if(!left&&!right)return;
+        const upper=/upperarm|shoulder/.test(name)&&!/forearm/.test(name);
+        const fore=/forearm|lowerarm/.test(name);
+        if(upper||fore)arms.push({bone,upper,sign:left?1:-1,x:bone.rotation.x,z:bone.rotation.z});
+      });
+    }
   }
-  const originalScaleY=figure.scale.y;
-  return (dt,time,attacking)=>{
+  let chakra=null;
+  if(featured){
+    chakra=new THREE.Group();chakra.visible=false;
+    chakra.position.set(.26,.16,.28);
+    const col=id==='naruto'?0x49d7ff:0xbca8ff;
+    const core=new THREE.Mesh(new THREE.SphereGeometry(.075,12,8),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false}));
+    chakra.add(core);
+    for(let i=0;i<3;i++){
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.10+i*.012,.007,5,24),
+        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false}));
+      ring.rotation.set(Math.PI*i/3,Math.PI*(i+1)/4,0);chakra.add(ring);
+    }
+    figure.add(chakra);
+  }
+  const baseScaleY=figure.scale.y;
+  return (dt,time,attacking,progress=-1,technique=0)=>{
     if(mixer)mixer.update(Math.max(0,Math.min(dt,.08)));
-    if(!mixer&&id!=='naruto'&&id!=='sasuke'){
-      figure.scale.y=originalScaleY*(1+.009*Math.sin(time*.0023));
+    if(featured){
+      const t=progress>=0?Math.max(0,Math.min(1,progress)):0;
+      const punch=progress>=0?Math.pow(Math.sin(Math.PI*t),2):0;
+      for(const m of morphMeshes){m.morphTargetInfluences[0]=1-punch;m.morphTargetInfluences[1]=punch}
+      figure.scale.y=baseScaleY*(1+.004*Math.sin(time*.002));
+      if(chakra){
+        chakra.visible=technique>0&&progress>.1&&progress<.87;
+        chakra.rotation.y=time*.004;
+        chakra.scale.setScalar(.9+.12*Math.sin(time*.012));
+      }
+    }else if(!mixer){
+      figure.scale.y=baseScaleY*(1+.009*Math.sin(time*.0023));
       if(!arms.length)figure.rotation.x=.013*Math.sin(time*.0013);
     }
     if(arms.length){
       const breath=Math.sin(time*.0025)*.025;
       for(const a of arms){
-        const attack=attacking?.14:0;
-        a.bone.rotation.z=a.z+a.sign*(a.upper?.43:-.46)+(a.upper?breath:0)+a.sign*attack;
+        a.bone.rotation.z=a.z+a.sign*(a.upper?.43:-.46)+(a.upper?breath:0)+a.sign*(attacking?.14:0);
         a.bone.rotation.x=a.x+(a.upper?.06:-.11);
       }
     }
@@ -386,7 +458,10 @@ function initArena3d(){
   const light=new THREE.DirectionalLight(0xffffff,.8);light.position.set(-2,4,5);scene.add(light);
   const camera=new THREE.OrthographicCamera(-1,1,.57,-.57,.01,20);camera.position.z=4;
   let slots=[],width=0,height=0,last=0,bindSerial=0;
-  arena3d={bind(){
+  arena3d={trigger(side,index,technique){
+    const active=slots.find(x=>x.side===side&&x.index===index);
+    if(active){active.attackAt=performance.now();active.technique=technique}
+  },bind(){
     const currentBind=++bindSerial;
     slots=[];
     for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
@@ -397,14 +472,14 @@ function initArena3d(){
           if(currentBind!==bindSerial||!unit.isConnected)return;
           if(!model){showBattleImage(unit,u.id,side);return}
           const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
-          slots.push({unit,sprite,fighter,side,motion:makeHeroMotion(u.id,fighter)});unit.classList.add('has-model');
+          slots.push({unit,sprite,fighter,side,index:i,motion:makeHeroMotion(u.id,fighter),attackAt:0,technique:0});unit.classList.add('has-model');
         });
       });
     }
   }};
   function draw(time){
     requestAnimationFrame(draw);
-    if(document.hidden||time-last<45)return;
+    if(document.hidden||document.querySelector('.modal.open')||time-last<45)return;
     const dt=last?Math.min(.08,(time-last)/1000):.045;
     last=time;
     const rect=host.getBoundingClientRect();
@@ -413,15 +488,18 @@ function initArena3d(){
       width=rect.width;height=rect.height;renderer.setSize(width,height);
     }
     renderer.setScissorTest(false);renderer.setViewport(0,0,width,height);renderer.clear();
-    for(const {unit,sprite,fighter,side,motion} of slots){
+    for(const slot of slots){
+      const {unit,sprite,fighter,side,motion}=slot;
       if(unit.classList.contains('down'))continue;
       const r=sprite.getBoundingClientRect();if(!r.width||!r.height)continue;
       const half=.57*r.width/r.height;camera.left=-half;camera.right=half;camera.updateProjectionMatrix();
       const x=r.left-rect.left,y=rect.bottom-r.bottom;
       renderer.setViewport(x,y,r.width,r.height);
       renderer.setScissor(x,y,r.width,r.height);renderer.setScissorTest(true);renderer.clearDepth();
-      const attacking=unit.classList.contains('acting-now');
-      if(motion)motion(dt,time,attacking);
+      const elapsed=slot.attackAt?time-slot.attackAt:-1;
+      const attackProgress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
+      const attacking=attackProgress>=0;
+      if(motion)motion(dt,time,attacking,attackProgress,slot.technique);
       fighter.rotation.y=(side==='allyTeam'?1:-1)*(.38+.06*Math.sin(time/850));
       fighter.rotation.z=attacking?.065*Math.sin(time/150):0;
       fighter.position.y=.012*Math.sin(time/440)+(attacking?.035*Math.abs(Math.sin(time/230)):0);
@@ -615,6 +693,7 @@ function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTa
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
+if(arena3d&&arena3d.trigger)arena3d.trigger(side,sourceIndex,action);
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
 const sx=from.left+from.width/2-box.left,sy=from.top+from.height*.43-box.top;
 const tx=to.left+to.width/2-box.left,ty=to.top+to.height*.4-box.top;
@@ -792,12 +871,22 @@ fetchHeroModel(hero.id,model=>{
   while(group.children.length)group.remove(group.children[0]);
   group.add(fighter);group.position.y=.5;
   const motion=makeHeroMotion(hero.id,fighter);
+  let previewAttackAt=0;
+  if(hero.id==='naruto'||hero.id==='sasuke'){
+    const skill=document.createElement('button');skill.type='button';skill.className='model-technique';
+    skill.textContent=hero.id==='naruto'?'🌀 Расенган':'⚡ Чидори';
+    skill.setAttribute('aria-label','Показать технику '+hero.name);
+    skill.addEventListener('click',()=>{previewAttackAt=performance.now()});
+    host.appendChild(skill);
+  }
   let prevFrame=0;
   function animateProfile(t){
     if(heroRenderer!==renderer||!host.isConnected)return;
     if(!document.hidden&&t-prevFrame>=48){
       const dt=prevFrame?Math.min(.08,(t-prevFrame)/1000):.048;
-      motion(dt,t,false);
+      const elapsed=previewAttackAt?t-previewAttackAt:-1;
+      const progress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
+      motion(dt,t,progress>=0,progress,2);
       renderer.render(scene,camera);prevFrame=t;
     }
     profileFrame=requestAnimationFrame(animateProfile);
