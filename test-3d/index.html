@@ -294,13 +294,17 @@ function fighterImage(id){
   image.className='fighter-image';image.style.backgroundImage='url("./models/'+id+'.webp")';
   return image;
 }
+function showBattleImage(unit,id,side){
+  const sprite=unit.querySelector('svg');if(!sprite)return;
+  const image=fighterImage(id);image.classList.add('battle-image');
+  sprite.replaceWith(image);turnFrame(image,side==='allyTeam'?1:15);
+}
 function bindBattleImages(){
   for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
     units.forEach((u,i)=>{
       if(!upgradedFighters.has(u.id))return;
       const unit=el(side+i);if(!unit||unit.querySelector('.fighter-image'))return;
-      const sprite=unit.querySelector('svg'),image=fighterImage(u.id);
-      image.classList.add('battle-image');sprite.replaceWith(image);turnFrame(image,side==='allyTeam'?1:15);
+      showBattleImage(unit,u.id,side);
     });
   }
 }
@@ -350,7 +354,8 @@ function initArena3d(){
         if(!upgradedFighters.has(u.id))return;
         const unit=el(side+i),sprite=unit.querySelector('svg');
         fetchHeroModel(u.id,model=>{
-          if(!model||!unit.isConnected)return;
+          if(!unit.isConnected)return;
+          if(!model){showBattleImage(unit,u.id,side);return}
           const fighter=normalizedFighter(model);if(!fighter)return;
           slots.push({unit,sprite,fighter,side});unit.classList.add('has-model');
         });
@@ -692,7 +697,7 @@ function closeProfile(){el('profileModal').classList.remove('open');releaseProfi
 function selectProfile(id){selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const remoteHeroModels={naruto:'./models/naruto.glb',sasuke:'./models/sasuke.glb'};
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,'./models/'+hero.id+'.glb']));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
@@ -720,30 +725,9 @@ host.innerHTML='';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
 const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
-scene.add(new THREE.HemisphereLight(0xffffff,0x536485,2.2));const lamp=new THREE.DirectionalLight(0xffffff,2.1);lamp.position.set(3,6,5);scene.add(lamp);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
-const palette={naruto:['#f28c23','#202938','#f8cf9d','#f2cf32'],sasuke:['#d6d8e4','#293553','#e7c7b1','#222432'],sakura:['#d85875','#f4bdcb','#f2d1bd','#ee8da9'],kakashi:['#4c6670','#1f3042','#e7c6b3','#c9d0d4'],hinata:['#c7b8dd','#252d49','#f1d2bf','#282941'],shikamaru:['#53744d','#333940','#dbbba5','#222b28'],gaara:['#7b3c38','#302c32','#ebc4a5','#ae4538'],itachi:['#272a31','#15171c','#dfc1b0','#1c2029'],pain:['#282c36','#16191f','#d8b8a5','#e58d44'],kisame:['#343b52','#262b35','#7185ad','#25364b'],deidara:['#292c32','#24262e','#f0cdb6','#e3c34f'],sasori:['#323438','#28262c','#e8c4a9','#bb493a']};
-const p=palette[hero.id]||palette.naruto;
-const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.84});
-const cloth=mat(p[0]),pants=mat(p[1]),skin=mat(p[2]),hair=mat(p[3]),dark=mat('#151e2c'),metal=mat('#9eaeb9');
-function shape(geo,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);group.add(o);return o}
-const ball=new THREE.SphereGeometry(1,18,14),box=new THREE.BoxGeometry(1,1,1),tube=new THREE.CylinderGeometry(.5,.5,1,12);
-shape(tube,pants,-.24,.49,0,.31,.95,.33);shape(tube,pants,.24,.49,0,.31,.95,.33);
-shape(box,dark,-.24,.11,.12,.36,.19,.62);shape(box,dark,.24,.11,.12,.36,.19,.62);
-shape(tube,cloth,0,1.51,0,1.02,1.15,.61);
-shape(ball,skin,0,2.47,0,.41,.48,.36);
-shape(ball,hair,0,2.79,-.04,.45,.24,.38);
-for(const s of [-1,1]){
-let arm=shape(tube,cloth,s*.68,1.51,0,.29,.85,.28);arm.rotation.z=s*.16;
-shape(ball,skin,s*.75,1.02,.03,.15,.18,.15);
-shape(ball,dark,s*.17,2.48,.335,.043,.04,.018);
-}
-if(['naruto','kakashi','hinata','sakura'].includes(hero.id)){shape(box,metal,0,2.66,.345,.64,.17,.07);shape(box,dark,0,2.66,.39,.18,.11,.02)}
-if(hero.id==='naruto'){for(let i=0;i<7;i++){const a=i*Math.PI*2/7;let spike=shape(tube,hair,Math.cos(a)*.29,2.96,Math.sin(a)*.25,.16,.31,.16);spike.rotation.z=Math.cos(a)*-.5}}
-if(hero.id==='gaara')shape(ball,mat('#a78356'),.52,1.47,-.39,.49,.62,.37);
-if(['itachi','pain','kisame','deidara','sasori'].includes(hero.id)){shape(tube,mat('#191b25'),0,1.47,.12,1.12,1.23,.7);for(let i=0;i<3;i++)shape(ball,mat('#b53943'),(i-1)*.28,1.6,.52,.13,.09,.04)}
-if(hero.id==='sakura')shape(ball,hair,0,2.73,-.03,.46,.29,.4);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(1.7,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
 let drag=false,last=0,angle=.10;
 renderer.domElement.style.touchAction='none';
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
@@ -777,8 +761,14 @@ fetchHeroModel(hero.id,model=>{
 }
 
 function renderProfile(){
-const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
-el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+const fighters=[...roster,...enemies];
+const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
+el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+if(enemies.includes(c)){
+  el('profileContent').innerHTML='<div class="profile-hero"><div class="profile-model" id="hero3d" data-hero="'+c.id+'"></div><div class="hero-details">'+c.name+' · Акацуки</div></div><div class="profile-stats"><span>⚔️ Атака: '+c.atk+'</span><span>❤️ Базовое HP: '+c.hp+'</span><span>⚡ Скорость: '+c.spd+'</span></div>';
+  setTimeout(()=>mountHero3D(c),0);return;
+}
+const p=heroData(c.id),b=heroBonuses(c.id);
 let slots=gearCatalog.map(g=>{const item=itemById(p.gear[g.slot]);return '<button class="equip-slot '+(item?'equipped quality-'+item.quality:'')+'" onclick="slotClick(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(item?qualities[item.quality].name+' ✓':'Пусто · выбрать')+'</small></button>'}).join('');
 let bag=s.inventory.map(item=>{
 const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
@@ -919,6 +909,7 @@ if(testBuild)el('pairDemo').hidden=false;
 document.addEventListener('DOMContentLoaded',initArena3d);
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
-<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей.</footer></body>
+<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Геометрия и расцветка остальных десяти моделей созданы для Naruto Auto Arena.</footer></body>
 </html>
+
 
