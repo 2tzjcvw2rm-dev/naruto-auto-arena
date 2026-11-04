@@ -416,18 +416,36 @@ function makeHeroMotion(id,figure){
       });
     }
   }
-  let chakra=null;
+  let chakra=null,lightningPaths=[];
   if(featured){
     chakra=new THREE.Group();chakra.visible=false;
-    chakra.position.set(.26,.16,.28);
-    const col=id==='naruto'?0x49d7ff:0xbca8ff;
-    const core=new THREE.Mesh(new THREE.SphereGeometry(.075,12,8),
-      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false}));
-    chakra.add(core);
-    for(let i=0;i<3;i++){
-      const ring=new THREE.Mesh(new THREE.TorusGeometry(.10+i*.012,.007,5,24),
-        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false}));
-      ring.rotation.set(Math.PI*i/3,Math.PI*(i+1)/4,0);chakra.add(ring);
+    chakra.position.set(.23,.14,.28);
+    if(id==='naruto'){
+      const core=new THREE.Mesh(new THREE.SphereGeometry(.087,14,10),
+        new THREE.MeshBasicMaterial({color:0x49d7ff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+      chakra.add(core);
+      for(let j=0;j<3;j++){
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(.11+j*.018,.007,5,26),
+          new THREE.MeshBasicMaterial({color:j%2?0xffffff:0x5ac7ff,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false}));
+        ring.rotation.set(Math.PI*j/3,Math.PI*(j+1)/4,0);chakra.add(ring);
+      }
+    }else{
+      // Chidori: electric forks only; no Rasengan sphere or torus.
+      for(let j=0;j<10;j++){
+        const positions=new Float32Array(8*3),geometry=new THREE.BufferGeometry();
+        geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+        const bolt=new THREE.Line(geometry,new THREE.LineBasicMaterial({
+          color:j%3===0?0xf1ffff:0x53bfff,transparent:true,opacity:j%3===0?1:.9,
+          blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false
+        }));
+        bolt.frustumCulled=false;chakra.add(bolt);lightningPaths.push({positions,geometry,j});
+      }
+      const sparks=new Float32Array(15*3),geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.BufferAttribute(sparks,3).setUsage(THREE.DynamicDrawUsage));
+      const pointCloud=new THREE.Points(geometry,new THREE.PointsMaterial({
+        color:0xd8faff,size:.031,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false
+      }));
+      pointCloud.frustumCulled=false;chakra.add(pointCloud);lightningPaths.sparks={sparks,geometry};
     }
     figure.add(chakra);
   }
@@ -440,9 +458,32 @@ function makeHeroMotion(id,figure){
       for(const m of morphMeshes){m.morphTargetInfluences[0]=1-punch;m.morphTargetInfluences[1]=punch}
       figure.scale.y=baseScaleY*(1+.004*Math.sin(time*.002));
       if(chakra){
-        chakra.visible=technique>0&&progress>.1&&progress<.87;
-        chakra.rotation.y=time*.004;
-        chakra.scale.setScalar(.9+.12*Math.sin(time*.012));
+        chakra.visible=technique===2&&progress>.1&&progress<.88;
+        if(id==='naruto'){
+          chakra.rotation.y=time*.006;chakra.rotation.z=time*.004;
+          chakra.scale.setScalar(.95+.14*Math.sin(time*.012));
+        }else if(chakra.visible){
+          for(const bolt of lightningPaths){
+            const a=bolt.positions,j=bolt.j;
+            for(let k=0;k<8;k++){
+              const t=k/7,phase=time*.036+j*1.7+k*.83;
+              a[k*3]=Math.sin(phase)*(.024+.12*t)+Math.cos(j*1.1)*.07*t;
+              a[k*3+1]=Math.cos(phase*1.3)*(.024+.13*t)+Math.sin(j*1.4)*.06*t;
+              a[k*3+2]=t*(.22+.09*(j%3));
+            }
+            bolt.geometry.attributes.position.needsUpdate=true;
+          }
+          const o=lightningPaths.sparks;
+          if(o){
+            for(let k=0;k<15;k++){
+              const phase=time*.023+k*2.1,t=(k%5)/5;
+              o.sparks[3*k]=Math.sin(phase)*(.07+.15*t);
+              o.sparks[3*k+1]=Math.cos(phase*1.3)*(.08+.14*t);
+              o.sparks[3*k+2]=.02+.28*t;
+            }
+            o.geometry.attributes.position.needsUpdate=true;
+          }
+        }
       }
     }else if(!mixer){
       figure.scale.y=baseScaleY*(1+.009*Math.sin(time*.0023));
@@ -515,9 +556,14 @@ function initArena3d(){
       const attackProgress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
       const attacking=attackProgress>=0;
       if(motion)motion(dt,time,attacking,attackProgress,slot.technique);
-      fighter.rotation.y=(side==='allyTeam'?1:-1)*(.38+.06*Math.sin(time/850));
-      fighter.rotation.z=attacking?.065*Math.sin(time/150):0;
-      fighter.position.y=.012*Math.sin(time/440)+(attacking?.035*Math.abs(Math.sin(time/230)):0);
+      const strike=attacking?Math.pow(Math.sin(Math.PI*attackProgress),2):0;
+      const direction=side==='allyTeam'?1:-1;
+      fighter.rotation.y=direction*(.29+.06*Math.sin(time/850)-.16*strike);
+      fighter.rotation.z=-direction*.13*strike;
+      fighter.rotation.x=-.12*strike;
+      fighter.position.x=direction*.14*strike;
+      fighter.position.y=.012*Math.sin(time/440)+.11*strike;
+      fighter.position.z=.07*strike;
       scene.add(fighter);renderer.render(scene,camera);scene.remove(fighter);
     }
   }
@@ -883,8 +929,8 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THRE
 const group=new THREE.Group();scene.add(group);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
 let drag=false,last=0,angle=.10;
-renderer.domElement.style.touchAction='none';
-renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.style.touchAction=(hero.id==='naruto'||hero.id==='sasuke')?'pan-y':'none';
+if(hero.id!=='naruto'&&hero.id!=='sasuke')renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
 renderer.domElement.addEventListener('pointercancel',()=>drag=false);
 renderer.domElement.addEventListener('lostpointercapture',()=>drag=false);
@@ -915,6 +961,13 @@ fetchHeroModel(hero.id,model=>{
       const elapsed=previewAttackAt?t-previewAttackAt:-1;
       const progress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
       motion(dt,t,progress>=0,progress,2);
+      if(hero.id==='naruto'||hero.id==='sasuke'){
+        const strike=progress>=0?Math.pow(Math.sin(Math.PI*progress),2):0;
+        group.position.x=.20*strike;
+        group.position.y=.5+.06*strike+.006*Math.sin(t*.0022);
+        group.rotation.z=-.12*strike;
+        group.rotation.y=.045*Math.sin(t*.001);
+      }
       renderer.render(scene,camera);prevFrame=t;
     }
     profileFrame=requestAnimationFrame(animateProfile);
@@ -931,7 +984,7 @@ fetchHeroModel(hero.id,model=>{
   }
   fit();
   if(window.ResizeObserver){releaseResize=new ResizeObserver(fit);releaseResize.observe(host)}
-  note.textContent='Поверни персонажа пальцем';
+  note.textContent=(hero.id==='naruto'||hero.id==='sasuke')?'3D-анимация • нажми технику':'Поверни персонажа пальцем';
 });
 }catch(err){mountTurntable(host,hero);console.warn('3D fallback',err)}
 }
