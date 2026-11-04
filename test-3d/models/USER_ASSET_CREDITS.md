@@ -25,3 +25,7 @@ Original SHA-256: Kakashi `0942fafd01d7a784324dee7d684910237e1b231cfe54458435d84
 - Source: user-provided `konan_pre-_akatsuki.glb`, copied byte-for-byte to `konan.glb`; the GLB contains its original textures and geometry, without skeletal animation tracks.
 - The game's loader scales only its dedicated `Object_16` paper-wing mesh to 68% in X, so Konan stays readable in the existing iPhone profile and 5v5 scenes. The GLB file itself is not altered.
 - Naruto anime and character intellectual-property rights are separate from the model author's CC licence.
+
+## Madara Uchiha (November 4, 2026)
+
+`madara.glb` is the user-supplied `freefire_new_3d_character_madara_uchiha..glb` (612,724 bytes). Source model title: **FreeFire New 3D Character Madara Uchiha.** Embedded metadata credits **AJ Studio** and names the source [Sketchfab model](https://sketchfab.com/3d-models/freefire-new-3d-character-madara-uchiha-83e56a5dd37a4902b5887625a2e3905d), with **CC BY 4.0**. The original GLB has four textured meshes and no embedded animation tracks. The game generates a subtle whole-character idle motion and uses ordinary combat motions without editing the mesh. Keep artist attribution visible wherever the model is distributed. Copyright/trademark rights in Naruto characters may require separate permission for commercial use.
