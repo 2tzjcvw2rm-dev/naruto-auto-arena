@@ -80,26 +80,34 @@ function makeSasukeProfileMotion(figure,battle=false) {
       modelRoot=modelRoot.children[0];
     modelRoot.add(root);
   }
+  // Relax Sasuke's left arm beside his hip, without changing the right-hand Chidori.
+  // The forearm points down instead of folding up across the torso.
   for (const arm of arms) {
     const right=arm.side<0;
-    const aimUpper=vector(right?-.13:.16,right?-.24:-.21,right?.12:.115).normalize();
-    const aimLower=vector(right?-.13:-.13,right?.025:.145,right?.205:.13).normalize();
+    const aimUpper=right
+      ? vector(-.13,-.24,.12).normalize()
+      : vector(.15,-.35,.035).normalize();
+    const aimLower=right
+      ? vector(-.13,.025,.205).normalize()
+      : vector(.085,-.24,.045).normalize();
     arm.shoulder.quaternion.setFromUnitVectors(arm.elbow.position.clone().normalize(),aimUpper);
     const localAim=aimLower.applyQuaternion(arm.shoulder.quaternion.clone().invert());
     arm.elbow.quaternion.setFromUnitVectors(arm.wrist.position.clone().normalize(),localAim);
     arm.rest=arm.elbow.quaternion.clone();
-    arm.wrist.rotateOnAxis(arm.wrist.position.clone().normalize(),right?-.35:.17);
+    arm.wrist.rotateOnAxis(arm.wrist.position.clone().normalize(),right?-.35:-.10);
   }
 
   const sword=makeKusanagi();
-  sword.position.set(.090,-.095,-.003);
-  // Turn the whole grip with the wrist so the blade clears the cloak.
-  const wrist=arms[1].wrist, wristWorld=wrist.getWorldQuaternion(new T.Quaternion());
-  const outward=vector(.83,-.52,.22).normalize().applyQuaternion(wristWorld.clone().invert());
-  const bladeAxis=vector(0,0,outward.z<0?-1:1);
-  wrist.quaternion.multiply(new T.Quaternion().setFromUnitVectors(bladeAxis,outward));
-  sword.quaternion.setFromUnitVectors(vector(0,1,0),bladeAxis);
-  arms[1].wrist.add(sword);
+  const leftWrist=arms[1].wrist;
+  // Align the *blade* with Sasuke's downward body axis, not the wrist's tilted
+  // local Y axis. The grip/pommel stays inside the closed left hand.
+  root.updateWorldMatrix(true,true);
+  const bladeDown=vector(.085,-.995,.035).normalize()
+    .applyQuaternion(root.getWorldQuaternion(new T.Quaternion()))
+    .applyQuaternion(leftWrist.getWorldQuaternion(new T.Quaternion()).invert());
+  sword.quaternion.setFromUnitVectors(vector(0,1,0),bladeDown);
+  sword.position.set(.052,-.080,.018);
+  leftWrist.add(sword);
   const charge=makeChidoriCharge();
   if(battle)charge.group.children.filter(o=>o.isLight).forEach(o=>charge.group.remove(o));
   // Rest wrist (-.535,1.06,-.009); palm (-.605,.989,.012).
