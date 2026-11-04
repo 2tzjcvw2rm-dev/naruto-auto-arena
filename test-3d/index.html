@@ -307,11 +307,43 @@ button:active{transform:translateY(2px)}
 }
 
 #hero3d[data-hero="sakura"].sakura-free-view{background-color:#d59cb9!important;background-image:url("./assets/sakura-konoha-background-only.avif?v=20261104free1")!important;background-position:center;background-size:cover}
-#hero3d .sakura-sketchfab-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;mix-blend-mode:multiply}
+#hero3d .sakura-sketchfab-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;opacity:1!important;mix-blend-mode:normal!important;filter:brightness(1.12) contrast(1.08) saturate(1.08);background:transparent}
 #hero3d .sakura-embed-credit{position:absolute;right:5px;bottom:5px;z-index:3;background:#17243bdd;color:#fff;font-size:9px;border-radius:5px;padding:3px 5px}
 #hero3d .sakura-embed-credit a{color:#fff;text-decoration:underline}
-.sakura-preview-toggle{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);z-index:8;color:#fff;background:#152137e8;border:1px solid #dfbd7c;padding:6px 10px;border-radius:8px;font-size:11px;white-space:nowrap}
- /* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
+.sakura-preview-toggle{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);z-index:8;color:#fff;background:#152137f2;border:1px solid #dfbd7c;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:750;white-space:nowrap;box-shadow:0 2px 8px #1119;min-height:36px;touch-action:manipulation}
+/* Character-specific 3D-stage scenes and separate high-quality approved adult character posters.
+   This toggles presentation only; actual GLBs, gameplay, levels, equipment remain untouched. */
+#hero3d[data-hero="naruto"].profile-art{
+  background-color:#83b5df!important;
+  background-image:url("./assets/naruto-hokage-art.avif?v=20261104a")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d[data-hero="naruto"].profile-3d{
+  background-color:#adcbe2!important;
+  background-image:url("./assets/naruto-stage-konoha.avif?v=20261104a")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d[data-hero="sasuke"].profile-art{
+  background-color:#282344!important;
+  background-image:url("./assets/sasuke-adult-art.avif?v=20261104a")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d[data-hero="sasuke"].profile-3d{
+  background-color:#252448!important;
+  background-image:url("./assets/sasuke-stage-night.avif?v=20261104a")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d[data-hero="sakura"].profile-3d,
+#hero3d[data-hero="sakura"].sakura-free-view{
+  background-image:url("./assets/sakura-konoha-background-only.avif?v=20261104free2")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d[data-hero="sakura"].profile-art{
+  background-image:url("./assets/sakura-blossom-profile.avif?v=20261104-sakura1")!important;
+  background-position:center center!important;background-size:cover!important;
+}
+#hero3d iframe.sakura-sketchfab-iframe{pointer-events:auto;touch-action:auto;}
+/* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
 #profileContent .hero-profile-v3{padding:8px!important}
 #profileContent .profile-stage-v3{position:relative;width:100%;height:clamp(350px,56vh,470px);overflow:hidden;border-radius:13px;background:linear-gradient(#95b6c5,#dfc79e)}
 #profileContent .profile-stage-v3 #hero3d{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;border-radius:inherit!important;z-index:1}
@@ -1099,13 +1131,20 @@ let heroRenderer=null;
 let profileCleanup=null;
 let releaseResize=null;
 let profileFrame=0;
-let sakuraFree3DEnabled=true;
-function toggleSakuraFree3D(){
- sakuraFree3DEnabled=!sakuraFree3DEnabled;
- const hero=[...roster,...enemies].find(x=>x.id==='sakura');
+// State is specific to each hero: switching to another profile never loses the selected view.
+const characterPreview3D={naruto:true,sasuke:true,sakura:true};
+function characterPreviewButtonLabel(id){return characterPreview3D[id]?'🌸 Показать арт':'↻ Показать 3D'}
+function updateCharacterPreviewButton(){
+ const btn=document.getElementById('characterPreviewToggle');
+ if(btn){btn.textContent=characterPreviewButtonLabel(selectedProfile);btn.setAttribute('aria-label',btn.textContent)}
+}
+function toggleCharacterPreview(){
+ const id=selectedProfile;
+ if(!Object.prototype.hasOwnProperty.call(characterPreview3D,id))return;
+ characterPreview3D[id]=!characterPreview3D[id];
+ updateCharacterPreviewButton();
+ const hero=[...roster,...enemies].find(x=>x.id===id);
  if(hero)mountHero3D(hero);
- const btn=document.getElementById('sakura3dToggle');
- if(btn)btn.textContent=sakuraFree3DEnabled?'🌸 Показать арт':'↻ Показать 3D';
 }
 function releaseProfile(){
   if(profileCleanup){profileCleanup();profileCleanup=null}
@@ -1118,16 +1157,20 @@ function releaseProfile(){
 
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
-// Reuse the same character GLB sources as the 5-on-5 arena; never change player progression.
+// Use the existing character GLBs in the 5-on-5 arena; never modify progression.
 releaseProfile();
-// Free external 3D viewer: does not replace the existing 5v5 GLB.
+const hasDualView=Object.prototype.hasOwnProperty.call(characterPreview3D,hero.id);
+host.classList.toggle('profile-3d',hasDualView&&characterPreview3D[hero.id]);
+host.classList.toggle('profile-art',hasDualView&&!characterPreview3D[hero.id]);
+host.classList.toggle('sakura-free-view',hero.id==='sakura'&&characterPreview3D.sakura);
+if(hasDualView&&!characterPreview3D[hero.id]){
+  host.innerHTML='';
+  host.setAttribute('aria-label',hero.name+': иллюстрация персонажа. Нажмите Показать 3D для вращения модели.');
+  return;
+}
+// The free Sakura preview is a third-party Sketchfab embed, not the in-game GLB.
 if(hero.id==='sakura'){
   host.innerHTML='';
-  host.classList.toggle('sakura-free-view',sakuraFree3DEnabled);
-  if(!sakuraFree3DEnabled){
-    host.setAttribute('aria-label','Утверждённый иллюстрированный профиль Сакуры');
-    return;
-  }
   host.setAttribute('aria-label','Бесплатная 3D Сакура: вращайте модель пальцем');
   const iframe=document.createElement('iframe');
   iframe.className='sakura-sketchfab-iframe';
@@ -1138,11 +1181,11 @@ if(hero.id==='sakura'){
   iframe.loading='eager';
   iframe.onerror=()=>{
     if(host.dataset.hero!=='sakura')return;
-    sakuraFree3DEnabled=false;
-    host.classList.remove('sakura-free-view');
+    characterPreview3D.sakura=false;
+    host.classList.remove('sakura-free-view','profile-3d');
+    host.classList.add('profile-art');
     iframe.remove();
-    const btn=document.getElementById('sakura3dToggle');
-    if(btn)btn.textContent='↻ Показать 3D';
+    updateCharacterPreviewButton();
   };
   host.appendChild(iframe);
   const credit=document.createElement('span');
@@ -1239,7 +1282,7 @@ function renderProfile(){
  el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
  const stage='<div class="profile-hero hero-profile-v3"><div class="profile-stage-v3">'+
   '<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">Загружаю 3D…</div></div>'+
-  stageGearSlots(p,isEnemy)+(c.id==='sakura'?'<button id="sakura3dToggle" type="button" class="sakura-preview-toggle" onclick="toggleSakuraFree3D()">'+(sakuraFree3DEnabled?'🌸 Показать арт':'↻ Показать 3D')+'</button>':'')+'</div>'+
+  stageGearSlots(p,isEnemy)+(Object.prototype.hasOwnProperty.call(characterPreview3D,c.id)?'<button id="characterPreviewToggle" type="button" class="sakura-preview-toggle" onclick="toggleCharacterPreview()">'+characterPreviewButtonLabel(c.id)+'</button>':'')+'</div>'+
   '<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+(isEnemy?'Акацуки':c.role)+
   '<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>';
  const stats='<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+(isEnemy?0:b.atk))+'</span>'+
