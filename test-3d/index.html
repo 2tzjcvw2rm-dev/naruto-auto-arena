@@ -207,7 +207,7 @@ button:active{transform:translateY(2px)}
 
 .arena.three-active .ground{opacity:.65}
 </style><script src="./vendor/three.min.js" defer></script>
-<script src="./vendor/GLTFLoader.js" defer></script><script src="./naruto-profile.js" defer></script><script src="./sasuke-profile.js" defer></script>
+<script src="./vendor/GLTFLoader.js" defer></script><script src="./combat-profile.js" defer></script><script src="./naruto-profile.js" defer></script><script src="./sasuke-profile.js" defer></script>
 <style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
@@ -1278,7 +1278,7 @@ const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(hero.id==='sakura'||hero.id==='itachi'||hero.id==='kakashi'||hero.id==='hinata')?2:1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,hero.id==='sakura'?.95:1.25));const lamp=new THREE.DirectionalLight(0xffffff,hero.id==='sakura'?.52:.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
-let drag=false,last=0,angle=.10;
+let drag=false,last=0,angle=hero.id==='itachi'?.38:.10;
 renderer.domElement.style.touchAction='none';
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
@@ -1288,7 +1288,7 @@ renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.client
 group.rotation.y=angle;renderer.render(scene,camera);
 const note=document.createElement('span');note.className='model-credit';note.textContent='Загружаю 3D-модель…';host.appendChild(note);
 if(!upgradedFighters.has(hero.id)){note.textContent='Поверни персонажа пальцем';return}
-fetchHeroModel(hero.id,model=>{
+fetchHeroModel(CombatProfile.modelKey(hero.id,remoteHeroModels),model=>{
   if(heroRenderer!==renderer||!host.isConnected)return;
   try {
   const fighter=model&&normalizedFighter(model);
@@ -1307,7 +1307,7 @@ fetchHeroModel(hero.id,model=>{
     });
   }
   group.add(fighter);group.position.y=.5;
-  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):makeHeroMotion(hero.id,fighter);
+  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):(CombatProfile.mount(hero.id,fighter)||makeHeroMotion(hero.id,fighter));
   if(motion.dispose)profileCleanup=()=>motion.dispose();
   // Cinematic roster view: no technique buttons, no spin controls.
   let prevFrame=0;
@@ -1337,6 +1337,11 @@ fetchHeroModel(hero.id,model=>{
     // Keep Naruto large inside the tall iPhone panel while preserving full-body framing.
     const aperture=Math.atan(Math.tan(camera.fov*Math.PI/360)*Math.min(1,Math.max(.78,camera.aspect)));
     camera.position.set(0,.5,(hero.id==='sakura'?1.26:1.05)*sphere.radius/Math.sin(aperture));
+    if (CombatProfile.has(hero.id)) {
+      const size=box.getSize(new THREE.Vector3());
+      const horizontal=Math.hypot(size.x,size.z);
+      camera.position.z=.5*horizontal+Math.max(size.y,horizontal/camera.aspect)*.58/Math.tan(camera.fov*Math.PI/360);
+    }
     camera.lookAt(0,.5,0);camera.updateProjectionMatrix();renderer.render(scene,camera);
   }
   fit();
