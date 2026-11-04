@@ -750,16 +750,20 @@ function initArena3d(){
     if(active){active.attackAt=performance.now();active.technique=technique}
   },bind(){
     const currentBind=++bindSerial;
+    for(const slot of slots)slot.motion?.dispose?.();
     slots=[];
     for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
       units.forEach((u,i)=>{
         if(!upgradedFighters.has(u.id))return;
         const unit=el(side+i),sprite=unit.querySelector('svg');
-        fetchHeroModel(u.id,model=>{
+        const combat=u.id==='itachi';
+        fetchHeroModel(combat?CombatProfile.modelKey(u.id,remoteHeroModels):u.id,model=>{
           if(currentBind!==bindSerial||!unit.isConnected)return;
           if(!model){showBattleImage(unit,u.id,side);return}
           const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
-          slots.push({unit,sprite,fighter,side,index:i,motion:makeHeroMotion(u.id,fighter),attackAt:0,technique:0});unit.classList.add('has-model');
+          const actor=new THREE.Group();actor.add(fighter);
+          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera}):makeHeroMotion(u.id,fighter);
+          slots.push({unit,sprite,fighter:actor,side,index:i,motion,attackAt:0,technique:0});unit.classList.add('has-model');
         });
       });
     }

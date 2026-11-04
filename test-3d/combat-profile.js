@@ -29,19 +29,65 @@ const CombatProfile = (() => {
     sprite.scale.setScalar(size);
     return sprite;
   }
+  // Surface turbulence is evaluated in object space, so the hot seams travel
+  // around the volume even when the camera is looking straight down the jet.
+  function flameVolume(cold, warm, hot) {
+    const material = new THREE.ShaderMaterial({
+      uniforms:{clock:{value:0},alpha:{value:1},cold:{value:new THREE.Color(cold)},
+        warm:{value:new THREE.Color(warm)},hot:{value:new THREE.Color(hot)}},
+      transparent:true,depthWrite:false,
+      vertexShader:`
+        uniform float clock; varying vec3 coord; varying float facing;
+        void main(){
+          coord=position;
+          float fold=sin(position.y*9.+clock*5.+cos(position.x*6.))*
+                     cos(position.z*7.-clock*3.+position.x*3.);
+          vec3 p=position+normal*(.09*fold+.045*sin(position.x*17.+clock*7.));
+          vec4 eye=modelViewMatrix*vec4(p,1.);
+          facing=abs(dot(normalize(normalMatrix*normal),normalize(-eye.xyz)));
+          gl_Position=projectionMatrix*eye;
+        }`,
+      fragmentShader:`
+        varying vec3 coord; varying float facing;
+        uniform vec3 cold,warm,hot; uniform float clock,alpha;
+        void main(){
+          vec3 p=coord; float t=clock;
+          float swirl=sin(8.*p.y+3.*sin(p.x*4.-t)+2.*sin(p.z*4.+t)-4.*t);
+          float fold=cos(p.z*8.+p.x*6.+swirl*2.+t*3.);
+          float heat=clamp(.49+.28*swirl+.18*fold+.17*facing,0.,1.);
+          vec3 col=mix(cold,warm,smoothstep(.12,.65,heat));
+          col=mix(col,hot,smoothstep(.61,.98,heat));
+          gl_FragColor=vec4(col,alpha*smoothstep(-.10,.40,facing)*(.78+.22*heat));
+        }`
+    });
+    return new THREE.Mesh(new THREE.SphereBufferGeometry(1,28,18),material);
+  }
   function katon(root) {
-    const glow = halo('rgba(255,98,20,.8)', .10);
-    root.add(glow);
-    const embers = particles(12, 0xff963b, .007);
-    root.add(embers.points);
-    return t => {
-      glow.material.opacity = .68 + .14*Math.sin(4*t);
-      for (let i=0;i<12;i++) {
-        const phase = (t*.68+i*.618)%1;
-        embers.position.setXYZ(i,.027*Math.sin(i*7+phase*4)*phase,
-          phase*.085,.020*Math.cos(i+phase*3));
+    const ball=flameVolume(0xa91b0d,0xff7617,0xffef88);
+    const jet=new THREE.Mesh(ball.geometry,ball.material);
+    const glow=halo('rgba(255,104,19,.85)',.37);
+    const embers=particles(32,0xffba4b,.009);
+    root.add(jet,ball,glow,embers.points);
+    return t=>{
+      const p=(t%3.8)/3.8;
+      const swell=THREE.MathUtils.smoothstep(p,0,.34);
+      const fade=1-THREE.MathUtils.smoothstep(p,.68,.98);
+      const intensity=swell*fade;
+      root.visible=intensity>.004;
+      const distance=.025+.32*swell+.09*p;
+      const r=(.026+.123*swell)*(.45+.55*fade);
+      ball.position.z=distance;ball.scale.set(r,r*.95,r*1.12);
+      jet.position.z=distance*.5;jet.scale.set(.009+.029*intensity,.011+.032*intensity,distance*.52);
+      ball.material.uniforms.clock.value=t;
+      ball.material.uniforms.alpha.value=intensity;
+      glow.position.copy(ball.position);glow.scale.setScalar(r*3.2);glow.material.opacity=intensity*.8;
+      for(let i=0;i<32;i++){
+        const s=(t*1.2+i*.618)%1,a=i*2.4+s*1.4;
+        const spread=(.014+.16*s)*intensity;
+        embers.position.setXYZ(i,Math.cos(a)*spread,Math.sin(a)*spread+.075*s*s,distance*s+.11*s*s);
       }
-      embers.position.needsUpdate = true;
+      embers.points.material.opacity=intensity;
+      embers.position.needsUpdate=true;
     };
   }
   function chidori(root) {
@@ -217,13 +263,16 @@ const CombatProfile = (() => {
   function mount(id, fighter, view) {
     if (!techniques[id]) return null;
     const parent = fighter.parent, root = new THREE.Group();
-    parent.add(root);
+    const head=fighter.getObjectByName('Head');
+    if(id==='itachi' && head){
+      head.add(root);
+      root.position.set(0,.028,.081);
+    }else parent.add(root);
     const right = fighter.getObjectByName('RightHand'), left = fighter.getObjectByName('LeftHand');
     const spine = fighter.getObjectByName('Spine1') || fighter.getObjectByName('Spine');
     const rest = spine?.quaternion.clone();
     const breath = new THREE.Quaternion(), axis = new THREE.Vector3(1,0,0);
     const a = new THREE.Vector3(), b = new THREE.Vector3();
-    const emberOffset = new THREE.Vector3(.01,.048,.025);
     const update = techniques[id](root, view);
     function frame(dt, ms) {
       const t = ms*.001;
@@ -231,14 +280,13 @@ const CombatProfile = (() => {
       if (right && left) {
         parent.worldToLocal(right.getWorldPosition(a)); parent.worldToLocal(left.getWorldPosition(b));
       }
-      if (id === 'itachi') root.position.copy(a).add(emberOffset);
       update(t,a,b);
     }
     frame(0,0);
     frame.dispose = () => {
       root.traverse(o => {o.geometry?.dispose(); if(o.material){o.material.map?.dispose();o.material.dispose();}});
       update.dispose?.();
-      parent.remove(root);
+      root.parent?.remove(root);
     };
     return frame;
   }
