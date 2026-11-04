@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Деревня Коноха на фоне скалы Хокаге">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#3b9cc5"/><stop offset=".48" stop-color="#a7d6d5"/><stop offset="1" stop-color="#f5d5a0"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff0c2" stop-opacity=".92"/><stop offset="1" stop-color="#ffecba" stop-opacity="0"/></radialGradient>
+ <linearGradient id="stone" x2="0.2" y2="1"><stop stop-color="#9c9990"/><stop offset=".48" stop-color="#6b7c73"/><stop offset="1" stop-color="#556c61"/></linearGradient>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#f3ce91"/><stop offset="1" stop-color="#b8956a"/></linearGradient>
+ <linearGradient id="roof" x2="0" y2="1"><stop stop-color="#be6853"/><stop offset="1" stop-color="#663f43"/></linearGradient>
+ <linearGradient id="ground" x2="0" y2="1"><stop stop-color="#749778"/><stop offset="1" stop-color="#466650"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+ <pattern id="tile" width="28" height="15" patternUnits="userSpaceOnUse"><path d="M0 14H28M14 0V14" stroke="#4c343a" stroke-opacity=".22" stroke-width="2"/></pattern>
+</defs>
+<rect width="960" height="640" fill="url(#sky)"/>
+<circle cx="742" cy="105" r="160" fill="url(#sun)"/>
+<g fill="#f4f9ee" opacity=".78"><path d="M45 106q28-24 59-2 24-25 49 0 44-3 50 22H19q0-13 26-20Z"/><path d="M693 75q22-20 43-8 30-27 59 0 41-7 55 18H672q2-11 21-10Z"/><path d="M393 145q30-19 59-2 27-16 43 3 30-4 44 13H358q4-12 35-14Z" opacity=".65"/></g>
+<path d="M0 265q90-146 184-86l79 89 143-130 124 144 88-100 102 70 123-125 117 164v202H0Z" fill="#7c9d93" opacity=".5"/>
+<path d="M0 323l90-60 63 18 105-102 65 36 55-42 109 78 93-80 92 70 94-91 92 53 102-60v288H0Z" fill="#607f76" opacity=".78"/>
+<!-- The Hokage monument: stylized original stone faces against the mountain -->
+<path d="M81 307L174 197l78 41 64-112 74 47 87-65 71 66 90-54 81 69 101-27 52 151-18 116H49Z" fill="url(#stone)" stroke="#536d67" stroke-width="7"/>
+<path d="M136 282l50-85 44 40 50-37 34-75 62 52 86-59 67 62 83-49 85 66 94-40-19 174-625 3Z" fill="#b4a78f" opacity=".22"/>
+<g fill="#d8c3a5" stroke="#5a6961" stroke-width="6" stroke-linejoin="round">
+ <g transform="translate(180 210)">
+  <path d="M-38-30l-15-18 27-16 25 10 18-13 18 24-3 35-14 35-18 11-22-12-14-36Z"/>
+  <path d="M-26-11l16-4 10 6-17 1m24-3 15-8 10 5-18 8" fill="none" stroke-width="5"/>
+  <path d="M0-4l-8 20 14 4m-22 11 16 4 19-8" fill="none" stroke-width="5"/>
+  <path d="M-33 0l-11 32 11 42 58 10 22-40-13-39" fill="#abac9e"/>
+ </g>
+ <g transform="translate(327 187)">
+  <path d="M-43-42l19-19 24 9 20-7 29 22-5 48-15 34-29 17-27-12-16-36Z"/>
+  <path d="M-33-8l26-9 10 6-22 7m28-4 20-11 8 7-18 9" fill="none" stroke-width="5"/>
+  <path d="M2-10l-11 29 16 2m-17 17 26 0" fill="none" stroke-width="5"/>
+  <path d="M-40 8l-15 25-4 30 38 25 50-2 24-44-10-31" fill="#9ca89a"/>
+ </g>
+ <g transform="translate(476 174)">
+  <path d="M-46-40l28-36 25 11 32 4 14 35-8 47-22 35-25 5-30-24-19-36Z"/>
+  <path d="M-32-5l20-8 9 5-21 10m35-11 22-4 8 8-23 4" fill="none" stroke-width="5"/>
+  <path d="M-1-8l-10 25 13 9m-20 12 17 8 22-6" fill="none" stroke-width="5"/>
+  <path d="M-43 8l-15 40 18 37 58 15 40-35-19-52" fill="#a6ae9c"/>
+ </g>
+ <g transform="translate(641 198)">
+  <path d="M-46-45l20-20 23 11 28-15 21 22 8 43-18 51-28 18-29-17-27-34Z"/>
+  <path d="M-29-9l20-11 12 6-22 10m30-8 20-8 7 8-23 7" fill="none" stroke-width="5"/>
+  <path d="M2-11l-8 27 13 5m-21 11 18 9 23-10" fill="none" stroke-width="5"/>
+  <path d="M-44 12l-12 37 13 41 56 2 43-34-12-48" fill="#93a59a"/>
+ </g>
+</g>
+<g fill="none" stroke="#536e68" stroke-width="4" opacity=".45"><path d="M62 301l112-20 107 38 95-19 127 14 117-29 112 23 111-21"/><path d="M80 333l138 4 85-17 101 26 150-18 94 8 128-9"/></g>
+<!-- Forest canopy and village wall -->
+<path d="M0 344q51-70 116 0 65-71 118-14 53-53 105-12 62-65 111-10 53-50 109-5 69-68 125-12 59-46 105 2 74-74 171 10v221H0Z" fill="#416b55"/>
+<path d="M0 365q62-45 126 0 71-48 134-8 80-55 150-12 69-48 126-10 69-45 145-11 64-40 134-9 87-63 145-7v202H0Z" fill="#5f8d6a"/>
+<rect y="408" width="960" height="232" fill="url(#ground)"/>
+<path d="M0 509L195 455l180 6 160-33 166 48 135-36 124 42v158H0Z" fill="#d5c093" opacity=".48"/>
+<!-- rooftops -->
+<g stroke="#6b4541" stroke-width="5" stroke-linejoin="round">
+ <g transform="translate(35 390)"><rect x="7" y="39" width="178" height="102" rx="7" fill="url(#wall)"/><path d="M-10 45l37-46h137l35 46Z" fill="url(#roof)"/><rect x="23" y="73" width="39" height="47" rx="5" fill="#596f67"/><rect x="105" y="73" width="45" height="49" rx="5" fill="#607a77"/><path d="M-10 45h210" stroke="#f6b080" opacity=".45"/></g>
+ <g transform="translate(252 377)"><rect x="7" y="32" width="149" height="141" rx="7" fill="url(#wall)"/><path d="M-14 36L9-10h156l24 46Z" fill="#b65749"/><rect x="52" y="64" width="58" height="55" rx="5" fill="#6b8c83"/><path d="M-14 36h203" stroke="#d18a6c" opacity=".4"/></g>
+ <g transform="translate(474 373)"><rect x="0" y="40" width="158" height="146" rx="8" fill="url(#wall)"/><path d="M-18 40l33-58h120l43 58Z" fill="#934642"/><rect x="58" y="77" width="49" height="60" rx="5" fill="#76918c"/><path d="M-18 40h196" stroke="#d99a72" opacity=".4"/></g>
+ <g transform="translate(696 391)"><rect x="0" y="36" width="190" height="110" rx="8" fill="url(#wall)"/><path d="M-19 41L13-10h154l44 51Z" fill="#bb6652"/><rect x="22" y="68" width="43" height="46" rx="5" fill="#718a84"/><rect x="114" y="69" width="44" height="46" rx="5" fill="#728b84"/></g>
+</g>
+<g fill="url(#tile)" opacity=".65"><path d="M26 435l37-46h137l35 46Z"/><path d="M238 413l23-46h156l24 46Z"/><path d="M456 413l33-58h120l43 58Z"/><path d="M677 432l32-51h154l44 51Z"/></g>
+<!-- iconic village spiral crest on a building -->
+<g transform="translate(559 447)">
+ <circle cx="0" cy="0" r="28" fill="#e2c5a7" stroke="#8c6454" stroke-width="4"/>
+ <path d="M-13-4q1-13 13-13 17 0 17 16 0 15-16 15-13 0-13-11 0-9 10-9 7 0 7 7" stroke="#b14d40" stroke-width="6" stroke-linecap="round" fill="none"/>
+ <path d="M-15-2l-13-8" stroke="#b14d40" stroke-width="5" stroke-linecap="round"/>
+</g>
+<path d="M0 549q160-32 309-1 158-55 324 4 173-31 327 10v78H0Z" fill="#446e51" opacity=".68"/>
+<g fill="#2c553f" opacity=".7"><circle cx="11" cy="523" r="71"/><circle cx="129" cy="556" r="49"/><circle cx="830" cy="572" r="62"/><circle cx="946" cy="532" r="82"/></g>
+<path d="M0 620q153-46 306-8 174-36 330 4 167-36 324-8v32H0Z" fill="#2c4f3b" opacity=".85"/>
+</svg>
