@@ -1093,7 +1093,7 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,'./test-3d/models/'+hero.id+'.glb']));
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./test-3d/models/sakura-team7.glb?v=20261104team7':'./test-3d/models/'+hero.id+'.glb']));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
@@ -1168,32 +1168,7 @@ if(hasDualView&&!characterPreview3D[hero.id]){
   host.setAttribute('aria-label',hero.name+': иллюстрация персонажа. Нажмите Показать 3D для вращения модели.');
   return;
 }
-// The free Sakura preview is a third-party Sketchfab embed, not the in-game GLB.
-if(hero.id==='sakura'){
-  host.innerHTML='';
-  host.setAttribute('aria-label','Бесплатная 3D Сакура: вращайте модель пальцем');
-  const iframe=document.createElement('iframe');
-  iframe.className='sakura-sketchfab-iframe';
-  iframe.title='Sakura 3D by danigamer495channel';
-  iframe.src='https://sketchfab.com/models/6409fbcec6864a72b1011856a068fd52/embed?autostart=1&ui_hint=0&ui_infos=0&ui_controls=0&scrollwheel=0&transparent=1';
-  iframe.allow='autoplay; fullscreen; xr-spatial-tracking';
-  iframe.setAttribute('allowfullscreen','');
-  iframe.loading='eager';
-  iframe.onerror=()=>{
-    if(host.dataset.hero!=='sakura')return;
-    characterPreview3D.sakura=false;
-    host.classList.remove('sakura-free-view','profile-3d');
-    host.classList.add('profile-art');
-    iframe.remove();
-    updateCharacterPreviewButton();
-  };
-  host.appendChild(iframe);
-  const credit=document.createElement('span');
-  credit.className='sakura-embed-credit';
-  credit.innerHTML='<a href="https://sketchfab.com/3d-models/sakura-6409fbcec6864a72b1011856a068fd52" target="_blank" rel="noopener noreferrer">3D · danigamer495channel · CC BY</a>';
-  host.appendChild(credit);
-  return;
-}
+// Sakura is now a bundled, self-contained GLB in the normal native viewer.
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
 try{
 host.innerHTML='';

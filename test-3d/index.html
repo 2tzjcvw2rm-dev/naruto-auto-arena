@@ -208,7 +208,7 @@ button:active{transform:translateY(2px)}
 .arena.three-active .ground{opacity:.65}
 </style><script src="./vendor/three.min.js" defer></script>
 <script src="./vendor/GLTFLoader.js" defer></script><script src="./naruto-profile.js" defer></script><script src="./sasuke-profile.js" defer></script>
-<script src="./sakura-profile.js?v=20261104c" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+<style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -1140,9 +1140,8 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-// The dedicated Sakura guard model includes editable ready/punch morph targets.
-const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-guard.glb?v=20261104pose1':'./models/'+hero.id+'.glb']));
-const nativeSakuraPreview=new URLSearchParams(window.location.search).get('sakura')==='native';
+// User-supplied Team 7 Sakura keeps her existing hand-sign pose, without re-posing.
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-team7.glb?v=20261104team7':'./models/'+hero.id+'.glb']));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
@@ -1217,11 +1216,7 @@ if(hasDualView&&!characterPreview3D[hero.id]){
   host.setAttribute('aria-label',hero.name+': иллюстрация персонажа. Нажмите Показать 3D для вращения модели.');
   return;
 }
-// Keep the approved high-detail Sakura viewer; local GLB remains a native fallback.
-if(hero.id==='sakura'&&!nativeSakuraPreview&&typeof window.mountSakuraViewer==='function'){
-  profileCleanup=window.mountSakuraViewer(host);
-  return;
-}
+// Sakura is now a bundled, self-contained GLB in the normal native viewer.
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
 try{
 host.innerHTML='';
