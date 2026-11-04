@@ -431,6 +431,7 @@ button:active{transform:translateY(2px)}
 .gear-picker-actions button{flex:1;font-size:13px;padding:12px 4px}
 @media(max-width:370px){#profileContent .profile-stage-v3 .gear-float{width:65px;min-height:67px;padding:3px 1px}#profileContent .profile-stage-v3 .gear-float small{font-size:9px}#profileContent .profile-stage-v3{height:clamp(338px,53vh,420px)}}
 #hero3d[data-hero="madara"]{background:radial-gradient(circle at 50% 26%,#9b3b6040,transparent 35%),radial-gradient(ellipse at 50% 85%,#53375888,transparent 65%),linear-gradient(180deg,#171b29 0%,#2c1e34 68%,#1b1e2b 100%)!important}
+#hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style></head>
 <body>
 <header>
@@ -469,7 +470,7 @@ function turnFrame(element,frame){
 }
 function fighterImage(id){
   const image=document.createElement('span');
-  image.className='fighter-image';image.style.backgroundImage=id==='madara'?'url("./assets/madara-avatar.svg")':'url("./models/'+id+'.webp")';
+  image.className='fighter-image';image.style.backgroundImage=(id==='madara'||id==='obito')?'url("./assets/'+id+'-avatar.svg")':'url("./models/'+id+'.webp")';if(id==='madara'||id==='obito'){image.style.backgroundSize='cover';image.style.backgroundPosition='center'}
   return image;
 }
 function showBattleImage(unit,id,side){
@@ -532,8 +533,8 @@ function normalizedFighter(model){
   return pivot;
 }
 function makeHeroMotion(id,figure){
-  if(id==='madara'){
-    // Madara's supplied GLB is a textured static mesh without animation clips.
+  if(id==='madara'||id==='obito'){
+    // User-supplied static GLB: retain textures and geometry; gentle whole-body idle.
     // Keep the uploaded geometry intact; animate the whole character on mobile.
     const baseY=figure.position.y;
     return (dt,time,attacking,progress=-1)=>{
@@ -864,7 +865,8 @@ const roster=[
 {id:'hinata',name:'Хината',role:'Защита',color:'#a99bd1',hair:'#262a47',skin:'#efd1c0',hp:135,atk:13,spd:10},
 {id:'shikamaru',name:'Шикамару',role:'Контроль',color:'#697c57',hair:'#292b2c',skin:'#d9ad87',hp:120,atk:15,spd:12},
 {id:'gaara',name:'Гаара',role:'Защита',color:'#a05c44',hair:'#c95743',skin:'#f2c6a8',hp:145,atk:17,spd:9},
-{id:'madara',name:'Мадара Учиха',role:'Урон',color:'#982c42',hair:'#161821',skin:'#d7b09b',hp:150,atk:23,spd:14}
+{id:'madara',name:'Мадара Учиха',role:'Урон',color:'#982c42',hair:'#161821',skin:'#d7b09b',hp:150,atk:23,spd:14},
+{id:'obito',name:'Обито Учиха',role:'Контроль',color:'#383147',hair:'#1c1c24',skin:'#e0a473',hp:130,atk:19,spd:16}
 ];
 const enemies=[
 {id:'itachi',name:'Итачи',color:'#272b34',hair:'#16151d',skin:'#d9b7aa',hp:110,atk:16,spd:13},
@@ -989,8 +991,8 @@ function heroAvatarHTML(c){
 function applyExternalPortraits(scope=document){
   scope.querySelectorAll('[data-portrait]').forEach(node=>{
     const id=node.dataset.portrait,frame=portraitFrames[id];
-    if(id==='madara'){
-      node.style.backgroundImage='url("./assets/madara-avatar.svg")';
+    if(id==='madara'||id==='obito'){
+      node.style.backgroundImage='url("./assets/'+id+'-avatar.svg")';
       node.style.backgroundPosition='center';node.style.backgroundSize='cover';node.style.backgroundRepeat='no-repeat';return;
     }
     if(!frame)return;
@@ -1027,7 +1029,8 @@ shikamaru:['Удар','Теневая ловушка','Теневое связы
 itachi:['Кунай','Огненная техника','Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
-madara:['Удар Учиха','Огненный шар','Сусаноо']
+madara:['Удар Учиха','Огненный шар','Сусаноо'],
+obito:['Удар цепью','Камуи','Изанаги']
 };
 const jutsuVisuals={
 naruto:[['melee','#ffb34c','👊'],['clones','#f5f5ff','🥷'],['orb','#4ec7ff','🌀']],
@@ -1042,7 +1045,8 @@ pain:[['melee','#b6a1df','👊'],['orb','#9b78e6','🌀'],['orb','#d2a5ff','💥
 kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
 deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
 sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']],
-madara:[['melee','#e99690','⚔️'],['fire','#ff623b','🔥'],['orb','#9c6eff','👹']]
+madara:[['melee','#e99690','⚔️'],['fire','#ff623b','🔥'],['orb','#9c6eff','👹']],
+obito:[['melee','#d7b5a1','⛓️'],['shadow','#8261ca','🌀'],['orb','#cba2ff','👁️']]
 };
 let rasengan3d=null;
 function drawRasengan3D(box){
@@ -1248,7 +1252,7 @@ function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
 // User-supplied Team 7 Sakura keeps her existing hand-sign pose, without re-posing.
-const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1',madara:'user-original-1'};
+const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1',madara:'user-original-1',obito:'user-original-1'};
 const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-team7.glb?v=20261104team7':'./models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
@@ -1599,11 +1603,11 @@ if(testBuild)el('pairDemo').hidden=false;
 document.addEventListener('DOMContentLoaded',initArena3d);
 document.addEventListener('DOMContentLoaded',()=>{
   const hero=new URLSearchParams(location.search).get('pose');
-  if(hero && upgradedFighters.has(hero) && (CombatProfile.has(hero)||hero==='sasuke')) openCharacter(hero);
+  if(hero && upgradedFighters.has(hero) && (CombatProfile.has(hero)||hero==='sasuke'||hero==='obito')) openCharacter(hero);
 });
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
-<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Конан — <a href="https://sketchfab.com/3d-models/konan-pre--akatsuki-39d1b5f5333f4b70abfe1fe832006c34">renjurenji679</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Другие авторы указаны в документации игровых моделей.</footer></body>
+<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Конан — <a href="https://sketchfab.com/3d-models/konan-pre--akatsuki-39d1b5f5333f4b70abfe1fe832006c34">renjurenji679</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Обито — <a href="https://sketchfab.com/3d-models/obito-uchiha-full-rigged-5ab22bc6374e4e0181f34d8104342cd9">Mwilix Alberto</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Другие авторы указаны в документации игровых моделей.</footer></body>
 </html>
 
 
