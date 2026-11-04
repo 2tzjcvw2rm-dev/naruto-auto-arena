@@ -205,7 +205,7 @@ button:active{transform:translateY(2px)}
 
 .arena.three-active .ground{opacity:.65}
 </style><script src="./test-3d/vendor/three.min.js" defer></script>
-<script src="./test-3d/vendor/GLTFLoader.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+<script src="./test-3d/vendor/GLTFLoader.js" defer></script><script src="./test-3d/naruto-profile.js" defer></script><script src="./test-3d/sasuke-profile.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -401,92 +401,6 @@ function normalizedFighter(model){
   const offset=new THREE.Group();offset.add(model);offset.position.copy(center).multiplyScalar(-1);
   const pivot=new THREE.Group();pivot.add(offset);pivot.scale.setScalar(1/size.y);
   return pivot;
-}
-// Use the actual GLB animation when present. For compatible skeletons without
-// clips, move arm bones into a restrained combat guard instead of a T-pose.
-
-// Dedicated, visible Naruto hand-seal idle for STATIC unrigged models.
-// CPU vertex animation is intentional here: pose is applied *before* first
-// frame, unlike the previous ineffective subtle morph-target transition.
-// Only runs for Naruto's profile, and keeps original GLB geometry unchanged.
-// Real-time relaxed ninja guard: rotate each whole arm around a shoulder pivot
-// with gentle vertex blending instead of pulling hands through the chest.
-// The cached original model and 5v5 battle models remain unchanged.
-function makeNarutoProfileRasengan(figure){
- // Static model has arms down to the belt, no arm rig. Bend real mesh in local coordinates.
- const smooth=x=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x)};
- const V=(x,y,z)=>new THREE.Vector3(x,y,z);
- const poses={};
- for(const side of [-1,1]){
-  const r={s:V(side*.17,1.48,0),e:V(side*.43,1.18,.02),w:V(side*.60,1.02,.035),t:V(side*.68,.975,.04)};
-  const t={s:V(side*.17,1.48,0),e:V(side*.385,1.20,.12),
-    w:V(side*.19,1.395,side>0?.27:.31),
-    t:V(side*.055,side>0?1.465:1.425,side>0?.325:.365)};
-  const rot=(a,b,c,d)=>new THREE.Quaternion().setFromUnitVectors(b.clone().sub(a).normalize(),d.clone().sub(c).normalize());
-  poses[side]={r,t,q1:rot(r.s,r.e,t.s,t.e),q2:rot(r.e,r.w,t.e,t.w),q3:rot(r.w,r.t,t.w,t.t)};
- }
- const v=new THREE.Vector3(),u=new THREE.Vector3(),f=new THREE.Vector3(),h=new THREE.Vector3();
- figure.traverse(mesh=>{
-  if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.getAttribute)return;
-  const src=mesh.geometry.getAttribute('position');
-  if(!src||src.itemSize!==3||src.count>90000)return;
-  const geo=mesh.geometry.clone(),dst=geo.getAttribute('position');
-  for(let i=0;i<src.count;i++){
-   const x=src.getX(i),y=src.getY(i),z=src.getZ(i),a=Math.abs(x);
-   if(a<.18||a>.77||y<.77||y>1.65)continue;
-   const centerY=1.48-1.055*Math.max(0,a-.17);
-   const mask=smooth((a-.18)/.145)*smooth((y-centerY+.205)/.105)*(1-smooth((y-centerY-.145)/.115));
-   if(mask<.001)continue;
-   const p=poses[x<0?-1:1];v.set(x,y,z);
-   u.copy(v).sub(p.r.s).applyQuaternion(p.q1).add(p.t.s);
-   f.copy(v).sub(p.r.e).applyQuaternion(p.q2).add(p.t.e);
-   h.copy(v).sub(p.r.w).applyQuaternion(p.q3).add(p.t.w);
-   u.lerp(f,smooth((a-.365)/.135));u.lerp(h,smooth((a-.55)/.105));
-   v.lerp(u,mask);dst.setXYZ(i,v.x,v.y,v.z);
-  }
-  dst.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();
-  mesh.geometry=geo;mesh.frustumCulled=false;
- });
- // Rasengan held between both hands in Naruto's live 3D profile.
- const source=figure.children[0]&&figure.children[0].children[0];
- let chakra=null,rings=[],sparks=[];
- if(source){
-  chakra=new THREE.Group();chakra.name='NarutoProfileRasengan';chakra.position.set(0,1.39,.46);
-  const add=(geometry,color,opacity)=>{
-   const mesh=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({
-    color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending}));
-   chakra.add(mesh);return mesh;
-  };
-  add(new THREE.SphereGeometry(.087,18,14),0xe5ffff,.94);
-  add(new THREE.SphereGeometry(.135,18,12),0x32baff,.17);
-  for(let i=0;i<4;i++){
-   const ring=add(new THREE.TorusGeometry(.1+i*.013,.007,5,32),
-    i%2?0xc6ffff:0x26aaff,.85);
-   ring.rotation.set(.25+i*1.1,i*.94,i*1.17);rings.push(ring);
-  }
-  for(let i=0;i<7;i++)sparks.push(add(
-   new THREE.SphereGeometry(.009+(i%3)*.002,7,5),
-   i%2?0xb4faff:0x58b7ff,.86));
-  chakra.add(new THREE.PointLight(0x57caff,.48,.88,2));
-  source.add(chakra);
- }
- const origin=figure.position.y;
- return (dt,time)=>{
-  figure.position.y=origin+.0035*Math.sin(time*.0016);
-  if(!chakra)return;
-  chakra.position.y=1.39+.007*Math.sin(time*.002);
-  chakra.scale.setScalar(1+.065*Math.sin(time*.0068));
-  for(let i=0;i<rings.length;i++){
-   rings[i].rotation.y=time*(i%2?-.0028:.0034)+i*.94;
-   rings[i].rotation.z=time*(i%2?.0031:-.0023)+i*1.17;
-  }
-  for(let i=0;i<sparks.length;i++){
-   const a=time*.0028+i*6.2831853/sparks.length;
-   const r=.124+.023*Math.sin(time*.004+i*2.1);
-   sparks[i].position.set(Math.cos(a)*r,Math.sin(a*1.6)*.09,Math.sin(a)*r);
-  }
- };
-
 }
 function makeHeroMotion(id,figure){
   // Both original Sketchfab meshes are static and unrigged. Preserve all
@@ -1137,17 +1051,41 @@ const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
 const modelAnimationClips={};
+function instantiateHero(source){
+  const instance=source.clone(true), originals=[], copies=[];
+  source.traverse(node=>originals.push(node));
+  instance.traverse(node=>copies.push(node));
+  const nodes=new Map(originals.map((node,i)=>[node,copies[i]]));
+  for(const original of originals){
+    if(!original.isSkinnedMesh)continue;
+    const mesh=nodes.get(original),skeleton=original.skeleton.clone();
+    skeleton.bones=original.skeleton.bones.map(bone=>nodes.get(bone));
+    mesh.bind(skeleton,original.bindMatrix);
+  }
+  return instance;
+}
 function fetchHeroModel(id,callback){
-if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
-if(modelCache[id]){callback(modelCache[id].clone(true));return}
-if(pendingModels[id]){pendingModels[id].push(callback);return}
-pendingModels[id]=[callback];
-new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelAnimationClips[id]=g.animations||[];modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
+  if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
+  if(modelCache[id]){callback(instantiateHero(modelCache[id]));return}
+  if(pendingModels[id]){pendingModels[id].push(callback);return}
+  pendingModels[id]=[callback];
+  function deliver(source){
+    const callbacks=pendingModels[id];
+    delete pendingModels[id];
+    for(const cb of callbacks)cb(source?instantiateHero(source):null);
+  }
+  new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{
+    modelAnimationClips[id]=g.animations||[];
+    modelCache[id]=g.scene;
+    deliver(g.scene);
+  },undefined,error=>{console.warn('GLB not loaded',id,error);deliver(null)});
 }
 let heroRenderer=null;
+let profileCleanup=null;
 let releaseResize=null;
 let profileFrame=0;
 function releaseProfile(){
+  if(profileCleanup){profileCleanup();profileCleanup=null}
   if(profileFrame){cancelAnimationFrame(profileFrame);profileFrame=0}
   if(releaseResize){releaseResize.disconnect();releaseResize=null}
   if(heroRenderer){heroRenderer.dispose();heroRenderer.forceContextLoss();heroRenderer=null}
@@ -1160,12 +1098,11 @@ releaseProfile();
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
 try{
 host.innerHTML='';
-const scene=new THREE.Scene();scene.background=(hero.id==='naruto'||hero.id==='sasuke')?null:new THREE.Color(0x172840);
+const scene=new THREE.Scene();scene.background=null;
 const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:(hero.id==='naruto'||hero.id==='sasuke'),powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:hero.id==='naruto'?0x9caa97:0x3b5672,transparent:hero.id==='naruto',opacity:hero.id==='naruto'?.72:1,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.visible=hero.id!=="naruto"&&hero.id!=="sasuke";scene.add(floor);
 let drag=false,last=0,angle=.10;
 renderer.domElement.style.touchAction='none';
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
@@ -1182,7 +1119,8 @@ fetchHeroModel(hero.id,model=>{
   if(!fighter){if(upgradedFighters.has(hero.id))mountTurntable(host,hero);else note.textContent='3D-модель не загрузилась';return}
   while(group.children.length)group.remove(group.children[0]);
   group.add(fighter);group.position.y=.5;
-  const motion=hero.id==='naruto'?makeNarutoProfileRasengan(fighter):makeHeroMotion(hero.id,fighter);
+  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):makeHeroMotion(hero.id,fighter);
+  if(motion.dispose)profileCleanup=()=>motion.dispose();
   // Cinematic roster view: no technique buttons, no spin controls.
   let prevFrame=0;
   function animateProfile(t){
