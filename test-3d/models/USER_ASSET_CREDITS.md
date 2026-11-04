@@ -29,3 +29,14 @@ Original SHA-256: Kakashi `0942fafd01d7a784324dee7d684910237e1b231cfe54458435d84
 ## Madara Uchiha (November 4, 2026)
 
 `madara.glb` is the user-supplied `freefire_new_3d_character_madara_uchiha..glb` (612,724 bytes). Source model title: **FreeFire New 3D Character Madara Uchiha.** Embedded metadata credits **AJ Studio** and names the source [Sketchfab model](https://sketchfab.com/3d-models/freefire-new-3d-character-madara-uchiha-83e56a5dd37a4902b5887625a2e3905d), with **CC BY 4.0**. The original GLB has four textured meshes and no embedded animation tracks. The game generates a subtle whole-character idle motion and uses ordinary combat motions without editing the mesh. Keep artist attribution visible wherever the model is distributed. Copyright/trademark rights in Naruto characters may require separate permission for commercial use.
+
+## Obito Uchiha / Обито Учиха (4 November 2026)
+
+- Game asset: `obito.glb` (new playable fighter; other characters are untouched).
+- Source: user-supplied `obito_uchiha_full_rigged.glb`, bundled **byte-for-byte** at `test-3d/models/obito.glb`.
+- Original model: **Obito Uchiha full rigged**, by **Mwilix Alberto** — https://sketchfab.com/3d-models/obito-uchiha-full-rigged-5ab22bc6374e4e0181f34d8104342cd9
+- License in embedded glTF metadata: **CC BY 4.0** — https://creativecommons.org/licenses/by/4.0/
+- SHA-256 of original GLB: `fe29095ce36c66c362055af53b36ea90c7d4f6fb7f554b19ff61cab7cde814ea` (854,936 bytes).
+- The exported GLB includes three meshes and embedded PNG textures, but **no skins or animation clips** despite the title. The game applies a subtle whole-character idle motion, while keeping geometry and textures intact.
+- The 3D model is loaded by the existing GLTFLoader in both main and `test-3d` game builds, including the 5v5 auto-battle. All character progress and inventory remain unchanged.
+- Naruto characters and trademarks remain the rights of their respective owners; the model author's Creative Commons license does not grant rights to the underlying franchise.
