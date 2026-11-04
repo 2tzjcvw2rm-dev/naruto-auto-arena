@@ -430,6 +430,7 @@ button:active{transform:translateY(2px)}
 .gear-picker-actions{display:flex;gap:8px}
 .gear-picker-actions button{flex:1;font-size:13px;padding:12px 4px}
 @media(max-width:370px){#profileContent .profile-stage-v3 .gear-float{width:65px;min-height:67px;padding:3px 1px}#profileContent .profile-stage-v3 .gear-float small{font-size:9px}#profileContent .profile-stage-v3{height:clamp(338px,53vh,420px)}}
+#hero3d[data-hero="madara"]{background:radial-gradient(circle at 50% 26%,#9b3b6040,transparent 35%),radial-gradient(ellipse at 50% 85%,#53375888,transparent 65%),linear-gradient(180deg,#171b29 0%,#2c1e34 68%,#1b1e2b 100%)!important}
 </style></head>
 <body>
 <header>
@@ -468,7 +469,7 @@ function turnFrame(element,frame){
 }
 function fighterImage(id){
   const image=document.createElement('span');
-  image.className='fighter-image';image.style.backgroundImage='url("./models/'+id+'.webp")';
+  image.className='fighter-image';image.style.backgroundImage=id==='madara'?'url("./assets/madara-avatar.svg")':'url("./models/'+id+'.webp")';
   return image;
 }
 function showBattleImage(unit,id,side){
@@ -531,6 +532,16 @@ function normalizedFighter(model){
   return pivot;
 }
 function makeHeroMotion(id,figure){
+  if(id==='madara'){
+    // Madara's supplied GLB is a textured static mesh without animation clips.
+    // Keep the uploaded geometry intact; animate the whole character on mobile.
+    const baseY=figure.position.y;
+    return (dt,time,attacking,progress=-1)=>{
+      const strike=progress>=0?Math.sin(Math.PI*Math.max(0,Math.min(1,progress))):0;
+      figure.position.y=baseY+.0035*Math.sin(time*.00165);
+      figure.rotation.z=.008*Math.sin(time*.0011)+.08*strike;
+    };
+  }
   if(id==='kakashi'||id==='hinata'){
     // Static upright copies preserve their original geometry and bind pose.
     // Animate only the complete character, not the old bone skeleton.
@@ -852,7 +863,8 @@ const roster=[
 {id:'kakashi',name:'Какаши',role:'Скорость',color:'#556b7b',hair:'#d8e3e9',skin:'#e0b9a4',hp:110,atk:19,spd:18},
 {id:'hinata',name:'Хината',role:'Защита',color:'#a99bd1',hair:'#262a47',skin:'#efd1c0',hp:135,atk:13,spd:10},
 {id:'shikamaru',name:'Шикамару',role:'Контроль',color:'#697c57',hair:'#292b2c',skin:'#d9ad87',hp:120,atk:15,spd:12},
-{id:'gaara',name:'Гаара',role:'Защита',color:'#a05c44',hair:'#c95743',skin:'#f2c6a8',hp:145,atk:17,spd:9}
+{id:'gaara',name:'Гаара',role:'Защита',color:'#a05c44',hair:'#c95743',skin:'#f2c6a8',hp:145,atk:17,spd:9},
+{id:'madara',name:'Мадара Учиха',role:'Урон',color:'#982c42',hair:'#161821',skin:'#d7b09b',hp:150,atk:23,spd:14}
 ];
 const enemies=[
 {id:'itachi',name:'Итачи',color:'#272b34',hair:'#16151d',skin:'#d9b7aa',hp:110,atk:16,spd:13},
@@ -976,7 +988,12 @@ function heroAvatarHTML(c){
 }
 function applyExternalPortraits(scope=document){
   scope.querySelectorAll('[data-portrait]').forEach(node=>{
-    const id=node.dataset.portrait,frame=portraitFrames[id];if(!frame)return;
+    const id=node.dataset.portrait,frame=portraitFrames[id];
+    if(id==='madara'){
+      node.style.backgroundImage='url("./assets/madara-avatar.svg")';
+      node.style.backgroundPosition='center';node.style.backgroundSize='cover';node.style.backgroundRepeat='no-repeat';return;
+    }
+    if(!frame)return;
     node.style.backgroundImage='url("'+portraitAtlas[frame[0]]+'"),url("./models/'+id+'.webp")';
     node.style.backgroundPosition=frame[1]+',7.7% 2%';
     node.style.backgroundSize=frame[2]+',auto 1550%';
@@ -1009,7 +1026,8 @@ kakashi:['Кунай','Копирующая техника','Райкири'],hi
 shikamaru:['Удар','Теневая ловушка','Теневое связывание'],gaara:['Песчаный удар','Песчаный щит','Песчаная буря'],
 itachi:['Кунай','Огненная техника','Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
-sasori:['Кукла','Ядовитые иглы','Сотня кукол']
+sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
+madara:['Удар Учиха','Огненный шар','Сусаноо']
 };
 const jutsuVisuals={
 naruto:[['melee','#ffb34c','👊'],['clones','#f5f5ff','🥷'],['orb','#4ec7ff','🌀']],
@@ -1023,7 +1041,8 @@ itachi:[['melee','#dd7272','🗡️'],['fire','#f65d22','🔥'],['fire','#30263e
 pain:[['melee','#b6a1df','👊'],['orb','#9b78e6','🌀'],['orb','#d2a5ff','💥']],
 kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
 deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
-sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']]
+sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']],
+madara:[['melee','#e99690','⚔️'],['fire','#ff623b','🔥'],['orb','#9c6eff','👹']]
 };
 let rasengan3d=null;
 function drawRasengan3D(box){
@@ -1229,7 +1248,7 @@ function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
 // User-supplied Team 7 Sakura keeps her existing hand-sign pose, without re-posing.
-const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1'};
+const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1',madara:'user-original-1'};
 const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-team7.glb?v=20261104team7':'./models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
