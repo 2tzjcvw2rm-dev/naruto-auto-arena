@@ -306,7 +306,12 @@ button:active{transform:translateY(2px)}
   overflow:hidden!important;
 }
 
-/* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
+#hero3d[data-hero="sakura"].sakura-free-view{background-color:#d59cb9!important;background-image:url("./test-3d/assets/sakura-konoha-background-only.avif?v=20261104free1")!important;background-position:center;background-size:cover}
+#hero3d .sakura-sketchfab-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;mix-blend-mode:multiply}
+#hero3d .sakura-embed-credit{position:absolute;right:5px;bottom:5px;z-index:3;background:#17243bdd;color:#fff;font-size:9px;border-radius:5px;padding:3px 5px}
+#hero3d .sakura-embed-credit a{color:#fff;text-decoration:underline}
+.sakura-preview-toggle{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);z-index:8;color:#fff;background:#152137e8;border:1px solid #dfbd7c;padding:6px 10px;border-radius:8px;font-size:11px;white-space:nowrap}
+ /* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
 #profileContent .hero-profile-v3{padding:8px!important}
 #profileContent .profile-stage-v3{position:relative;width:100%;height:clamp(350px,56vh,470px);overflow:hidden;border-radius:13px;background:linear-gradient(#95b6c5,#dfc79e)}
 #profileContent .profile-stage-v3 #hero3d{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;border-radius:inherit!important;z-index:1}
@@ -1094,22 +1099,56 @@ let heroRenderer=null;
 let profileCleanup=null;
 let releaseResize=null;
 let profileFrame=0;
+let sakuraFree3DEnabled=true;
+function toggleSakuraFree3D(){
+ sakuraFree3DEnabled=!sakuraFree3DEnabled;
+ const hero=[...roster,...enemies].find(x=>x.id==='sakura');
+ if(hero)mountHero3D(hero);
+ const btn=document.getElementById('sakura3dToggle');
+ if(btn)btn.textContent=sakuraFree3DEnabled?'🌸 Показать арт':'↻ Показать 3D';
+}
 function releaseProfile(){
   if(profileCleanup){profileCleanup();profileCleanup=null}
   if(profileFrame){cancelAnimationFrame(profileFrame);profileFrame=0}
   if(releaseResize){releaseResize.disconnect();releaseResize=null}
   if(heroRenderer){heroRenderer.dispose();heroRenderer.forceContextLoss();heroRenderer=null}
+  const ext=document.querySelector('#hero3d iframe.sakura-sketchfab-iframe');
+  if(ext)ext.remove();
 }
 
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
 // Reuse the same character GLB sources as the 5-on-5 arena; never change player progression.
 releaseProfile();
-// Sakura's approved artwork is the interim profile presentation; keep her GLB
-// in the repository and in the 5v5 arena until her future model is rigged.
+// Free external 3D viewer: does not replace the existing 5v5 GLB.
 if(hero.id==='sakura'){
   host.innerHTML='';
-  host.setAttribute('aria-label','Сакура на фоне цветущей Конохи. Образец боевой позы сохранён для будущей 3D-модели.');
+  host.classList.toggle('sakura-free-view',sakuraFree3DEnabled);
+  if(!sakuraFree3DEnabled){
+    host.setAttribute('aria-label','Утверждённый иллюстрированный профиль Сакуры');
+    return;
+  }
+  host.setAttribute('aria-label','Бесплатная 3D Сакура: вращайте модель пальцем');
+  const iframe=document.createElement('iframe');
+  iframe.className='sakura-sketchfab-iframe';
+  iframe.title='Sakura 3D by danigamer495channel';
+  iframe.src='https://sketchfab.com/models/6409fbcec6864a72b1011856a068fd52/embed?autostart=1&ui_hint=0&ui_infos=0&ui_controls=0&scrollwheel=0&transparent=1';
+  iframe.allow='autoplay; fullscreen; xr-spatial-tracking';
+  iframe.setAttribute('allowfullscreen','');
+  iframe.loading='eager';
+  iframe.onerror=()=>{
+    if(host.dataset.hero!=='sakura')return;
+    sakuraFree3DEnabled=false;
+    host.classList.remove('sakura-free-view');
+    iframe.remove();
+    const btn=document.getElementById('sakura3dToggle');
+    if(btn)btn.textContent='↻ Показать 3D';
+  };
+  host.appendChild(iframe);
+  const credit=document.createElement('span');
+  credit.className='sakura-embed-credit';
+  credit.innerHTML='<a href="https://sketchfab.com/3d-models/sakura-6409fbcec6864a72b1011856a068fd52" target="_blank" rel="noopener noreferrer">3D · danigamer495channel · CC BY</a>';
+  host.appendChild(credit);
   return;
 }
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
@@ -1200,7 +1239,7 @@ function renderProfile(){
  el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
  const stage='<div class="profile-hero hero-profile-v3"><div class="profile-stage-v3">'+
   '<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">Загружаю 3D…</div></div>'+
-  stageGearSlots(p,isEnemy)+'</div>'+
+  stageGearSlots(p,isEnemy)+(c.id==='sakura'?'<button id="sakura3dToggle" type="button" class="sakura-preview-toggle" onclick="toggleSakuraFree3D()">'+(sakuraFree3DEnabled?'🌸 Показать арт':'↻ Показать 3D')+'</button>':'')+'</div>'+
   '<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+(isEnemy?'Акацуки':c.role)+
   '<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>';
  const stats='<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+(isEnemy?0:b.atk))+'</span>'+
