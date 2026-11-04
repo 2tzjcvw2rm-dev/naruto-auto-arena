@@ -331,6 +331,40 @@ function normalizedFighter(model){
   const pivot=new THREE.Group();pivot.add(offset);pivot.scale.setScalar(1/size.y);
   return pivot;
 }
+// Use the actual GLB animation when present. For compatible skeletons without
+// clips, move arm bones into a restrained combat guard instead of a T-pose.
+function makeHeroMotion(id,figure){
+  let mixer=null;
+  const clips=modelAnimationClips[id]||[];
+  if(clips.length){
+    const clip=clips.find(c=>/idle|stand|combat|fight|guard|ready/i.test(c.name))||clips[0];
+    try{mixer=new THREE.AnimationMixer(figure);mixer.clipAction(clip).play()}catch(err){console.warn('Animation fallback',id,err);mixer=null}
+  }
+  const arms=[];
+  if(!mixer&&id!=='naruto'&&id!=='sasuke'){
+    figure.traverse(bone=>{
+      if(!bone.isBone)return;
+      const name=bone.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+      const left=name.includes('left')||name.startsWith('lupper')||name.startsWith('lfore');
+      const right=name.includes('right')||name.startsWith('rupper')||name.startsWith('rfore');
+      if(!left&&!right)return;
+      const upper=/upperarm|shoulder/.test(name)&&!/forearm/.test(name);
+      const fore=/forearm|lowerarm/.test(name);
+      if(upper||fore)arms.push({bone,upper,sign:left?1:-1,x:bone.rotation.x,z:bone.rotation.z});
+    });
+  }
+  return (dt,time,attacking)=>{
+    if(mixer)mixer.update(Math.max(0,Math.min(dt,.08)));
+    if(arms.length){
+      const breath=Math.sin(time*.0025)*.025;
+      for(const a of arms){
+        const attack=attacking?.14:0;
+        a.bone.rotation.z=a.z+a.sign*(a.upper?.43:-.46)+(a.upper?breath:0)+a.sign*attack;
+        a.bone.rotation.x=a.x+(a.upper?.06:-.11);
+      }
+    }
+  };
+}
 function initArena3d(){
   if(arena3d)return;
   if(!window.THREE){arenaUnavailable=true;bindBattleImages();return}
@@ -338,7 +372,7 @@ function initArena3d(){
   let renderer;
   try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'})}
   catch(error){arenaUnavailable=true;bindBattleImages();return}
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
   renderer.outputEncoding=THREE.sRGBEncoding;
   renderer.setClearColor(0,0);renderer.autoClear=false;
   host.appendChild(renderer.domElement);host.parentElement.classList.add('three-active');
@@ -346,25 +380,27 @@ function initArena3d(){
   scene.add(new THREE.HemisphereLight(0xfff7ed,0xc6d3ea,1.1));
   const light=new THREE.DirectionalLight(0xffffff,.8);light.position.set(-2,4,5);scene.add(light);
   const camera=new THREE.OrthographicCamera(-1,1,.57,-.57,.01,20);camera.position.z=4;
-  let slots=[],width=0,height=0,last=0;
+  let slots=[],width=0,height=0,last=0,bindSerial=0;
   arena3d={bind(){
+    const currentBind=++bindSerial;
     slots=[];
     for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
       units.forEach((u,i)=>{
         if(!upgradedFighters.has(u.id))return;
         const unit=el(side+i),sprite=unit.querySelector('svg');
         fetchHeroModel(u.id,model=>{
-          if(!unit.isConnected)return;
+          if(currentBind!==bindSerial||!unit.isConnected)return;
           if(!model){showBattleImage(unit,u.id,side);return}
-          const fighter=normalizedFighter(model);if(!fighter)return;
-          slots.push({unit,sprite,fighter,side});unit.classList.add('has-model');
+          const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
+          slots.push({unit,sprite,fighter,side,motion:makeHeroMotion(u.id,fighter)});unit.classList.add('has-model');
         });
       });
     }
   }};
   function draw(time){
     requestAnimationFrame(draw);
-    if(document.hidden||time-last<42)return;
+    if(document.hidden||time-last<45)return;
+    const dt=last?Math.min(.08,(time-last)/1000):.045;
     last=time;
     const rect=host.getBoundingClientRect();
     if(!rect.width||!rect.height)return;
@@ -372,15 +408,18 @@ function initArena3d(){
       width=rect.width;height=rect.height;renderer.setSize(width,height);
     }
     renderer.setScissorTest(false);renderer.setViewport(0,0,width,height);renderer.clear();
-    for(const {unit,sprite,fighter,side} of slots){
+    for(const {unit,sprite,fighter,side,motion} of slots){
       if(unit.classList.contains('down'))continue;
       const r=sprite.getBoundingClientRect();if(!r.width||!r.height)continue;
       const half=.57*r.width/r.height;camera.left=-half;camera.right=half;camera.updateProjectionMatrix();
       const x=r.left-rect.left,y=rect.bottom-r.bottom;
       renderer.setViewport(x,y,r.width,r.height);
       renderer.setScissor(x,y,r.width,r.height);renderer.setScissorTest(true);renderer.clearDepth();
-      fighter.rotation.y=(side==='allyTeam'?1:-1)*(.38+.025*Math.sin(time/700));
-      fighter.position.y=.012*Math.sin(time/440);
+      const attacking=unit.classList.contains('acting-now');
+      if(motion)motion(dt,time,attacking);
+      fighter.rotation.y=(side==='allyTeam'?1:-1)*(.38+.06*Math.sin(time/850));
+      fighter.rotation.z=attacking?.065*Math.sin(time/150):0;
+      fighter.position.y=.012*Math.sin(time/440)+(attacking?.035*Math.abs(Math.sin(time/230)):0);
       scene.add(fighter);renderer.render(scene,camera);scene.remove(fighter);
     }
   }
@@ -701,16 +740,19 @@ const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
+const modelAnimationClips={};
 function fetchHeroModel(id,callback){
 if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
 if(modelCache[id]){callback(modelCache[id].clone(true));return}
 if(pendingModels[id]){pendingModels[id].push(callback);return}
 pendingModels[id]=[callback];
-new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
+new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelAnimationClips[id]=g.animations||[];modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
 }
 let heroRenderer=null;
 let releaseResize=null;
+let profileFrame=0;
 function releaseProfile(){
+  if(profileFrame){cancelAnimationFrame(profileFrame);profileFrame=0}
   if(releaseResize){releaseResize.disconnect();releaseResize=null}
   if(heroRenderer){heroRenderer.dispose();heroRenderer.forceContextLoss();heroRenderer=null}
 }
@@ -724,7 +766,7 @@ try{
 host.innerHTML='';
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
 const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
@@ -744,6 +786,18 @@ fetchHeroModel(hero.id,model=>{
   if(!fighter){if(upgradedFighters.has(hero.id))mountTurntable(host,hero);else note.textContent='3D-модель не загрузилась';return}
   while(group.children.length)group.remove(group.children[0]);
   group.add(fighter);group.position.y=.5;
+  const motion=makeHeroMotion(hero.id,fighter);
+  let prevFrame=0;
+  function animateProfile(t){
+    if(heroRenderer!==renderer||!host.isConnected)return;
+    if(!document.hidden&&t-prevFrame>=48){
+      const dt=prevFrame?Math.min(.08,(t-prevFrame)/1000):.048;
+      motion(dt,t,false);
+      renderer.render(scene,camera);prevFrame=t;
+    }
+    profileFrame=requestAnimationFrame(animateProfile);
+  }
+  profileFrame=requestAnimationFrame(animateProfile);
   function fit(){
     const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
     renderer.setSize(w,h);camera.aspect=w/h;
