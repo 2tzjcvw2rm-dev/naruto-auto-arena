@@ -1093,7 +1093,8 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./test-3d/models/sakura-team7.glb?v=20261104team7':'./test-3d/models/'+hero.id+'.glb']));
+const customModelVersions={kakashi:'ff1',pain:'ff1',itachi:'ff1',hinata:'ff1'};
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./test-3d/models/sakura-team7.glb?v=20261104team7':'./test-3d/models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
