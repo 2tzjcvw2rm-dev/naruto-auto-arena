@@ -466,6 +466,26 @@ function normalizedFighter(model){
   return pivot;
 }
 function makeHeroMotion(id,figure){
+  if(id==='sakura'){
+    // Sakura uses two real GLB shape keys rather than shifting the arms with
+    // procedural heuristics. These blend between guard and a forward punch.
+    const meshes=[];
+    figure.traverse(node=>{
+      if(node.isMesh&&node.morphTargetInfluences&&node.morphTargetInfluences.length>=2)
+        meshes.push(node);
+    });
+    const baseScale=figure.scale.y;
+    return (dt,time,attacking,progress=-1)=>{
+      const phase=progress>=0?Math.max(0,Math.min(1,progress)):0;
+      const punch=progress>=0?Math.sin(Math.PI*phase)**2:0;
+      for(const mesh of meshes){
+        mesh.morphTargetInfluences[0]=1-punch;
+        mesh.morphTargetInfluences[1]=punch;
+      }
+      figure.scale.y=baseScale*(1+.006*Math.sin(time*.002));
+      figure.rotation.z=.008*Math.sin(time*.00135);
+    };
+  }
   // Both original Sketchfab meshes are static and unrigged. Preserve all
   // textures and add two lightweight morph targets for a combat-ready pose.
   const featured=id==='naruto'||id==='sasuke'||id==='sakura';
@@ -1120,7 +1140,9 @@ function closeProfile(){closeGearPicker();el('profileModal').classList.remove('o
 function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,'./models/'+hero.id+'.glb']));
+// The dedicated Sakura guard model includes editable ready/punch morph targets.
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-guard.glb?v=20261104pose1':'./models/'+hero.id+'.glb']));
+const nativeSakuraPreview=new URLSearchParams(window.location.search).get('sakura')==='native';
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
@@ -1196,7 +1218,7 @@ if(hasDualView&&!characterPreview3D[hero.id]){
   return;
 }
 // Keep the approved high-detail Sakura viewer; local GLB remains a native fallback.
-if(hero.id==='sakura'&&typeof window.mountSakuraViewer==='function'){
+if(hero.id==='sakura'&&!nativeSakuraPreview&&typeof window.mountSakuraViewer==='function'){
   profileCleanup=window.mountSakuraViewer(host);
   return;
 }
