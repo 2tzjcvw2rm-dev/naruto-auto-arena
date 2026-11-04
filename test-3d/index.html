@@ -270,6 +270,10 @@ button:active{transform:translateY(2px)}
 .profile-hero .hero-power{display:block;width:65%;text-align:center;font-size:23px;color:#613c14;background:linear-gradient(#ffe7a9,#f6c66e);border:2px solid #d7a457;border-radius:10px;padding:6px;margin:7px auto}
 .mini-unit .unit-power{display:inline-block;font-size:9px;font-weight:900;color:#ffe2a0;background:#262139cc;border-radius:4px;padding:1px 2px;white-space:nowrap}
 @media(max-width:390px){.team-avatar{width:57px;height:57px;flex-basis:57px}.team-card-actions button{font-size:11px!important}.team-avatar-name strong{font-size:12px!important}}
+
+.chidori-bolts{position:absolute;inset:0;width:100%;height:100%;z-index:95;pointer-events:none;filter:drop-shadow(0 0 5px #00bfff) drop-shadow(0 0 6px #fff)}
+.chidori-impact{position:absolute;width:118px;height:118px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:96;background:repeating-conic-gradient(from 6deg,transparent 0 14deg,#7cd9ff88 15deg 20deg,transparent 22deg 35deg),radial-gradient(circle,#fff 0,#8ae4ffb0 12%,#3286fa60 33%,transparent 70%);animation:chidoriPop .7s ease-out both}
+@keyframes chidoriPop{0%{opacity:0;scale:.3}15%{opacity:1;scale:1.1}100%{opacity:0;scale:1.7}}
 </style></head>
 <body>
 <header>
@@ -753,6 +757,41 @@ box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible'
 clearTimeout(window.rasenganCutinTimer);
 window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350);
 }
+function showChidoriStrike(layer,sx,sy,tx,ty){
+  const box=layer.getBoundingClientRect(),ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('class','chidori-bolts');
+  svg.setAttribute('viewBox','0 0 '+Math.max(1,box.width)+' '+Math.max(1,box.height));
+  svg.setAttribute('preserveAspectRatio','none');
+  const dx=tx-sx,dy=ty-sy,len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len,ny=dx/len;
+  const path=(points,width,color,opacity)=>{
+    const p=document.createElementNS(ns,'path');p.setAttribute('d',points);
+    p.setAttribute('fill','none');p.setAttribute('stroke',color);
+    p.setAttribute('stroke-width',width);
+    p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');
+    p.setAttribute('opacity',opacity);svg.appendChild(p);
+  };
+  for(let j=0;j<6;j++){
+    let points='M '+sx.toFixed(1)+' '+sy.toFixed(1);
+    for(let k=1;k<=9;k++){
+      const t=k/9,spread=k===9?0:Math.sin((j+1)*13.7+k*3.7)*(12+11*(j%3))*(1-t*.6);
+      const x=sx+dx*t+nx*spread,y=sy+dy*t+ny*spread;
+      points+=' L '+x.toFixed(1)+' '+y.toFixed(1);
+      if(k===3||k===6){
+        const bx=x+nx*(j%2===0?23:-23),by=y+ny*(j%2===0?23:-23);
+        path('M '+x.toFixed(1)+' '+y.toFixed(1)+' L '+bx.toFixed(1)+' '+by.toFixed(1),2,'#75d6ff',.8);
+      }
+    }
+    path(points,j===0?10:5,'#168fff',.32);
+    path(points,j===0?3.8:1.9,j%2===0?'#edffff':'#84d3ff',1);
+  }
+  layer.appendChild(svg);
+  if(svg.animate)svg.animate([{opacity:0,transform:'scale(.93)'},{opacity:1,transform:'scale(1)'},{opacity:.85},{opacity:0}],{duration:850,easing:'ease-out'});
+  setTimeout(()=>svg.remove(),930);
+  const flash=document.createElement('div');flash.className='chidori-impact';
+  flash.style.left=tx+'px';flash.style.top=ty+'px';layer.appendChild(flash);
+  setTimeout(()=>flash.remove(),700);
+}
 function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
@@ -769,6 +808,7 @@ const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin
 void source.offsetWidth;source.classList.add(cls);
 setTimeout(()=>source.classList.remove(cls),1300);
 if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
+if(kind==='lightning'&&action===2){showChidoriStrike(layer,sx,sy,tx,ty);return}
 const fx=document.createElement('div');
 fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
 fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
