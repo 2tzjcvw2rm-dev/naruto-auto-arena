@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Naruto Auto Arena</title>
 <meta name="theme-color" content="#10192e">
+<link rel="preconnect" href="https://sketchfab.com">
+<link rel="preconnect" href="https://static.sketchfab.com" crossorigin>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#10192e;color:white;font-family:Arial;text-align:center}
@@ -205,7 +207,8 @@ button:active{transform:translateY(2px)}
 
 .arena.three-active .ground{opacity:.65}
 </style><script src="./vendor/three.min.js" defer></script>
-<script src="./vendor/GLTFLoader.js" defer></script><script src="./naruto-profile.js" defer></script><script src="./sasuke-profile.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+<script src="./vendor/GLTFLoader.js" defer></script><script src="./naruto-profile.js" defer></script><script src="./sasuke-profile.js" defer></script>
+<script src="./sakura-profile.js?v=20261104c" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -307,7 +310,20 @@ button:active{transform:translateY(2px)}
 }
 
 #hero3d[data-hero="sakura"].sakura-free-view{background-color:#d59cb9!important;background-image:url("./assets/sakura-konoha-background-only.avif?v=20261104free1")!important;background-position:center;background-size:cover}
-#hero3d .sakura-sketchfab-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;opacity:1!important;mix-blend-mode:normal!important;filter:brightness(1.12) contrast(1.08) saturate(1.08);background:transparent}
+#hero3d .sakura-sketchfab-iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:2;mix-blend-mode:normal!important;filter:brightness(1.09) contrast(1.14) saturate(1.27);background:transparent}
+#hero3d .sakura-loading-art{position:absolute;inset:0;z-index:1;pointer-events:none;background:url("./assets/sakura-blossom-profile.avif?v=20261104-sakura1") center / cover no-repeat;opacity:1;transition:opacity .32s ease}
+#hero3d .sakura-loading-art.is-hidden{opacity:0}
+#hero3d .sakura-ambient-petals{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none}
+#hero3d .sakura-ambient-petals i{position:absolute;top:-9%;width:9px;height:13px;border-radius:80% 10% 80% 20%;background:linear-gradient(135deg,#fff7fd,#f0a3cf);opacity:.58;filter:drop-shadow(0 0 3px #ffd9f0);animation:sakuraFloat 7s linear infinite}
+#hero3d .sakura-ambient-petals i:nth-child(1){left:12%;animation-delay:-1s}
+#hero3d .sakura-ambient-petals i:nth-child(2){left:27%;animation-delay:-4.3s}
+#hero3d .sakura-ambient-petals i:nth-child(3){left:43%;animation-delay:-2.7s}
+#hero3d .sakura-ambient-petals i:nth-child(4){left:58%;animation-delay:-5.7s}
+#hero3d .sakura-ambient-petals i:nth-child(5){left:72%;animation-delay:-.5s}
+#hero3d .sakura-ambient-petals i:nth-child(6){left:84%;animation-delay:-3.5s}
+#hero3d .sakura-ambient-petals i:nth-child(7){left:93%;animation-delay:-6.2s}
+@keyframes sakuraFloat{0%{transform:translate3d(0,-4px,0) rotate(0deg)}100%{transform:translate3d(-40px,480px,0) rotate(290deg)}}
+@media(prefers-reduced-motion:reduce){#hero3d .sakura-ambient-petals i{animation:none;opacity:.25}}
 #hero3d .sakura-embed-credit{position:absolute;right:5px;bottom:5px;z-index:3;background:#17243bdd;color:#fff;font-size:9px;border-radius:5px;padding:3px 5px}
 #hero3d .sakura-embed-credit a{color:#fff;text-decoration:underline}
 .sakura-preview-toggle{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);z-index:8;color:#fff;background:#152137f2;border:1px solid #dfbd7c;padding:8px 16px;border-radius:9px;font-size:12px;font-weight:750;white-space:nowrap;box-shadow:0 2px 8px #1119;min-height:36px;touch-action:manipulation}
@@ -452,7 +468,7 @@ function normalizedFighter(model){
 function makeHeroMotion(id,figure){
   // Both original Sketchfab meshes are static and unrigged. Preserve all
   // textures and add two lightweight morph targets for a combat-ready pose.
-  const featured=id==='naruto'||id==='sasuke';
+  const featured=id==='naruto'||id==='sasuke'||id==='sakura';
   let mixer=null;
   const clips=modelAnimationClips[id]||[];
   if(clips.length){
@@ -474,18 +490,21 @@ function makeHeroMotion(id,figure){
           const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
           const abs=Math.abs(x),sign=x<0?-1:1;
           const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
-          const reach=smooth((abs-.16)/.34);
-          const torsoGate=smooth((y-.93)/.19)*(1-smooth((y-1.52)/.18));
-          const q=reach*torsoGate,hand=smooth((abs-.37)/.29)*q;
+          // Sakura's sculpt is 2.246 units tall and needs a higher shoulder gate.
+          const sakura=id==='sakura';
+          const reach=sakura?smooth((abs-.21)/.26):smooth((abs-.16)/.34);
+          const torsoGate=sakura?smooth((y-1.17)/.22)*(1-smooth((y-1.78)/.23)):smooth((y-.93)/.19)*(1-smooth((y-1.52)/.18));
+          const q=reach*torsoGate;
+          const hand=sakura?smooth((abs-.37)/.13)*q:smooth((abs-.37)/.29)*q;
           // Gradually bend the arms down and forward from their static T pose.
-          const gx=x-sign*(.18*q+.08*hand);
-          const gy=y-.10*q-.09*hand;
-          const gz=z+.14*q+.05*hand;
+          const gx=sakura?x-sign*(.14*q+.095*hand):x-sign*(.18*q+.08*hand);
+          const gy=sakura?y+.025*q+.07*hand:y-.10*q-.09*hand;
+          const gz=sakura?z+.22*q+.13*hand:z+.14*q+.05*hand;
           // Right arm extends for Rasengan / Chidori while left stays guarding.
           const attackSide=x>0?1:0;
-          const sx=gx-sign*.055*q*attackSide;
-          const sy=gy+.08*hand*attackSide;
-          const sz=gz+.37*hand*attackSide+.08*q*attackSide;
+          const sx=sakura?gx+sign*.035*q*attackSide:gx-sign*.055*q*attackSide;
+          const sy=sakura?gy+.06*hand*attackSide:gy+.08*hand*attackSide;
+          const sz=sakura?gz+.31*hand*attackSide+.08*q*attackSide:gz+.37*hand*attackSide+.08*q*attackSide;
           const k=i*3;
           guard[k]=gx;guard[k+1]=gy;guard[k+2]=gz;
           strike[k]=sx;strike[k+1]=sy;strike[k+2]=sz;
@@ -539,7 +558,7 @@ function makeHeroMotion(id,figure){
     }
   }
   let chakra=null,lightningPaths=[];
-  if(featured){
+  if(featured&&id!=='sakura'){
     chakra=new THREE.Group();chakra.visible=false;
     chakra.position.set(.23,.14,.28);
     if(id==='naruto'){
@@ -1168,30 +1187,9 @@ if(hasDualView&&!characterPreview3D[hero.id]){
   host.setAttribute('aria-label',hero.name+': иллюстрация персонажа. Нажмите Показать 3D для вращения модели.');
   return;
 }
-// The free Sakura preview is a third-party Sketchfab embed, not the in-game GLB.
-if(hero.id==='sakura'){
-  host.innerHTML='';
-  host.setAttribute('aria-label','Бесплатная 3D Сакура: вращайте модель пальцем');
-  const iframe=document.createElement('iframe');
-  iframe.className='sakura-sketchfab-iframe';
-  iframe.title='Sakura 3D by danigamer495channel';
-  iframe.src='https://sketchfab.com/models/6409fbcec6864a72b1011856a068fd52/embed?autostart=1&ui_hint=0&ui_infos=0&ui_controls=0&scrollwheel=0&transparent=1';
-  iframe.allow='autoplay; fullscreen; xr-spatial-tracking';
-  iframe.setAttribute('allowfullscreen','');
-  iframe.loading='eager';
-  iframe.onerror=()=>{
-    if(host.dataset.hero!=='sakura')return;
-    characterPreview3D.sakura=false;
-    host.classList.remove('sakura-free-view','profile-3d');
-    host.classList.add('profile-art');
-    iframe.remove();
-    updateCharacterPreviewButton();
-  };
-  host.appendChild(iframe);
-  const credit=document.createElement('span');
-  credit.className='sakura-embed-credit';
-  credit.innerHTML='<a href="https://sketchfab.com/3d-models/sakura-6409fbcec6864a72b1011856a068fd52" target="_blank" rel="noopener noreferrer">3D · danigamer495channel · CC BY</a>';
-  host.appendChild(credit);
+// Keep the approved high-detail Sakura viewer; local GLB remains a native fallback.
+if(hero.id==='sakura'&&typeof window.mountSakuraViewer==='function'){
+  profileCleanup=window.mountSakuraViewer(host);
   return;
 }
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
@@ -1248,12 +1246,12 @@ fetchHeroModel(hero.id,model=>{
     const sphere=box.getBoundingSphere(new THREE.Sphere());
     // Keep Naruto large inside the tall iPhone panel while preserving full-body framing.
     const aperture=Math.atan(Math.tan(camera.fov*Math.PI/360)*Math.min(1,Math.max(.78,camera.aspect)));
-    camera.position.set(0,.5,1.05*sphere.radius/Math.sin(aperture));
+    camera.position.set(0,.5,(hero.id==='sakura'?1.26:1.05)*sphere.radius/Math.sin(aperture));
     camera.lookAt(0,.5,0);camera.updateProjectionMatrix();renderer.render(scene,camera);
   }
   fit();
   if(window.ResizeObserver){releaseResize=new ResizeObserver(fit);releaseResize.observe(host)}
-  if(hero.id==='naruto'||hero.id==='sasuke')note.remove();else note.textContent='Поверни персонажа пальцем';
+  if(hero.id==='naruto'||hero.id==='sasuke'||hero.id==='sakura')note.remove();else note.textContent='Поверни персонажа пальцем';
   } catch(err) {
     console.warn('3D profile initialization failed',hero.id,err);
     if(heroRenderer===renderer){releaseProfile();mountTurntable(host,hero)}
