@@ -255,6 +255,21 @@ button:active{transform:translateY(2px)}
 @keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
 </style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style><style>.fighter-image{display:block;background-repeat:no-repeat;background-size:400% 400%;aspect-ratio:2/3}.profile-model>.fighter-image{height:96%;max-width:100%;margin:1% auto}.battle-image{height:75px;max-width:100%;flex-shrink:1}.model-credits{font-size:12px;color:#cad7ea;margin:12px}.model-credits a{color:#ffd486}#battle3d{z-index:8}.arena .mini-unit.has-model svg{visibility:hidden!important}.profile-model canvas{display:block;width:100%;height:100%}.model-technique{position:absolute!important;right:8px;bottom:8px;z-index:6!important;background:#16223ae8!important;color:#e5f5ff!important;border:1px solid #7dbedf!important;border-radius:9px!important;font-size:12px!important;line-height:1.1!important;padding:9px 12px!important;box-shadow:0 2px 12px #0005!important;cursor:pointer!important}
 .profile-model .model-credit{bottom:8px!important;left:8px!important;right:auto!important;max-width:45%!important}
+
+/* Portrait crops of the first frame of each existing 4x4 character sheet */
+.team-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding:9px!important;min-width:0!important}
+.team-card-header{display:flex;align-items:center;gap:8px;min-width:0}
+.team-avatar{display:block;width:68px;height:68px;flex:0 0 68px;border:2px solid #edc27d;border-radius:9px;background-color:#142039;background-repeat:no-repeat;background-size:auto 1550%;background-position:7.7% 2%;box-shadow:inset 0 0 9px #102039,0 2px 7px #0007}
+.team-avatar-name{min-width:0;flex:1}.team-avatar-name strong{display:block;font-size:14px!important;color:#fff6df;line-height:1.2}.team-avatar-name small{display:block;font-size:11px;line-height:1.35;color:#d9dce7}
+.hero-power{display:inline-block;font-size:14px;font-weight:900;color:#f9c86e;font-variant-numeric:tabular-nums;white-space:nowrap}
+.team-card .hero-power{font-size:12px;margin-top:4px}
+.team-card-actions{display:flex;gap:6px;margin-top:auto;width:100%}
+.team-card-actions button{flex:1!important;min-width:0;padding:10px 3px!important;font-size:12px!important}
+.profile-hero{display:block!important;padding:9px!important}
+.profile-hero .hero-details{color:#283142!important;text-align:center!important;font-size:16px!important;line-height:1.4!important;margin-top:7px}
+.profile-hero .hero-power{display:block;width:65%;text-align:center;font-size:23px;color:#613c14;background:linear-gradient(#ffe7a9,#f6c66e);border:2px solid #d7a457;border-radius:10px;padding:6px;margin:7px auto}
+.mini-unit .unit-power{display:inline-block;font-size:9px;font-weight:900;color:#ffe2a0;background:#262139cc;border-radius:4px;padding:1px 2px;white-space:nowrap}
+@media(max-width:390px){.team-avatar{width:57px;height:57px;flex-basis:57px}.team-card-actions button{font-size:11px!important}.team-avatar-name strong{font-size:12px!important}}
 </style></head>
 <body>
 <header>
@@ -584,7 +599,7 @@ if(hpBar)hpBar.style.width=Math.max(0,100*u.curHp/u.maxHp)+'%';
 if(rageBar)rageBar.style.width=Math.max(0,u.rage||0)+'%';
 n.classList.toggle('down',u.curHp<=0);
 });
-el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+el('teamStatus').textContent='⚡ Команда: '+prettyPower(s.team.reduce((n,id)=>n+characterPower(roster.find(c=>c.id===id)),0))+' · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 return;
 }
 renderedLayout=layoutKey;
@@ -596,11 +611,11 @@ const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middl
 const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row).length;
 const bottom=total===1?24:(idx===0?43:8);
 const left=(side==='allyTeam'?allyXs:foeXs)[row];
-return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
+return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><span class="unit-power">⚡'+prettyPower(characterPower(u))+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
 }).join('');
 }
 if(arena3d)arena3d.bind();else if(arenaUnavailable)bindBattleImages();
-el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+el('teamStatus').textContent='⚡ Команда: '+prettyPower(s.team.reduce((n,id)=>n+characterPower(roster.find(c=>c.id===id)),0))+' · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 
 }
 function renderFormationPreview(){
@@ -622,12 +637,15 @@ const slot=s.formationSlots.findIndex((x,i)=>formationRowForSlot(i)===row&&x===n
 if(slot<0){el('teamStatus').textContent='В этой линии нет свободного места — поменяй бойцов в схеме';return}
 putInSlot(slot,id);
 }
+function heroAvatarHTML(c){
+  return '<span class="team-avatar" role="img" aria-label="Портрет '+c.name+'" style="background-image:url(\'./models/'+c.id+'.webp\')"></span>';
+}
 function renderTeamCards(){
-renderFormationPreview();
-el('teamCards').innerHTML=roster.map(c=>{
-const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id);
-return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+(chosen?' · Место '+(slot+1):'')+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>'
-}).join('');
+  renderFormationPreview();
+  el('teamCards').innerHTML=roster.map(c=>{
+    const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id),p=heroData(c.id);
+    return '<div class="team-card '+(chosen?'chosen':'')+'"><div class="team-card-header">'+heroAvatarHTML(c)+'<div class="team-avatar-name"><strong>'+c.name+'</strong><small>⭐ Уровень '+p.level+' · '+c.role+(chosen?' · Место '+(slot+1):'')+'</small><span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="team-card-actions"><button onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>';
+  }).join('');
 }
 function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
 function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
@@ -815,6 +833,16 @@ const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critD
 for(const g of gearCatalog){const item=itemById(p.gear[g.slot]);if(item)b[g.bonus]+=g.value*(1+item.quality)}
 return b;
 }
+/* Combat power is derived from base stats, a character's level, and the
+   actual equipped items plus their improvement quality; no save migration. */
+function characterPower(c){
+  if(!c)return 0;
+  const p=heroData(c.id),b=heroBonuses(c.id);
+  return Math.max(1,Math.round((c.atk+b.atk)*22+(c.hp+b.hp)*3.2+
+    (c.spd+b.speed)*15+(5+b.crit)*8+(150+b.critDamage)*.9+p.level*70));
+}
+function prettyPower(v){return Number(v||0).toLocaleString('ru-RU')}
+
 function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
 function closeProfile(){el('profileModal').classList.remove('open');releaseProfile();initTeams();render();openTeam()}
 function selectProfile(id){selectedProfile=id;renderProfile()}
@@ -913,7 +941,7 @@ const fighters=[...roster,...enemies];
 const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
 el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
 if(enemies.includes(c)){
-  el('profileContent').innerHTML='<div class="profile-hero"><div class="profile-model" id="hero3d" data-hero="'+c.id+'"></div><div class="hero-details">'+c.name+' · Акацуки</div></div><div class="profile-stats"><span>⚔️ Атака: '+c.atk+'</span><span>❤️ Базовое HP: '+c.hp+'</span><span>⚡ Скорость: '+c.spd+'</span></div>';
+  el('profileContent').innerHTML='<div class="profile-hero"><div class="profile-model" id="hero3d" data-hero="'+c.id+'"></div><div class="hero-details">'+c.name+' · Акацуки · ⭐ Уровень '+heroData(c.id).level+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="profile-stats"><span>⚔️ Атака: '+c.atk+'</span><span>❤️ Базовое HP: '+c.hp+'</span><span>⚡ Скорость: '+c.spd+'</span></div>';
   setTimeout(()=>mountHero3D(c),0);return;
 }
 const p=heroData(c.id),b=heroBonuses(c.id);
@@ -922,7 +950,7 @@ let bag=s.inventory.map(item=>{
 const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
 return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
 }).join('');
-el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
+el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+c.role+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>'+
 '<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
 '<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
 '<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
