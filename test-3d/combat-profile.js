@@ -1,7 +1,7 @@
 // Profile-only GLBs have a repaired skeleton and a posed rest frame.
 // Keep effect coordinates in the normalized fighter's parent space.
 const CombatProfile = (() => {
-  const techniques = {itachi: katon};
+  const techniques = {itachi: katon, kakashi: chidori};
   function modelKey(id, urls) {
     if (!techniques[id]) return id;
     const key = id + '-combat';
@@ -42,6 +42,46 @@ const CombatProfile = (() => {
           phase*.085,.020*Math.cos(i+phase*3));
       }
       embers.position.needsUpdate = true;
+    };
+  }
+  function chidori(root) {
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.033,1),
+      new THREE.MeshBasicMaterial({color:0xe6ffff}));
+    root.add(core,halo('rgba(36,148,255,1)',.23));
+    const count=15, steps=7;
+    const geometry=new THREE.BufferGeometry();
+    const data=new THREE.BufferAttribute(new Float32Array(count*steps*6),3);
+    geometry.setAttribute('position',data);
+    const bolts=new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({
+      color:0x74dbff,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+    bolts.frustumCulled=false;
+    root.add(bolts);
+    const sparks=particles(18,0xbffbff,.007);
+    root.add(sparks.points);
+    const from=new THREE.Vector3(), to=new THREE.Vector3();
+    return (t,left,right) => {
+      root.position.copy(left).lerp(right,.5);
+      root.position.z+=.034;
+      root.position.y+=.035;
+      core.scale.setScalar(1+.09*Math.sin(t*19));
+      core.rotation.set(t*.9,t*1.8,0);
+      for(let i=0;i<count;i++){
+        const yaw=i*2.4+t*.8, elev=.85*Math.sin(i*1.75+t);
+        from.set(0,0,0);
+        for(let k=0;k<steps;k++){
+          const r=(k+1)/steps*(.068+.021*Math.sin(i*3+t*7));
+          const a=yaw+.15*Math.sin(i+k*9+t*26), e=elev+.18*Math.cos(k*7+i+t*18);
+          to.set(r*Math.cos(a)*Math.cos(e),r*Math.sin(e),r*Math.sin(a)*Math.cos(e));
+          const n=(i*steps+k)*2;
+          data.setXYZ(n,from.x,from.y,from.z);data.setXYZ(n+1,to.x,to.y,to.z);
+          from.copy(to);
+        }
+      }
+      for(let i=0;i<18;i++){
+        const r=.04+.057*((t*1.6+i*.413)%1);
+        sparks.position.setXYZ(i,r*Math.sin(7*i+t),r*Math.cos(5*i),r*Math.cos(7*i+t));
+      }
+      sparks.position.needsUpdate=data.needsUpdate=true;
     };
   }
   function mount(id, fighter) {
