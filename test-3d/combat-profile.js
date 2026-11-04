@@ -90,45 +90,31 @@ const CombatProfile = (() => {
       embers.position.needsUpdate=true;
     };
   }
-  function chidori(root) {
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(.033,1),
-      new THREE.MeshBasicMaterial({color:0xe6ffff}));
-    root.add(core,halo('rgba(36,148,255,1)',.23));
-    const count=15, steps=7;
-    const geometry=new THREE.BufferGeometry();
-    const data=new THREE.BufferAttribute(new Float32Array(count*steps*6),3);
-    geometry.setAttribute('position',data);
-    const bolts=new THREE.LineSegments(geometry,new THREE.LineBasicMaterial({
-      color:0x74dbff,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
-    bolts.frustumCulled=false;
-    root.add(bolts);
-    const sparks=particles(18,0xbffbff,.007);
-    root.add(sparks.points);
-    const from=new THREE.Vector3(), to=new THREE.Vector3();
-    return (t,left,right) => {
-      root.position.copy(left).lerp(right,.5);
-      root.position.z+=.034;
-      root.position.y+=.035;
-      core.scale.setScalar(1+.09*Math.sin(t*19));
-      core.rotation.set(t*.9,t*1.8,0);
-      for(let i=0;i<count;i++){
-        const yaw=i*2.4+t*.8, elev=.85*Math.sin(i*1.75+t);
-        from.set(0,0,0);
-        for(let k=0;k<steps;k++){
-          const r=(k+1)/steps*(.068+.021*Math.sin(i*3+t*7));
-          const a=yaw+.15*Math.sin(i+k*9+t*26), e=elev+.18*Math.cos(k*7+i+t*18);
-          to.set(r*Math.cos(a)*Math.cos(e),r*Math.sin(e),r*Math.sin(a)*Math.cos(e));
-          const n=(i*steps+k)*2;
-          data.setXYZ(n,from.x,from.y,from.z);data.setXYZ(n+1,to.x,to.y,to.z);
-          from.copy(to);
-        }
-      }
-      for(let i=0;i<18;i++){
-        const r=.04+.057*((t*1.6+i*.413)%1);
-        sparks.position.setXYZ(i,r*Math.sin(7*i+t),r*Math.cos(5*i),r*Math.cos(7*i+t));
-      }
-      sparks.position.needsUpdate=data.needsUpdate=true;
+  function braceWrist(fighter) {
+    // Local joint rotations for the existing GLB. The left fingers curl
+    // around the right forearm just behind the wrist, leaving the palm clear.
+    const pose={
+      LeftHandIndex1:[0.18605,-0.03457,0.28490,0.93969],
+      LeftHandMiddle1:[0.21345,-0.05689,0.26111,0.93969],
+      LeftHandRing1:[0.17547,-0.02640,0.29239,0.93969],
+      LeftHandPinky1:[0.12650,0.00896,0.31764,0.93969],
+      LeftHand:[0.79689,0.01001,-0.14150,0.58723],
+      LeftForeArm:[-0.20811,-0.28247,-0.12103,0.92858],
+      LeftArm:[0.06751,-0.08427,-0.06706,0.99189],
+      RightHand:[0.27558,-0.43088,-0.12843,0.84965],
+      RightForeArm:[0.04506,-0.04419,-0.01810,0.99784],
+      RightArm:[-0.07383,0.10937,0.05257,0.98986],
     };
+    for(const [name,rotation] of Object.entries(pose))
+      fighter.getObjectByName(name).quaternion.fromArray(rotation);
+  }
+  function chidori(root,view) {
+    const charge=makeChidoriCharge();
+    // The palm is measured in the original right-hand joint's local frame.
+    charge.group.scale.setScalar(.72);
+    if(view.battle)charge.group.children.filter(o=>o.isLight).forEach(o=>charge.group.remove(o));
+    root.add(charge.group);
+    return t=>charge.update(t);
   }
   function shinra(root, view) {
     const {renderer,scene,camera}=view;
@@ -267,6 +253,10 @@ const CombatProfile = (() => {
     if(id==='itachi' && head){
       head.add(root);
       root.position.set(0,.028,.081);
+    }else if(id==='kakashi'){
+      braceWrist(fighter);
+      fighter.getObjectByName('RightHand').add(root);
+      root.position.set(.035,.052,.054);
     }else parent.add(root);
     const right = fighter.getObjectByName('RightHand'), left = fighter.getObjectByName('LeftHand');
     const spine = fighter.getObjectByName('Spine1') || fighter.getObjectByName('Spine');
