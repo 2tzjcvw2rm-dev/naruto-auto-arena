@@ -715,7 +715,7 @@ function initArena3d(){
           if(!model){showBattleImage(unit,u.id,side);return}
           const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
           const actor=new THREE.Group();actor.add(fighter);
-          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):makeHeroMotion(u.id,fighter);
+          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
           slots.push({unit,sprite,fighter:actor,side,index:i,motion,attackAt:0,technique:0});unit.classList.add('has-model');
         });
       });
@@ -1481,7 +1481,7 @@ if(testBuild)el('pairDemo').hidden=false;
 document.addEventListener('DOMContentLoaded',initArena3d);
 document.addEventListener('DOMContentLoaded',()=>{
   const hero=new URLSearchParams(location.search).get('pose');
-  if(hero && upgradedFighters.has(hero) && CombatProfile.has(hero)) openCharacter(hero);
+  if(hero && upgradedFighters.has(hero) && (CombatProfile.has(hero)||hero==='sasuke')) openCharacter(hero);
 });
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>

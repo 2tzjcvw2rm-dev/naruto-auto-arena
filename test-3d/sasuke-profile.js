@@ -1,6 +1,6 @@
 // Pose the unrigged Sketch Nerd model using its original (+Z forward) mesh space.
 // The eyes identify the anatomical right as -X. Distances are in source GLB units.
-function makeSasukeProfileMotion(figure) {
+function makeSasukeProfileMotion(figure,battle=false) {
   const T = THREE;
   const vector = (x,y,z) => new T.Vector3(x,y,z);
   const bone = (name, position, parent) => {
@@ -47,6 +47,20 @@ function makeSasukeProfileMotion(figure) {
       const blend=wrist||elbow;
       weights[k+2]=sleeve*(1-blend);weights[k+3]=sleeve*blend;
     }
+    // Curl the distal vertices of the left fingers around the grip axis.
+    // Operate on this instance's cloned arm only, leaving the shared GLB intact.
+    if(src.material.name.includes('Left_Arm')){
+      for(let i=0;i<pos.count;i++){
+        const x=pos.getX(i),y=pos.getY(i);
+        const along=(x-.625)*.707-(y-.977)*.707;
+        if(along<=0 || x<.575)continue;
+        const turn=Math.min(2.5,along/.034),across=(x-.625)*.707+(y-.977)*.707;
+        const bent=.034*Math.sin(turn);
+        const inward=.034*(Math.cos(turn)-1);
+        pos.setXY(i,.625+.707*(bent+across+inward),.977+.707*(-bent+across+inward));
+      }
+      geo.computeVertexNormals();
+    }
     geo.setAttribute('skinIndex',new T.Uint16BufferAttribute(indices,4));
     geo.setAttribute('skinWeight',new T.Float32BufferAttribute(weights,4));
     const material=src.material.clone();
@@ -77,23 +91,85 @@ function makeSasukeProfileMotion(figure) {
     arm.wrist.rotateOnAxis(arm.wrist.position.clone().normalize(),right?-.35:.17);
   }
 
+  const sword=makeKusanagi();
+  sword.position.set(.090,-.095,-.003);
+  // Turn the whole grip with the wrist so the blade clears the cloak.
+  const wrist=arms[1].wrist, wristWorld=wrist.getWorldQuaternion(new T.Quaternion());
+  const outward=vector(.83,-.52,.22).normalize().applyQuaternion(wristWorld.clone().invert());
+  const bladeAxis=vector(0,0,outward.z<0?-1:1);
+  wrist.quaternion.multiply(new T.Quaternion().setFromUnitVectors(bladeAxis,outward));
+  sword.quaternion.setFromUnitVectors(vector(0,1,0),bladeAxis);
+  arms[1].wrist.add(sword);
   const charge=makeChidoriCharge();
+  if(battle)charge.group.children.filter(o=>o.isLight).forEach(o=>charge.group.remove(o));
   // Rest wrist (-.535,1.06,-.009); palm (-.605,.989,.012).
   // The charge sits a few centimetres out from the palm surface, beside the fingers.
   charge.group.position.set(-.077,-.071,.046);
   arms[0].wrist.add(charge.group);
   const axis=vector(1,0,0), flutter=new T.Quaternion();
-  const update=(dt,time) => {
+  const update=(dt,time,attacking,progress=-1,technique=0) => {
     const t=time*.001, breath=Math.sin(t*1.85);
     chest.rotation.set(-.075+.015*breath,-.14+.015*Math.sin(t*.83),.028+.008*breath);
     for(const arm of arms) {
       flutter.setFromAxisAngle(axis,.027*Math.sin(t*1.85+arm.side*.45));
       arm.elbow.quaternion.copy(arm.rest).multiply(flutter);
     }
-    charge.update(t);
+    if(battle){
+      const strike=attacking?Math.sin(Math.PI*progress):0;
+      arms[1].elbow.rotateX(-.34*strike);
+      arms[0].elbow.rotateX(-.26*strike);
+      charge.group.visible=technique===2&&progress>.1&&progress<.88;
+    }
+    if(charge.group.visible)charge.update(t);
+  };
+  update.dispose=()=>{
+    const owned=[sword,charge.group];
+    for(const obj of owned){
+      obj.traverse(node=>{node.geometry?.dispose();if(node.material){node.material.map?.dispose();node.material.dispose();}});
+      obj.parent?.remove(obj);
+    }
+    figure.traverse(node=>{if(node.isSkinnedMesh&&node.skeleton===skeleton){node.geometry.dispose();node.material.dispose();}});
+    skeleton.dispose?.();
   };
   update(0,0);
   return update;
+}
+
+// Faceted straight chokutō. Four longitudinal faces separate the back,
+// polished bevel and narrow cutting edge even in the small mobile viewport.
+function makeKusanagi() {
+  const sword=new THREE.Group();sword.name='LeftHandKusanagi';
+  const steel=new THREE.MeshStandardMaterial({vertexColors:true,metalness:.48,roughness:.27});
+  const vertices=[],colors=[];
+  const stations=[[-.001,.023,0],[.57,.022,0],[.70,.013,-.004],[.77,.0004,-.014]];
+  const tint=[0x8394a5,0xe6f2ff,0xc0d4e4,0x708394];
+  function ring([y,width,drift]){
+    return [[drift-width,y,0],[drift-.006,y,.006],[drift+width,y,0],[drift-.006,y,-.006]];
+  }
+  for(let i=1;i<stations.length;i++){
+    const a=ring(stations[i-1]),b=ring(stations[i]);
+    for(let k=0;k<4;k++){
+      const next=(k+1)%4,c=new THREE.Color(tint[k]);
+      for(const v of [a[k],b[k],a[next],a[next],b[k],b[next]]){
+        vertices.push(...v);colors.push(c.r,c.g,c.b);
+      }
+    }
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geo.computeVertexNormals();
+  steel.side=THREE.DoubleSide;
+  const blade=new THREE.Mesh(geo,steel);blade.position.y=.107;sword.add(blade);
+  const lacquer=new THREE.MeshStandardMaterial({color:0x302c35,roughness:.51});
+  const silver=new THREE.MeshStandardMaterial({color:0x91a4af,metalness:.62,roughness:.34});
+  function fitting(radius,length,y,depth,mat){
+    const piece=new THREE.Mesh(new THREE.CylinderBufferGeometry(radius,radius,length,12),mat);
+    piece.position.y=y;piece.scale.z=depth;sword.add(piece);
+  }
+  fitting(.025,.197,0,.81,lacquer);
+  fitting(.027,.013,-.099,.82,silver);fitting(.040,.016,.100,.78,lacquer);
+  fitting(.026,.023,.114,.68,silver);
+  return sword;
 }
 
 function makeChidoriCharge() {
