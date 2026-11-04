@@ -285,6 +285,36 @@ button:active{transform:translateY(2px)}
   overflow:hidden!important;
 }
 
+</style><style>
+
+/* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
+#profileContent .hero-profile-v3{padding:8px!important}
+#profileContent .profile-stage-v3{position:relative;width:100%;height:clamp(350px,56vh,470px);overflow:hidden;border-radius:13px;background:linear-gradient(#95b6c5,#dfc79e)}
+#profileContent .profile-stage-v3 #hero3d{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;min-height:0!important;border-radius:inherit!important;z-index:1}
+#profileContent .profile-stage-v3 #hero3d canvas{width:100%!important;height:100%!important;touch-action:none!important}
+#profileContent .profile-stage-v3 .gear-float{position:absolute;z-index:7;width:clamp(63px,23%,96px);min-height:73px;height:22%;max-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;border:2px solid #dfbd7c;border-radius:10px;background:linear-gradient(160deg,#34435cdd,#152034ed);color:#ffdfab;line-height:1.12;text-align:center;font-size:clamp(9px,2.7vw,12px);text-shadow:0 1px 3px #101725;box-shadow:0 4px 13px #0005;white-space:normal;cursor:pointer;touch-action:manipulation}
+#profileContent .profile-stage-v3 .gear-float b{font-size:clamp(21px,6vw,30px);line-height:1.1}
+#profileContent .profile-stage-v3 .gear-float small{font-size:10px;line-height:1.05;max-width:100%}
+#profileContent .profile-stage-v3 .gear-float.equipped{border-color:#ffd65f;background:linear-gradient(160deg,#55472bdd,#212938ef)}
+#profileContent .profile-stage-v3 .gear-float.locked{opacity:.74;cursor:default;border-style:dashed}
+#profileContent .profile-stage-v3 .gear-float.side-left{left:5px}
+#profileContent .profile-stage-v3 .gear-float.side-right{right:5px}
+#profileContent .profile-stage-v3 .gear-float.row-1{top:10%}
+#profileContent .profile-stage-v3 .gear-float.row-2{top:39%}
+#profileContent .profile-stage-v3 .gear-float.row-3{top:68%}
+#profileContent .hero-profile-v3 .hero-details{padding:8px 0 1px;color:#283142}
+#profileContent .hero-profile-v3 .hero-details .hero-power{margin:5px auto 1px}
+#profileContent .profile-stage-v3 .profile-model-loading{padding-top:130px}
+.gear-picker-overlay{position:fixed;inset:0;z-index:3500;background:#050b15dd;display:flex;align-items:center;justify-content:center;padding:13px}
+.gear-picker-dialog{max-height:85vh;overflow-y:auto;width:min(100%,430px);border-radius:14px;border:2px solid #d9ac62;background:#1d2a3e;padding:14px;color:white}
+.gear-picker-dialog h3{color:#ffcf7a;margin:2px 0 7px;text-align:center}
+.gear-picker-dialog p{font-size:13px;color:#d5e0ee}
+.gear-picker-options{display:grid;grid-template-columns:1fr;gap:7px;margin:10px 0}
+.gear-picker-options button{display:flex;align-items:center;justify-content:space-between;font-size:13px;text-align:left;gap:10px;padding:12px;background:#304258;color:#fff;border:1px solid #8197af}
+.gear-picker-options button.selected{border-color:#ffcf67;background:#4e4938}
+.gear-picker-actions{display:flex;gap:8px}
+.gear-picker-actions button{flex:1;font-size:13px;padding:12px 4px}
+@media(max-width:370px){#profileContent .profile-stage-v3 .gear-float{width:65px;min-height:67px;padding:3px 1px}#profileContent .profile-stage-v3 .gear-float small{font-size:9px}#profileContent .profile-stage-v3{height:clamp(338px,53vh,420px)}}
 </style></head>
 <body>
 <header>
@@ -374,54 +404,63 @@ function normalizedFighter(model){
 // with gentle vertex blending instead of pulling hands through the chest.
 // The cached original model and 5v5 battle models remain unchanged.
 function makeNarutoProfileSeal(figure){
-  const segments=[];
-  const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
-  figure.traverse(mesh=>{
-    if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.getAttribute)return;
-    const src=mesh.geometry.getAttribute('position');
-    if(!src||src.itemSize!==3||src.count>90000)return;
-    const g=mesh.geometry.clone(),p=g.getAttribute('position');
-    const a=new Float32Array(p.count*3),b=new Float32Array(p.count*3);
-    for(let i=0;i<p.count;i++){
-      const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
-      const sign=x<0?-1:1,ax=Math.abs(x);
-      // Shoulder starts around x ±.21, y 1.54 on this GLB.
-      // The taper softly separates arms from torso to prevent spikes.
-      const arm=smooth((ax-.20)/.17)*smooth((y-.88)/.13)*
-        (1-smooth((y-1.63)/.14));
-      const distal=smooth((ax-.32)/.32)*arm;
-      for(let pose=0;pose<2;pose++){
-        const angle=pose===0?.38:.46,cos=Math.cos(angle),sin=Math.sin(angle);
-        const dx=ax-.21,dy=y-1.54;
-        const bentX=.21+cos*dx+sin*dy;
-        const bentY=1.54-sin*dx+cos*dy;
-        const target=pose===0?a:b,k=i*3;
-        target[k]=x+(sign*bentX-x)*arm;
-        target[k+1]=y+(bentY-y)*arm;
-        target[k+2]=z+(.045+(pose===1?.016:0))*distal;
-      }
-    }
-    // Store initial pose in real vertex positions. This works on iOS WebGL
-    // even if the mesh's imported material lacks GPU morph-target flags.
-    p.array.set(a);p.needsUpdate=true;
-    g.computeBoundingSphere();
-    mesh.geometry=g;mesh.frustumCulled=false;
-    segments.push({position:p,poseA:a,poseB:b});
-  });
-  const baselineY=figure.position.y;
-  let previous=-1;
-  return (dt,t)=>{
-    const weight=.5+.5*Math.sin(t*.0019);
-    if(Math.abs(previous-weight)>.003){
-      previous=weight;
-      for(const seg of segments){
-        const dst=seg.position.array,aa=seg.poseA,bb=seg.poseB;
-        for(let k=0;k<dst.length;k++)dst[k]=aa[k]+(bb[k]-aa[k])*weight;
-        seg.position.needsUpdate=true;
-      }
-    }
-    figure.position.y=baselineY+.0045*Math.sin(t*.0015);
+ // Static model has arms down to the belt, no arm rig. Bend real mesh in local coordinates.
+ const smooth=x=>{x=Math.min(1,Math.max(0,x));return x*x*(3-2*x)};
+ const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+ const poses={};
+ for(const side of [-1,1]){
+  const r={s:V(side*.17,1.48,0),e:V(side*.43,1.18,.02),w:V(side*.60,1.02,.035),t:V(side*.68,.975,.04)};
+  const t={s:V(side*.17,1.48,0),e:V(side*.385,1.20,.12),
+    w:V(side*.19,1.395,side>0?.27:.31),
+    t:V(side*.055,side>0?1.465:1.425,side>0?.325:.365)};
+  const rot=(a,b,c,d)=>new THREE.Quaternion().setFromUnitVectors(b.clone().sub(a).normalize(),d.clone().sub(c).normalize());
+  poses[side]={r,t,q1:rot(r.s,r.e,t.s,t.e),q2:rot(r.e,r.w,t.e,t.w),q3:rot(r.w,r.t,t.w,t.t)};
+ }
+ const v=new THREE.Vector3(),u=new THREE.Vector3(),f=new THREE.Vector3(),h=new THREE.Vector3();
+ figure.traverse(mesh=>{
+  if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.getAttribute)return;
+  const src=mesh.geometry.getAttribute('position');
+  if(!src||src.itemSize!==3||src.count>90000)return;
+  const geo=mesh.geometry.clone(),dst=geo.getAttribute('position');
+  for(let i=0;i<src.count;i++){
+   const x=src.getX(i),y=src.getY(i),z=src.getZ(i),a=Math.abs(x);
+   if(a<.18||a>.77||y<.77||y>1.65)continue;
+   const centerY=1.48-1.055*Math.max(0,a-.17);
+   const mask=smooth((a-.18)/.145)*smooth((y-centerY+.205)/.105)*(1-smooth((y-centerY-.145)/.115));
+   if(mask<.001)continue;
+   const p=poses[x<0?-1:1];v.set(x,y,z);
+   u.copy(v).sub(p.r.s).applyQuaternion(p.q1).add(p.t.s);
+   f.copy(v).sub(p.r.e).applyQuaternion(p.q2).add(p.t.e);
+   h.copy(v).sub(p.r.w).applyQuaternion(p.q3).add(p.t.w);
+   u.lerp(f,smooth((a-.365)/.135));u.lerp(h,smooth((a-.55)/.105));
+   v.lerp(u,mask);dst.setXYZ(i,v.x,v.y,v.z);
+  }
+  dst.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();
+  mesh.geometry=geo;mesh.frustumCulled=false;
+ });
+ // Two upright fingers crossed with two horizontal fingers: Kage Bunshin seal.
+ const source=figure.children[0]&&figure.children[0].children[0];
+ let fingers=null;
+ if(source){
+  fingers=new THREE.Group();fingers.name='KageBunshinSeal';
+  const skin=new THREE.MeshStandardMaterial({color:0xe9bd99,roughness:.9});
+  const finger=(from,to,r)=>{
+   const a=V(...from),b=V(...to),dir=b.clone().sub(a);
+   const m=new THREE.Mesh(new THREE.CylinderGeometry(r*.81,r,dir.length(),9),skin);
+   m.position.copy(a).add(b).multiplyScalar(.5);
+   m.quaternion.setFromUnitVectors(V(0,1,0),dir.normalize());fingers.add(m);
   };
+  finger([-.014,1.397,.409],[-.014,1.505,.409],.01);
+  finger([.014,1.397,.410],[.014,1.505,.410],.01);
+  finger([-.090,1.432,.432],[.074,1.432,.432],.01);
+  finger([-.090,1.407,.435],[.074,1.407,.435],.01);
+  source.add(fingers);
+ }
+ const origin=figure.position.y;
+ return (dt,time)=>{
+  figure.position.y=origin+.0035*Math.sin(time*.0016);
+  if(fingers)fingers.position.y=.0025*Math.sin(time*.0016);
+ };
 }
 function makeHeroMotion(id,figure){
   // Both original Sketchfab meshes are static and unrigged. Preserve all
@@ -1063,8 +1102,8 @@ function characterPower(c){
 function prettyPower(v){return Number(v||0).toLocaleString('ru-RU')}
 
 function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
-function closeProfile(){el('profileModal').classList.remove('open');releaseProfile();initTeams();render();openTeam()}
-function selectProfile(id){selectedProfile=id;renderProfile()}
+function closeProfile(){closeGearPicker();el('profileModal').classList.remove('open');releaseProfile();initTeams();render();openTeam()}
+function selectProfile(id){closeGearPicker();selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
 const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,'./models/'+hero.id+'.glb']));
@@ -1102,8 +1141,8 @@ scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THRE
 const group=new THREE.Group();scene.add(group);
 const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:hero.id==='naruto'?0x9caa97:0x3b5672,transparent:hero.id==='naruto',opacity:hero.id==='naruto'?.72:1,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.visible=hero.id!=="naruto";scene.add(floor);
 let drag=false,last=0,angle=.10;
-renderer.domElement.style.touchAction=(hero.id==='naruto'||hero.id==='sasuke')?'pan-y':'none';
-if(hero.id!=='naruto'&&hero.id!=='sasuke')renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
+renderer.domElement.style.touchAction='none';
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
 renderer.domElement.addEventListener('pointercancel',()=>drag=false);
 renderer.domElement.addEventListener('lostpointercapture',()=>drag=false);
@@ -1128,10 +1167,10 @@ fetchHeroModel(hero.id,model=>{
       if(hero.id==='naruto'){
         // Hands keep their seal; only subtle breathing/weight shift is shown.
         group.position.set(0,.5+.006*Math.sin(t*.00155),0);
-        group.rotation.set(0,.026*Math.sin(t*.00075),.008*Math.sin(t*.0011));
+        group.rotation.set(0,angle+.015*Math.sin(t*.00075),.008*Math.sin(t*.0011));
       }else if(hero.id==='sasuke'){
         group.position.y=.5+.004*Math.sin(t*.00165);
-        group.rotation.y=.03*Math.sin(t*.0009);
+        group.rotation.y=angle+.015*Math.sin(t*.0009);
       }
       renderer.render(scene,camera);prevFrame=t;
     }
@@ -1154,26 +1193,39 @@ fetchHeroModel(hero.id,model=>{
 }catch(err){mountTurntable(host,hero);console.warn('3D fallback',err)}
 }
 
-function renderProfile(){
-const fighters=[...roster,...enemies];
-const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
-el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
-if(enemies.includes(c)){
-  el('profileContent').innerHTML='<div class="profile-hero"><div class="profile-model" id="hero3d" data-hero="'+c.id+'"></div><div class="hero-details">'+c.name+' · Акацуки · ⭐ Уровень '+heroData(c.id).level+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="profile-stats"><span>⚔️ Атака: '+c.atk+'</span><span>❤️ Базовое HP: '+c.hp+'</span><span>⚡ Скорость: '+c.spd+'</span></div>';
-  setTimeout(()=>mountHero3D(c),0);return;
+function stageGearSlots(progress,locked){
+ return gearCatalog.map((g,i)=>{
+  const item=locked?null:itemById(progress.gear[g.slot]);
+  const side=i<3?'side-left':'side-right',row='row-'+(i%3+1);
+  const state=locked?'🔒':item?qualities[item.quality].name+' ✓':'Пусто';
+  const caption=locked?'Недоступно':item?qualities[item.quality].name+' ✓':'Выбрать';
+  return '<button type="button" class="gear-float '+side+' '+row+
+    (item?' equipped quality-'+item.quality:'')+(locked?' locked':'')+
+    '" '+(locked?'disabled aria-disabled="true"':'onclick="slotClick(\''+g.slot+'\')"')+
+    ' aria-label="'+g.label+': '+state+'"><b>'+g.icon+'</b><strong>'+g.label+
+    '</strong><small>'+caption+'</small></button>';
+ }).join('');
 }
-const p=heroData(c.id),b=heroBonuses(c.id);
-let slots=gearCatalog.map(g=>{const item=itemById(p.gear[g.slot]);return '<button class="equip-slot '+(item?'equipped quality-'+item.quality:'')+'" onclick="slotClick(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(item?qualities[item.quality].name+' ✓':'Пусто · выбрать')+'</small></button>'}).join('');
-let bag=s.inventory.map(item=>{
-const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
-return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
-}).join('');
-el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+c.role+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>'+
-'<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
-'<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
-'<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
-'<div class="profile-hint" id="profileHint">Купленные вещи остаются в сумке после снятия. Улучшения сохраняются.</div>';
-setTimeout(()=>mountHero3D(c),0);
+function renderProfile(){
+ const fighters=[...roster,...enemies];
+ const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
+ const isEnemy=enemies.includes(c),p=heroData(c.id),b=heroBonuses(c.id);
+ el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+ const stage='<div class="profile-hero hero-profile-v3"><div class="profile-stage-v3">'+
+  '<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">Загружаю 3D…</div></div>'+
+  stageGearSlots(p,isEnemy)+'</div>'+
+  '<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+(isEnemy?'Акацуки':c.role)+
+  '<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>';
+ const stats='<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+(isEnemy?0:b.atk))+'</span>'+
+  '<span>❤️ HP: '+(c.hp+(isEnemy?0:b.hp))+'</span>'+
+  '<span>⚡ Скорость: '+(c.spd+(isEnemy?0:b.speed))+'</span>'+
+  (isEnemy?'':'<span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span>'+
+  '<span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span>')+'</div>';
+ el('profileContent').innerHTML=stage+stats+(isEnemy?
+  '<div class="profile-hint">Это противник. Его экипировка пока недоступна.</div>':
+  '<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
+  '<div class="profile-hint" id="profileHint">Нажми слот рядом с героем, чтобы выбрать предмет из сумки. Улучшения сохраняются.</div>');
+ setTimeout(()=>mountHero3D(c),0);
 }
 
 function openBag(){if(started&&!paused)togglePause();el('bagModal').classList.add('open');renderBag()}
@@ -1215,12 +1267,31 @@ const p=heroData(selectedProfile);delete p.gear[item.slot];p.gear[item.slot]=ite
 }
 save();initTeams();render();renderProfile();
 }
+function closeGearPicker(){const picker=el('gearPicker');if(picker)picker.remove()}
+function equipGearFromPicker(id){closeGearPicker();equipItem(id)}
+function removeGearFromSlot(slot){delete heroData(selectedProfile).gear[slot];closeGearPicker();save();initTeams();render();renderProfile()}
 function slotClick(slot){
-const p=heroData(selectedProfile),equipped=itemById(p.gear[slot]);
-if(equipped){equipItem(equipped.id);return}
-const free=s.inventory.find(i=>i.slot===slot&&!gearOwner(i.id));
-if(free){equipItem(free.id);return}
-showGearHint('Нет свободного предмета этого типа. Купи его в магазине ниже.');
+ const config=gearCatalog.find(g=>g.slot===slot);
+ if(!config||enemies.some(e=>e.id===selectedProfile))return;
+ closeGearPicker();
+ const equipped=itemById(heroData(selectedProfile).gear[slot]);
+ const items=s.inventory.filter(i=>i.slot===slot).slice().sort((a,b)=>b.quality-a.quality);
+ const rows=items.map(item=>{
+  const owner=gearOwner(item.id),q=qualities[item.quality];
+  const hint=owner===selectedProfile?'✓ Надето':owner?'На '+([...roster,...enemies].find(c=>c.id===owner)?.name||owner):'В сумке';
+  return '<button type="button" class="'+(equipped&&equipped.id===item.id?'selected':'')+
+   '" onclick="equipGearFromPicker('+item.id+')"><span><b style="color:'+q.color+'">'+config.icon+' '+q.name+
+   '</b><br><small>'+hint+'</small></span><strong>'+(owner===selectedProfile?'Снять / заменить':'Надеть')+'</strong></button>';
+ }).join('');
+ const overlay=document.createElement('div');overlay.id='gearPicker';overlay.className='gear-picker-overlay';
+ overlay.innerHTML='<div class="gear-picker-dialog" role="dialog" aria-modal="true" aria-label="Выбор экипировки">'+
+  '<h3>'+config.icon+' '+config.label+'</h3><p>Выбери предмет для '+(roster.find(x=>x.id===selectedProfile)?.name||'персонажа')+'.</p>'+
+  '<div class="gear-picker-options">'+(rows||'<p>У тебя ещё нет предметов этого типа.</p>')+'</div>'+
+  '<div class="gear-picker-actions">'+(equipped?'<button type="button" onclick="removeGearFromSlot(\''+slot+'\')">Снять</button>':'')+
+  '<button type="button" onclick="closeGearPicker();openBag()">🎒 Сумка</button>'+
+  '<button type="button" onclick="closeGearPicker()">Закрыть</button></div></div>';
+ overlay.addEventListener('click',e=>{if(e.target===overlay)closeGearPicker()});
+ document.body.appendChild(overlay);
 }
 function unequipAll(){heroData(selectedProfile).gear={};save();initTeams();render();renderProfile()}
 function resetHeroGear(){unequipAll()}
