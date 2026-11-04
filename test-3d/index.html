@@ -278,17 +278,13 @@ button:active{transform:translateY(2px)}
 /* Original illustrated village backdrop. The GLB model renders above it
    via alpha canvas; this is not a baked 2D picture of the fighter. */
 #hero3d[data-hero="naruto"]{
-  background-color:#93b8b4!important;
-  background-image:linear-gradient(180deg,rgba(8,28,44,.09),rgba(17,37,31,.08) 55%,rgba(12,26,26,.34)),url("./assets/konoha-profile.svg")!important;
+  background-color:#9fbbbd!important;
+  background-image:linear-gradient(180deg,rgba(8,28,44,.07),rgba(16,35,29,.02) 55%,rgba(12,26,26,.12)),url("./assets/konoha-beautiful.webp?v=2")!important;
   background-position:center center!important;
   background-size:cover!important;
   overflow:hidden!important;
 }
-#hero3d[data-hero="naruto"]::after{
-  content:"木ノ葉隠れ";position:absolute;left:10px;top:10px;color:#f5efcb;
-  text-shadow:0 2px 5px #152f41,0 0 12px #152f41;font-size:12px;font-weight:800;
-  letter-spacing:.12em;opacity:.77;pointer-events:none;
-}
+
 </style></head>
 <body>
 <header>
@@ -374,66 +370,57 @@ function normalizedFighter(model){
 // CPU vertex animation is intentional here: pose is applied *before* first
 // frame, unlike the previous ineffective subtle morph-target transition.
 // Only runs for Naruto's profile, and keeps original GLB geometry unchanged.
+// Real-time relaxed ninja guard: rotate each whole arm around a shoulder pivot
+// with gentle vertex blending instead of pulling hands through the chest.
+// The cached original model and 5v5 battle models remain unchanged.
 function makeNarutoProfileSeal(figure){
   const segments=[];
   const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
   figure.traverse(mesh=>{
     if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.getAttribute)return;
-    const old=mesh.geometry.getAttribute('position');
-    if(!old||old.itemSize!==3||old.count>90000)return;
-    const geometry=mesh.geometry.clone(),pos=geometry.getAttribute('position');
-    const open=new Float32Array(pos.count*3),closed=new Float32Array(pos.count*3);
-    const weights=new Float32Array(pos.count),sides=new Float32Array(pos.count);
-    for(let k=0;k<pos.count;k++){
-      const x=old.getX(k),y=old.getY(k),z=old.getZ(k),a=Math.abs(x);
-      const axial=smooth((a-.18)/.48);
-      const armHeight=1.49-.65*Math.max(0,a-.20);
-      const crossSection=1-smooth((Math.abs(y-armHeight)-.07)/.29);
-      // Protect face, chest and shoulders from being pulled into the arms.
-      const weight=smooth((a-.175)/.145)*crossSection*
-        smooth((y-.90)/.14)*(1-smooth((y-1.66)/.09));
-      const grip=Math.pow(axial,1.28)*weight,sign=x<0?-1:1;
-      const i=k*3;
-      // The old values barely moved the wrists. Bring both palms genuinely
-      // together at chest-height while preventing the meshes from crossing
-      // through the torso or passing the centre line.
-      const openInward=Math.min(.72*grip,Math.max(0,a-.13));
-      const closedInward=Math.min(.86*grip,Math.max(0,a-.065));
-      open[i]=x-sign*openInward;
-      open[i+1]=y+(.18*grip-.018*weight);
-      open[i+2]=z+.40*grip;
-      closed[i]=x-sign*closedInward;
-      closed[i+1]=y+(.22*grip-.018*weight);
-      closed[i+2]=z+.50*grip;
-      weights[k]=weight;sides[k]=sign;
-    }
-    // Start IN the folded-seal pose even before animation frames arrive.
-    pos.array.set(closed);pos.needsUpdate=true;
-    geometry.computeBoundingSphere();
-    mesh.geometry=geometry;
-    segments.push({pos,open,closed,weights,sides});
-  });
-  const baseY=figure.position.y;
-  let lastPhase=-1;
-  return (dt,time,attacking,progress=-1)=>{
-    // A quiet 3.2-second hand-seal idle: fingers/wrists shift without
-    // dropping back to a T-pose.
-    const phase=(Math.sin(time*.00195)+1)*.5;
-    if(Math.abs(phase-lastPhase)>.006){
-      lastPhase=phase;
-      const strike=progress>=0?Math.pow(Math.sin(Math.PI*progress),2):0;
-      for(const seg of segments){
-        const a=seg.pos.array,open=seg.open,close=seg.closed;
-        for(let k=0;k<a.length;k+=3){
-          const i=k/3,w=seg.weights[i],sign=seg.sides[i];
-          a[k]=open[k]+(close[k]-open[k])*phase+sign*.06*strike*w;
-          a[k+1]=open[k+1]+(close[k+1]-open[k+1])*phase+.035*strike*w;
-          a[k+2]=open[k+2]+(close[k+2]-open[k+2])*phase+.07*strike*w;
-        }
-        seg.pos.needsUpdate=true;
+    const src=mesh.geometry.getAttribute('position');
+    if(!src||src.itemSize!==3||src.count>90000)return;
+    const g=mesh.geometry.clone(),p=g.getAttribute('position');
+    const a=new Float32Array(p.count*3),b=new Float32Array(p.count*3);
+    for(let i=0;i<p.count;i++){
+      const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
+      const sign=x<0?-1:1,ax=Math.abs(x);
+      // Shoulder starts around x ±.21, y 1.54 on this GLB.
+      // The taper softly separates arms from torso to prevent spikes.
+      const arm=smooth((ax-.20)/.17)*smooth((y-.88)/.13)*
+        (1-smooth((y-1.63)/.14));
+      const distal=smooth((ax-.32)/.32)*arm;
+      for(let pose=0;pose<2;pose++){
+        const angle=pose===0?.38:.46,cos=Math.cos(angle),sin=Math.sin(angle);
+        const dx=ax-.21,dy=y-1.54;
+        const bentX=.21+cos*dx+sin*dy;
+        const bentY=1.54-sin*dx+cos*dy;
+        const target=pose===0?a:b,k=i*3;
+        target[k]=x+(sign*bentX-x)*arm;
+        target[k+1]=y+(bentY-y)*arm;
+        target[k+2]=z+(.045+(pose===1?.016:0))*distal;
       }
     }
-    figure.position.y=baseY+.006*Math.sin(time*.0015);
+    // Store initial pose in real vertex positions. This works on iOS WebGL
+    // even if the mesh's imported material lacks GPU morph-target flags.
+    p.array.set(a);p.needsUpdate=true;
+    g.computeBoundingSphere();
+    mesh.geometry=g;mesh.frustumCulled=false;
+    segments.push({position:p,poseA:a,poseB:b});
+  });
+  const baselineY=figure.position.y;
+  let previous=-1;
+  return (dt,t)=>{
+    const weight=.5+.5*Math.sin(t*.0019);
+    if(Math.abs(previous-weight)>.003){
+      previous=weight;
+      for(const seg of segments){
+        const dst=seg.position.array,aa=seg.poseA,bb=seg.poseB;
+        for(let k=0;k<dst.length;k++)dst[k]=aa[k]+(bb[k]-aa[k])*weight;
+        seg.position.needsUpdate=true;
+      }
+    }
+    figure.position.y=baselineY+.0045*Math.sin(t*.0015);
   };
 }
 function makeHeroMotion(id,figure){
@@ -1113,7 +1100,7 @@ const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:hero.id==='naruto',powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
 scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:hero.id==='naruto'?0x9caa97:0x3b5672,transparent:hero.id==='naruto',opacity:hero.id==='naruto'?.72:1,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
+const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:hero.id==='naruto'?0x9caa97:0x3b5672,transparent:hero.id==='naruto',opacity:hero.id==='naruto'?.72:1,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.visible=hero.id!=="naruto";scene.add(floor);
 let drag=false,last=0,angle=.10;
 renderer.domElement.style.touchAction=(hero.id==='naruto'||hero.id==='sasuke')?'pan-y':'none';
 if(hero.id!=='naruto'&&hero.id!=='sasuke')renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
