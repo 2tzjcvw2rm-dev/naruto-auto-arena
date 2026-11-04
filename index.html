@@ -709,7 +709,7 @@ function initArena3d(){
       units.forEach((u,i)=>{
         if(!upgradedFighters.has(u.id))return;
         const unit=el(side+i),sprite=unit.querySelector('svg');
-        const combat=u.id==='itachi'||u.id==='kakashi';
+        const combat=['itachi','kakashi','hinata'].includes(u.id);
         fetchHeroModel(combat?CombatProfile.modelKey(u.id,remoteHeroModels):u.id,model=>{
           if(currentBind!==bindSerial||!unit.isConnected)return;
           if(!model){showBattleImage(unit,u.id,side);return}

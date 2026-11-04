@@ -176,79 +176,65 @@ const CombatProfile = (() => {
     update.dispose=()=>target.dispose();
     return update;
   }
-  function lions(root) {
-    // Batch the sculpted facets into one colored mesh per fist.
-    const vertices=[], colors=[];
-    function sculpt(geometry, xyz, scale, tint, rotation=0) {
-      if(geometry.index) geometry=geometry.toNonIndexed();
-      geometry.scale(...scale);geometry.rotateZ(rotation);geometry.translate(...xyz);
-      const pts=geometry.attributes.position, color=new THREE.Color(tint).convertSRGBToLinear();
-      for(let i=0;i<pts.count;i++){
-        vertices.push(pts.getX(i),pts.getY(i),pts.getZ(i));
-        colors.push(color.r,color.g,color.b);
-      }
-      geometry.dispose();
-    }
-    const oval=(xyz,scale,color,roll=0)=>sculpt(new THREE.SphereBufferGeometry(1,12,8),xyz,scale,color,roll);
-    const tuft=(xyz,scale,color,roll)=>sculpt(new THREE.ConeBufferGeometry(1,1,5),xyz,scale,color,roll);
-    // Mane with tapered locks, rounded ears, whisker pads and a short square jaw.
-    oval([0,0,-.14],[.87,.91,.56],0x5b65df);
-    for(let i=0;i<13;i++){
-      const a=i*2*Math.PI/13;
-      tuft([-.77*Math.sin(a),.78*Math.cos(a),-.10],[.25,.60,.29],
-        i%2?0x7376ef:0x648bfa,a+.29);
-    }
-    oval([0,.03,.16],[.65,.70,.51],0x689cef);
-    for(const k of [-1,1]){
-      oval([k*.46,.61,.12],[.245,.245,.15],0x8facee);
-      oval([k*.46,.64,.246],[.14,.13,.04],0x454caf);
-      oval([k*.27,.20,.60],[.225,.084,.075],0x263b88,k*.26);
-      oval([k*.26,.20,.66],[.141,.045,.04],0xa5fcff,k*.26);
-      oval([k*.27,.30,.58],[.23,.075,.08],0xaabaff,k*.27);
-    }
-    oval([0,-.26,.54],[.36,.24,.18],0x323e91);
-    oval([0,-.40,.53],[.27,.11,.16],0x98adfc);
-    for(const k of [-1,1]){
-      oval([k*.16,-.11,.67],[.237,.168,.14],0xb2dbff);
-      tuft([k*.21,-.27,.66],[.044,.14,.055],0xe5ffff,Math.PI);
-    }
-    oval([0,.012,.79],[.155,.092,.085],0x17295d);
-    for(const k of [-1,1]){
-      oval([k*.36,-.13,.72],[.15,.016,.018],0x5772bb,k*.13);
-      oval([k*.36,-.18,.70],[.16,.012,.018],0x5772bb,-k*.16);
-    }
-    const geometry=new THREE.BufferGeometry();
-    geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
-    geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-    geometry.computeVertexNormals();
-    const heads=[];
-    for(const side of [-1,1]){
-      const head=new THREE.Group();root.add(head);
-      const face=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({vertexColors:true,
-        transparent:true,opacity:.86,depthWrite:true}));
-      face.scale.setScalar(.072);head.add(face);
-      const haze=halo('rgba(82,128,255,.82)',.17);haze.position.z=-.02;head.add(haze);
-      const streams=particles(14,0x96c9ff,.005);head.add(streams.points);
-      heads.push({head,face,haze,streams,side});
-    }
-    return (t,right,left)=>{
-      for(const {head,face,haze,streams,side} of heads){
-        head.position.copy(side===-1?right:left);
-        head.position.z+=.040;head.position.y+=.012;
-        face.rotation.y=side*.16+.06*Math.sin(t*2+side);
-        face.material.opacity=.81+.075*Math.sin(3*t+side);
-        haze.material.opacity=.72+.16*Math.sin(2*t+side);
-        for(let i=0;i<14;i++){
-          const p=(t*.95+i*.379)%1, a=7*p+i*2.4;
-          streams.position.setXYZ(i,.064*Math.sin(a),.064*Math.cos(a),-.07+p*.12);
+  function lions(root,view) {
+    const sparks=particles(view.battle?8:18,0x79dcff,.006);
+    // One draw for the entire crown. Each tongue tapers along the knuckles,
+    // with a broad translucent foot and an independently drifting tip.
+    const positions=[],coords=[],indices=[];
+    const lanes=view.battle?5:8,steps=10;
+    for(let i=0;i<lanes;i++){
+      const angle=i*2.39996;
+      for(let j=0;j<=steps;j++){
+        const u=j/steps, width=(.022+.006*Math.cos(i))*Math.pow(1-u,.8);
+        const radius=.027+.009*Math.sin(u*Math.PI)+.012*u;
+        const height=(.075+.032*(.5+.5*Math.cos(5*i)))*u-.022;
+        for(const side of [-1,1]){
+          const a=angle+u*.92;
+          positions.push(radius*Math.cos(a)-side*width*Math.sin(a),height,
+            radius*Math.sin(a)+side*width*Math.cos(a));
+          coords.push(side,u,angle);
         }
-        streams.position.needsUpdate=true;
+        if(j<steps){const k=(i*(steps+1)+j)*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
       }
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+    geo.setAttribute('strand',new THREE.Float32BufferAttribute(coords,3));geo.setIndex(indices);
+    const mat=new THREE.ShaderMaterial({
+      uniforms:{clock:{value:0}},transparent:true,depthWrite:false,side:THREE.DoubleSide,
+      vertexShader:`attribute vec3 strand; varying vec3 v;uniform float clock;
+      void main(){
+        v=strand;vec3 p=position;float u=v.y,a=v.z;
+        p.x+=.020*u*u*sin(clock*5.+a+u*4.);
+        p.z+=.016*u*u*cos(clock*4.-a+u*3.);
+        p.y+=.012*u*sin(clock*6.+a);
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
+      }`,
+      fragmentShader:`varying vec3 v;uniform float clock;
+      void main(){
+        float core=1.-abs(v.x+.12*sin(10.*v.y-clock*5.+v.z));
+        float alpha=smoothstep(0.,.58,core)*(.97-.50*v.y);
+        vec3 blue=mix(vec3(.12,.24,.98),vec3(.12,.72,1.),core);
+        blue=mix(blue,vec3(.72,.98,1.),smoothstep(.44,1.,core)*(1.-v.y*.65));
+        gl_FragColor=vec4(blue,alpha);
+      }`
+    });
+    const veil=halo('rgba(50,134,255,.95)',.13);
+    root.add(new THREE.Mesh(geo,mat),veil,sparks.points);
+    return t=>{
+      mat.uniforms.clock.value=t;
+      veil.material.opacity=.56+.13*Math.sin(t*5.);
+      for(let i=0;i<sparks.position.count;i++){
+        const u=(t*.9+i*.618)%1,a=i*2.4+u;
+        sparks.position.setXYZ(i,(.025+.019*u)*Math.cos(a),-.005+.117*u,(.023+.021*u)*Math.sin(a));
+      }
+      sparks.position.needsUpdate=true;
     };
   }
   function mount(id, fighter, view) {
     if (!techniques[id]) return null;
     const parent = fighter.parent, root = new THREE.Group();
+    const roots=[root];
     const head=fighter.getObjectByName('Head');
     if(id==='itachi' && head){
       head.add(root);
@@ -257,26 +243,30 @@ const CombatProfile = (() => {
       braceWrist(fighter);
       fighter.getObjectByName('RightHand').add(root);
       root.position.set(.035,.052,.054);
+    }else if(id==='hinata'){
+      roots.push(new THREE.Group());
+      for(const [i,side] of ['Right','Left'].entries()){
+        const anchor=roots[i];
+        fighter.getObjectByName(side+'Hand').add(anchor);
+        anchor.position.set(0,.019,.041);
+      }
     }else parent.add(root);
-    const right = fighter.getObjectByName('RightHand'), left = fighter.getObjectByName('LeftHand');
     const spine = fighter.getObjectByName('Spine1') || fighter.getObjectByName('Spine');
     const rest = spine?.quaternion.clone();
     const breath = new THREE.Quaternion(), axis = new THREE.Vector3(1,0,0);
-    const a = new THREE.Vector3(), b = new THREE.Vector3();
-    const update = techniques[id](root, view);
+    const updates=roots.map(anchor=>techniques[id](anchor,view));
     function frame(dt, ms) {
       const t = ms*.001;
       if (spine) spine.quaternion.copy(rest).multiply(breath.setFromAxisAngle(axis,.014*Math.sin(t*1.8)));
-      if (right && left) {
-        parent.worldToLocal(right.getWorldPosition(a)); parent.worldToLocal(left.getWorldPosition(b));
-      }
-      update(t,a,b);
+      updates.forEach((update,i)=>update(t+i*.37));
     }
     frame(0,0);
     frame.dispose = () => {
-      root.traverse(o => {o.geometry?.dispose(); if(o.material){o.material.map?.dispose();o.material.dispose();}});
-      update.dispose?.();
-      root.parent?.remove(root);
+      updates.forEach(update=>update.dispose?.());
+      for(const anchor of roots){
+        anchor.traverse(o=>{o.geometry?.dispose();if(o.material){o.material.map?.dispose();o.material.dispose();}});
+        anchor.parent?.remove(anchor);
+      }
     };
     return frame;
   }
