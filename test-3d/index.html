@@ -296,6 +296,16 @@ button:active{transform:translateY(2px)}
  overflow:hidden!important;
 }
 
+/* Sakura: user-approved original illustrated pose, retained for future 3D rigging. */
+#hero3d[data-hero="sakura"]{
+  background-color:#dd92b5!important;
+  background-image:linear-gradient(180deg,rgba(30,15,55,.02),rgba(37,12,28,.06)),url("./assets/sakura-blossom-profile.avif?v=20261104-sakura1")!important;
+  background-position:center center!important;
+  background-size:cover!important;
+  background-repeat:no-repeat!important;
+  overflow:hidden!important;
+}
+
 /* Gear surrounds the 3D fighter, matching a mobile RPG roster screen */
 #profileContent .hero-profile-v3{padding:8px!important}
 #profileContent .profile-stage-v3{position:relative;width:100%;height:clamp(350px,56vh,470px);overflow:hidden;border-radius:13px;background:linear-gradient(#95b6c5,#dfc79e)}
@@ -1095,6 +1105,13 @@ function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
 // Reuse the same character GLB sources as the 5-on-5 arena; never change player progression.
 releaseProfile();
+// Sakura's approved artwork is the interim profile presentation; keep her GLB
+// in the repository and in the 5v5 arena until her future model is rigged.
+if(hero.id==='sakura'){
+  host.innerHTML='';
+  host.setAttribute('aria-label','Сакура на фоне цветущей Конохи. Образец боевой позы сохранён для будущей 3D-модели.');
+  return;
+}
 if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
 try{
 host.innerHTML='';
