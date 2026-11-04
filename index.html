@@ -204,8 +204,8 @@ button:active{transform:translateY(2px)}
 
 
 .arena.three-active .ground{opacity:.65}
-</style><script src="https://cdn.jsdelivr.net/npm/three@0.124.0/build/three.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.124.0/examples/js/loaders/GLTFLoader.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
+</style><script src="./test-3d/vendor/three.min.js" defer></script>
+<script src="./test-3d/vendor/GLTFLoader.js" defer></script><style>.profile-hero:has(.profile-model){display:block!important}.profile-model{width:100%;height:260px;overflow:hidden;border-radius:13px;background:linear-gradient(135deg,#92b8c8,#e5c99e);position:relative}.profile-model iframe{width:100%;height:100%;border:0}.profile-model .model-credit{position:absolute;bottom:4px;right:6px;background:#101724bd;color:white;padding:4px 6px;border-radius:5px;font-size:10px;pointer-events:none}.profile-model-loading{padding:90px 0;color:#23334b}.profile-hero .hero-details{margin:8px!important}</style><style>.rage-bar{height:6px;background:#401821;border-radius:4px;width:95%;overflow:hidden;margin-top:3px}.rage-bar i{display:block;height:100%;background:linear-gradient(90deg,#ba1d34,#ff5555);transition:width .25s}.round-indicator{position:absolute;top:9px;right:8px;z-index:12;background:#172638e8;color:white;padding:6px 9px;border-radius:10px;font-size:12px}.profile-model{height:300px!important}</style><style>
 .arena .mini-unit svg{visibility:visible!important}
 .arena .mini-unit{z-index:6}
 .arena .rage-bar{display:block!important;position:relative;width:95%!important;height:7px!important;background:#39101a!important;border:1px solid #f37b83!important;margin:5px auto 0!important;border-radius:5px;overflow:hidden}
@@ -253,17 +253,49 @@ button:active{transform:translateY(2px)}
 @keyframes rasenganSpin{to{transform:rotate(360deg)}}
 @keyframes cutinPunch{0%{transform:translateX(-30px)}65%,100%{transform:translateX(40px)}}
 @keyframes cutinAppear{0%{opacity:0;scale:.75}15%,85%{opacity:1;scale:1}100%{opacity:0;scale:1.08}}
-</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style></head>
+</style><style>.mini-unit.acting-now{z-index:35!important;filter:drop-shadow(0 0 9px #ffe07d)!important}.mini-unit.acting-now .unit-name{color:#ffe48b!important;font-weight:900!important}#battleFeed{font-size:15px!important;min-width:235px!important;max-width:90%!important;padding:9px 10px!important;line-height:1.5!important;border-width:2px!important}</style><style>#hero3d{height:280px!important;background:#172840}#hero3d canvas{display:block;width:100%!important;height:280px!important;touch-action:pan-y}#hero3d .model-credit{left:6px;right:auto}</style><style>#rasenganCutin .cutin-orb{width:100px;height:100px;background:none;box-shadow:none;animation:none;right:15px;top:10px}#rasenganCutin .cutin-orb canvas{width:100px;height:100px;display:block}#rasenganCutin .cutin-orb .orb-core{display:none}</style><style>.fighter-image{display:block;background-repeat:no-repeat;background-size:400% 400%;aspect-ratio:2/3}.profile-model>.fighter-image{height:96%;max-width:100%;margin:1% auto}.battle-image{height:75px;max-width:100%;flex-shrink:1}.model-credits{font-size:12px;color:#cad7ea;margin:12px}.model-credits a{color:#ffd486}#battle3d{z-index:8}.arena .mini-unit.has-model svg{visibility:hidden!important}.profile-model canvas{display:block;width:100%;height:100%}.model-technique{position:absolute!important;right:8px;bottom:8px;z-index:6!important;background:#16223ae8!important;color:#e5f5ff!important;border:1px solid #7dbedf!important;border-radius:9px!important;font-size:12px!important;line-height:1.1!important;padding:9px 12px!important;box-shadow:0 2px 12px #0005!important;cursor:pointer!important}
+.profile-model .model-credit{bottom:8px!important;left:8px!important;right:auto!important;max-width:45%!important}
+
+/* Portrait crops of the first frame of each existing 4x4 character sheet */
+.team-card{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:8px!important;padding:9px!important;min-width:0!important}
+.team-card-header{display:flex;align-items:center;gap:8px;min-width:0}
+.team-avatar{display:block;width:68px;height:68px;flex:0 0 68px;border:2px solid #edc27d;border-radius:9px;background-color:#142039;background-repeat:no-repeat;background-size:auto 1550%;background-position:7.7% 2%;box-shadow:inset 0 0 9px #102039,0 2px 7px #0007}
+.team-avatar-name{min-width:0;flex:1}.team-avatar-name strong{display:block;font-size:14px!important;color:#fff6df;line-height:1.2}.team-avatar-name small{display:block;font-size:11px;line-height:1.35;color:#d9dce7}
+.hero-power{display:inline-block;font-size:14px;font-weight:900;color:#f9c86e;font-variant-numeric:tabular-nums;white-space:nowrap}
+.team-card .hero-power{font-size:12px;margin-top:4px}
+.team-card-actions{display:flex;gap:6px;margin-top:auto;width:100%}
+.team-card-actions button{flex:1!important;min-width:0;padding:10px 3px!important;font-size:12px!important}
+.profile-hero{display:block!important;padding:9px!important}
+.profile-hero .hero-details{color:#283142!important;text-align:center!important;font-size:16px!important;line-height:1.4!important;margin-top:7px}
+.profile-hero .hero-power{display:block;width:65%;text-align:center;font-size:23px;color:#613c14;background:linear-gradient(#ffe7a9,#f6c66e);border:2px solid #d7a457;border-radius:10px;padding:6px;margin:7px auto}
+.mini-unit .unit-power{display:inline-block;font-size:9px;font-weight:900;color:#ffe2a0;background:#262139cc;border-radius:4px;padding:1px 2px;white-space:nowrap}
+@media(max-width:390px){.team-avatar{width:57px;height:57px;flex-basis:57px}.team-card-actions button{font-size:11px!important}.team-avatar-name strong{font-size:12px!important}}
+
+.chidori-bolts{position:absolute;inset:0;width:100%;height:100%;z-index:95;pointer-events:none;filter:drop-shadow(0 0 5px #00bfff) drop-shadow(0 0 6px #fff)}
+.chidori-impact{position:absolute;width:118px;height:118px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:96;background:repeating-conic-gradient(from 6deg,transparent 0 14deg,#7cd9ff88 15deg 20deg,transparent 22deg 35deg),radial-gradient(circle,#fff 0,#8ae4ffb0 12%,#3286fa60 33%,transparent 70%);animation:chidoriPop .7s ease-out both}
+@keyframes chidoriPop{0%{opacity:0;scale:.3}15%{opacity:1;scale:1.1}100%{opacity:0;scale:1.7}}
+
+/* Original illustrated village backdrop. The GLB model renders above it
+   via alpha canvas; this is not a baked 2D picture of the fighter. */
+#hero3d[data-hero="naruto"]{
+  background-color:#9fbbbd!important;
+  background-image:linear-gradient(180deg,rgba(8,28,44,.07),rgba(16,35,29,.02) 55%,rgba(12,26,26,.12)),url("./test-3d/assets/konoha-beautiful.webp?v=2")!important;
+  background-position:center center!important;
+  background-size:cover!important;
+  overflow:hidden!important;
+}
+
+</style></head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
 <div>Командные сражения • Техники ниндзя</div>
 </header>
 <nav class="main-nav"><button id="bagBtn" onclick="openBag()">🎒 Сумка <small>Предметы и ресурсы</small></button></nav><div class="arena">
-<div class="sun"></div>
+<div id="battle3d" aria-hidden="true"></div><div class="sun"></div>
 <div class="mountain"></div><div class="clouds" style="position:absolute;inset:12% 0 auto;height:35px;opacity:.55;pointer-events:none;background:radial-gradient(ellipse at 20% 50%,white 0 12%,transparent 13%),radial-gradient(ellipse at 55% 40%,white 0 9%,transparent 10%),radial-gradient(ellipse at 80% 50%,white 0 11%,transparent 12%)"></div><div class="hokage">顔 顔 顔</div><div class="village"><div class="house"></div><div class="house"></div><div class="house"></div><div class="house"></div></div><div class="ground"></div>
 <div id="clones" class="clones"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div><div id="hero" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M24 208L22 128Q29 109 52 103H99Q125 109 130 130L128 208" fill="#f18c28" stroke="#303443" stroke-width="6"/><path d="M52 134L75 164L99 134" fill="#232b39" stroke="#e0b58b" stroke-width="5"/><path d="M54 172L54 208M97 172L97 208" stroke="#313544" stroke-width="9"/><path d="M46 110L36 142L58 152M105 110L116 142L95 152" fill="#f18c28" stroke="#333b48" stroke-width="5"/><path d="M45 68Q39 36 75 29Q110 36 105 72L101 100Q75 125 49 101Z" fill="#f7c18a" stroke="#54382d" stroke-width="3"/><path d="M40 58L31 38L46 40L43 18L61 29L73 6L82 26L105 13L103 35L120 31L109 57Z" fill="#f7cb31" stroke="#ae7b2d" stroke-width="3"/><path d="M43 59Q75 49 107 59L106 75Q75 68 44 75Z" fill="#28384c"/><rect x="60" y="57" width="32" height="14" rx="4" fill="#c7cdd0"/><path d="M69 65q8 -10 17 0q-9 8 -17 0" fill="none" stroke="#536371" stroke-width="2"/><path d="M51 82l15 1m18 0l15 -1" stroke="#29303a" stroke-width="5"/><path d="M55 86l8 1m26 0l8 -1" stroke="#f7f8ff" stroke-width="4"/><path d="M48 94l-15 -3m15 9l-15 1m68 -7l15 -3m-15 9l15 1" stroke="#a66c52" stroke-width="2.5"/><path d="M66 105Q75 111 85 105" fill="none" stroke="#9d5c48" stroke-width="2"/></svg></div>
-<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="roundIndicator" class="round-indicator">Раунд 1 / 12</div><div id="jutsuFxLayer" aria-hidden="true"></div><div id="rasenganCutin" aria-hidden="true"><div class="cutin-naruto">🥷</div><div class="cutin-orb"><div class="orb-core"></div></div><strong>НАРУТО · РАСЕНГАН!</strong></div><div id="battleFeed" aria-live="polite">⚔️ Приготовься к бою</div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
+<div id="enemy" class="fighter"><svg viewBox="0 0 150 210" xmlns="http://www.w3.org/2000/svg"><path d="M26 208L23 120Q29 105 53 101L99 101Q123 105 130 127L127 208" fill="#1d2029" stroke="#9d3136" stroke-width="5"/><path d="M50 101L75 158L101 101" fill="#2d2d37" stroke="#b33b40" stroke-width="5"/><path d="M51 172q17 -20 36 -2q-10 20 -31 11q-8 -3 -5 -9" fill="#bb343a" stroke="#e9d7c9" stroke-width="2"/><path d="M48 61Q46 32 75 32Q106 32 105 64L102 100Q76 122 49 100Z" fill="#dcb9a2" stroke="#302529" stroke-width="4"/><path d="M36 63Q35 17 75 15Q117 17 115 65L104 49L96 34L54 34L47 53Z" fill="#20212a"/><path d="M46 67L69 72M81 72L103 67" stroke="#2a252c" stroke-width="5"/><path d="M51 77h18m12 0h18" stroke="#c62d31" stroke-width="5"/><circle cx="60" cy="77" r="3" fill="#20202a"/><circle cx="90" cy="77" r="3" fill="#20202a"/><path d="M74 79l-3 15h8M65 102q10 5 20 0" fill="none" stroke="#8d6661" stroke-width="2"/></svg></div><div id="roundIndicator" class="round-indicator">Раунд 1 / 12</div><div id="jutsuFxLayer" aria-hidden="true"></div><div id="rasenganCutin" aria-hidden="true"><div class="cutin-naruto">🥷</div><div class="cutin-orb"><div class="orb-core"></div></div><strong>НАРУТО · РАСЕНГАН!</strong></div><div id="battleFeed" aria-live="polite">⚔️ Приготовься к бою</div><div id="allyTeam" class="team-side"></div><div id="foeTeam" class="team-side"></div><div id="rasengan" class="rasengan"></div><div id="speedlines" class="speedlines"></div><div id="hitnumber" class="hitnumber"></div><button class="teamQuick" onclick="openTeam()">👥 СОБРАТЬ КОМАНДУ</button><div id="startOverlay"><h2>🍥 NARUTO ARENA</h2><p>Собери команду из пяти ниндзя</p><button id="startButton" onclick="startGame()">⚔️ НАЧАТЬ ИГРУ</button><button id="pairDemo" hidden onclick="startPairDemo()">Тестовый бой 5×5</button><button class="teamQuick" onclick="openTeam()">👥 ВЫБРАТЬ КОМАНДУ</button><div><button onclick="openCharacter('naruto')">Наруто · 3D</button> <button onclick="openCharacter('sasuke')">Саске · 3D</button></div><p id="startInfo">Нажми, чтобы выйти на арену</p></div><div id="shockwave" class="shockwave"></div><div id="jutsulabel" class="jutsu-label"></div>
 <div id="effect" class="effect"></div>
 </div>
 <div class="panel">
@@ -283,83 +315,373 @@ button:active{transform:translateY(2px)}
 </div>
 <div id="modelModal"><div class="model-dialog"><h2>🥷 Наруто — тест 3D</h2><div id="modelFrameHolder"></div><p class="model-note">Настоящая модель автора ronildo.facanha со скелетом и анимацией бега. Пока это отдельный 3D-просмотр, бой продолжает работать на прежних персонажах. Модель загружается с Sketchfab.</p><button onclick="closeModelPreview()">Закрыть 3D-просмотр</button><p class="model-note">Модель: CC BY, автор ronildo.facanha / Sketchfab.</p></div></div><div id="bagModal"><div class="bag-dialog"><h2>🎒 МОЯ СУМКА</h2><div id="bagContent"></div><button class="team-close" onclick="closeBag()">✅ Закрыть сумку</button></div></div><div id="profileModal"><div class="profile-dialog"><h2>🎒 НИНДЗЯ И СНАРЯЖЕНИЕ</h2><div id="profileChoose"></div><div id="profileContent"></div><button class="team-close" onclick="closeProfile()">✅ Назад к бою</button></div></div><div id="teamModal"><div class="team-dialog"><h2>👥 МОЯ КОМАНДА</h2><p>Выбери до 5 ниндзя и назначь линию: передняя (танки), средняя (урон), задняя (хилы и поддержка). Можно 1–2 бойца на каждой линии.</p><div id="formationPreview"></div><div id="teamCards" class="team-cards"></div><button class="team-close" onclick="closeTeam()">✅ Готово</button></div></div><script>
 const el=id=>document.getElementById(id);
-let arena3d=null,arena3dUnits=[],arena3dClock=0;
-function initArena3d(){
-if(arena3d||!window.THREE)return;
-try{
-const T=THREE,host=el('battle3d'),w=host.clientWidth||360,h=host.clientHeight||360;
-const renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.setSize(w,h);
-if('outputColorSpace' in renderer)renderer.outputColorSpace=T.SRGBColorSpace;else renderer.outputEncoding=T.sRGBEncoding;host.appendChild(renderer.domElement);
-const scene=new T.Scene(),camera=new T.OrthographicCamera(-6,6,4,-4,.1,100);
-camera.position.set(0,5,16);camera.lookAt(0,1,0);
-scene.add(new T.HemisphereLight(0xffffff,0x6a6572,2.1));
-const light=new T.DirectionalLight(0xffffff,2);light.position.set(-4,9,8);scene.add(light);
-arena3d={renderer,scene,camera,host};
-function draw(){
-if(!arena3d)return;
-arena3dClock+=.027;
-for(const a of arena3dUnits){
-a.body.position.y=Math.sin(arena3dClock*1.7+a.phase)*.055;
-a.body.rotation.z=Math.sin(arena3dClock*1.3+a.phase)*.035;
+// Render the upgraded fighters over their existing formation slots. Slot transforms
+// carry movement and combat effects, while HP, targeting and turn logic stay in the game.
+function turnFrame(element,frame){
+  const n=(frame%16+16)%16;
+  element.style.backgroundPosition=(n%4)*100/3+'% '+Math.floor(n/4)*100/3+'%';
 }
-renderer.render(scene,camera);requestAnimationFrame(draw)
+function fighterImage(id){
+  const image=document.createElement('span');
+  image.className='fighter-image';image.style.backgroundImage='url("./test-3d/models/'+id+'.webp")';
+  return image;
 }
-requestAnimationFrame(draw);
-window.addEventListener('resize',()=>{if(!arena3d)return;const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.left=-6;camera.right=6;camera.top=6*h/w;camera.bottom=-6*h/w;camera.updateProjectionMatrix()});
-host.parentElement.classList.add('three-active');syncArena3d();
-}catch(e){console.warn('3D disabled, keeping 2D fighters',e);arena3d=null}
+function showBattleImage(unit,id,side){
+  const sprite=unit.querySelector('svg');if(!sprite)return;
+  const image=fighterImage(id);image.classList.add('battle-image');
+  sprite.replaceWith(image);turnFrame(image,side==='allyTeam'?1:15);
 }
-function ninjaMesh(u,enemy){
-const T=THREE,root=new T.Group(),body=new T.Group();root.add(body);
-const palette={naruto:[0xf28d23,0xf4d331],sasuke:[0x343c78,0x20202c],sakura:[0xe46983,0xef8caa],kakashi:[0x3f655e,0xd7d9d8],hinata:[0xb3a4cc,0x292e65],shikamaru:[0x5b775a,0x222222],gaara:[0x884b4b,0x9b342a],itachi:[0x29232b,0x20202b],pain:[0x342d42,0xf37b36],kisame:[0x293c5c,0x435e75],deidara:[0x343036,0xe8d179],sasori:[0x53403c,0xb53a32]};
-const colors=palette[u.id]||[0x5c637b,0x333344],mat=c=>new T.MeshStandardMaterial({color:c,roughness:.85});
-function box(x,y,z,w,h,d,color,parent=body){const o=new T.Mesh(new T.BoxGeometry(w,h,d),mat(color));o.position.set(x,y,z);parent.add(o);return o}
-function ball(x,y,z,r,color){const o=new T.Mesh(new T.SphereGeometry(r,9,7),mat(color));o.position.set(x,y,z);body.add(o);return o}
-box(0,1.1,0,.62,.85,.35,colors[0]);box(-.18,.43,0,.24,.8,.27,0x242a3c);box(.18,.43,0,.24,.8,.27,0x242a3c);
-box(-.43,1.1,0,.23,.77,.28,colors[0]);box(.43,1.1,0,.23,.77,.28,colors[0]);
-ball(0,1.88,0,.36,0xe9b89a);
-box(0,2.04,.29,.65,.14,.11,0x263749);
-if(u.id==='naruto'){for(let i=-2;i<=2;i++){const spike=box(i*.15,2.29+Math.abs(i)*-.035,0,.18,.32,.23,colors[1]);spike.rotation.z=i*.17}}
-else{ball(0,2.22,-.06,.32,colors[1]);box(0,2.3,.18,.58,.12,.16,colors[1])}
-box(-.13,1.9,.33,.07,.035,.035,0x25252d);box(.13,1.9,.33,.07,.035,.035,0x25252d);
-if(enemy)root.rotation.y=Math.PI;
-if(remoteHeroModels[u.id])fetchHeroModel(u.id,loaded=>{
-if(!loaded||!root.parent)return;
-const bounds=new T.Box3().setFromObject(loaded),size=bounds.getSize(new T.Vector3()),center=bounds.getCenter(new T.Vector3());
-const maxDimension=Math.max(size.x,size.y,size.z);
-if(!isFinite(maxDimension)||maxDimension<.00001)return;
-const holder=new T.Group();holder.add(loaded);loaded.position.sub(center);
-holder.scale.setScalar(2.4/maxDimension);
-body.clear();body.add(holder);
-});
-return {root,body,phase:Math.random()*6.28}
+function bindBattleImages(){
+  for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+    units.forEach((u,i)=>{
+      if(!upgradedFighters.has(u.id))return;
+      const unit=el(side+i);if(!unit||unit.querySelector('.fighter-image'))return;
+      showBattleImage(unit,u.id,side);
+    });
+  }
 }
-function syncArena3d(){
-if(!arena3d)return;
-const {scene}=arena3d;
-for(const a of arena3dUnits)scene.remove(a.root);
-arena3dUnits=[];
-for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
-const counts={front:0,middle:0,back:0};
-units.forEach((u,i)=>{
-if(u.curHp<=0)return;
-const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
-const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row&&v.curHp>0).length;
-const mesh=ninjaMesh(u,side==='foeTeam');
-const pos={front:3.8,middle:2.4,back:1.05}[row];
-mesh.root.position.set((side==='allyTeam'?-1:1)*pos,total===1?-.3:(idx===0?.65:-1.05),idx===0?-1:1);
-mesh.root.scale.setScalar(.68);
-scene.add(mesh.root);arena3dUnits.push(mesh);
-});
+function mountTurntable(host,hero){
+  host.innerHTML='';
+  if(!upgradedFighters.has(hero.id)){host.innerHTML=ninjaSVG(hero);return}
+  const image=fighterImage(hero.id),note=document.createElement('span');
+  note.className='model-credit';note.textContent='Поверни персонажа пальцем';
+  host.append(image,note);turnFrame(image,0);
+  let start=0,base=0,current=0,pointer=null;
+  host.style.touchAction='none';
+  host.onpointerdown=e=>{pointer=e.pointerId;start=e.clientX;base=current;host.setPointerCapture(pointer)};
+  host.onpointermove=e=>{if(e.pointerId===pointer){current=base+Math.round((e.clientX-start)/12);turnFrame(image,current)}};
+  host.onpointerup=host.onpointercancel=host.onlostpointercapture=()=>{pointer=null};
 }
+let arena3d=null,arenaUnavailable=false;
+function normalizedFighter(model){
+  model.updateMatrixWorld(true);
+  const bounds=new THREE.Box3().setFromObject(model);
+  const size=bounds.getSize(new THREE.Vector3());
+  if(!Number.isFinite(size.length())||size.y<=0)return null;
+  const center=bounds.getCenter(new THREE.Vector3());
+  const offset=new THREE.Group();offset.add(model);offset.position.copy(center).multiplyScalar(-1);
+  const pivot=new THREE.Group();pivot.add(offset);pivot.scale.setScalar(1/size.y);
+  return pivot;
 }
+// Use the actual GLB animation when present. For compatible skeletons without
+// clips, move arm bones into a restrained combat guard instead of a T-pose.
 
+// Dedicated, visible Naruto hand-seal idle for STATIC unrigged models.
+// CPU vertex animation is intentional here: pose is applied *before* first
+// frame, unlike the previous ineffective subtle morph-target transition.
+// Only runs for Naruto's profile, and keeps original GLB geometry unchanged.
+// Real-time relaxed ninja guard: rotate each whole arm around a shoulder pivot
+// with gentle vertex blending instead of pulling hands through the chest.
+// The cached original model and 5v5 battle models remain unchanged.
+function makeNarutoProfileSeal(figure){
+  const segments=[];
+  const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
+  figure.traverse(mesh=>{
+    if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.getAttribute)return;
+    const src=mesh.geometry.getAttribute('position');
+    if(!src||src.itemSize!==3||src.count>90000)return;
+    const g=mesh.geometry.clone(),p=g.getAttribute('position');
+    const a=new Float32Array(p.count*3),b=new Float32Array(p.count*3);
+    for(let i=0;i<p.count;i++){
+      const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
+      const sign=x<0?-1:1,ax=Math.abs(x);
+      // Shoulder starts around x ±.21, y 1.54 on this GLB.
+      // The taper softly separates arms from torso to prevent spikes.
+      const arm=smooth((ax-.20)/.17)*smooth((y-.88)/.13)*
+        (1-smooth((y-1.63)/.14));
+      const distal=smooth((ax-.32)/.32)*arm;
+      for(let pose=0;pose<2;pose++){
+        const angle=pose===0?.38:.46,cos=Math.cos(angle),sin=Math.sin(angle);
+        const dx=ax-.21,dy=y-1.54;
+        const bentX=.21+cos*dx+sin*dy;
+        const bentY=1.54-sin*dx+cos*dy;
+        const target=pose===0?a:b,k=i*3;
+        target[k]=x+(sign*bentX-x)*arm;
+        target[k+1]=y+(bentY-y)*arm;
+        target[k+2]=z+(.045+(pose===1?.016:0))*distal;
+      }
+    }
+    // Store initial pose in real vertex positions. This works on iOS WebGL
+    // even if the mesh's imported material lacks GPU morph-target flags.
+    p.array.set(a);p.needsUpdate=true;
+    g.computeBoundingSphere();
+    mesh.geometry=g;mesh.frustumCulled=false;
+    segments.push({position:p,poseA:a,poseB:b});
+  });
+  const baselineY=figure.position.y;
+  let previous=-1;
+  return (dt,t)=>{
+    const weight=.5+.5*Math.sin(t*.0019);
+    if(Math.abs(previous-weight)>.003){
+      previous=weight;
+      for(const seg of segments){
+        const dst=seg.position.array,aa=seg.poseA,bb=seg.poseB;
+        for(let k=0;k<dst.length;k++)dst[k]=aa[k]+(bb[k]-aa[k])*weight;
+        seg.position.needsUpdate=true;
+      }
+    }
+    figure.position.y=baselineY+.0045*Math.sin(t*.0015);
+  };
+}
+function makeHeroMotion(id,figure){
+  // Both original Sketchfab meshes are static and unrigged. Preserve all
+  // textures and add two lightweight morph targets for a combat-ready pose.
+  const featured=id==='naruto'||id==='sasuke';
+  let mixer=null;
+  const clips=modelAnimationClips[id]||[];
+  if(clips.length){
+    const clip=clips.find(c=>/idle|stand|combat|fight|guard|ready/i.test(c.name))||clips[0];
+    try{mixer=new THREE.AnimationMixer(figure);mixer.clipAction(clip).play()}
+    catch(err){console.warn('Animation fallback',id,err);mixer=null}
+  }
+  const arms=[],morphMeshes=[];
+  if(!mixer){
+    if(featured){
+      figure.traverse(mesh=>{
+        if(!mesh.isMesh||!mesh.geometry||!mesh.geometry.attributes.position)return;
+        const src=mesh.geometry.attributes.position;
+        if(src.count>65000||src.count<20)return;
+        const guard=new Float32Array(src.count*3),strike=new Float32Array(src.count*3);
+        const sealOpen=id==='naruto'?new Float32Array(src.count*3):null;
+        const sealClosed=id==='naruto'?new Float32Array(src.count*3):null;
+        for(let i=0;i<src.count;i++){
+          const x=src.getX(i),y=src.getY(i),z=src.getZ(i);
+          const abs=Math.abs(x),sign=x<0?-1:1;
+          const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v)};
+          const reach=smooth((abs-.16)/.34);
+          const torsoGate=smooth((y-.93)/.19)*(1-smooth((y-1.52)/.18));
+          const q=reach*torsoGate,hand=smooth((abs-.37)/.29)*q;
+          // Gradually bend the arms down and forward from their static T pose.
+          const gx=x-sign*(.18*q+.08*hand);
+          const gy=y-.10*q-.09*hand;
+          const gz=z+.14*q+.05*hand;
+          // Right arm extends for Rasengan / Chidori while left stays guarding.
+          const attackSide=x>0?1:0;
+          const sx=gx-sign*.055*q*attackSide;
+          const sy=gy+.08*hand*attackSide;
+          const sz=gz+.37*hand*attackSide+.08*q*attackSide;
+          const k=i*3;
+          guard[k]=gx;guard[k+1]=gy;guard[k+2]=gz;
+          strike[k]=sx;strike[k+1]=sy;strike[k+2]=sz;
+          if(sealOpen){
+            // Hand-sign pose: elbows bent outwards, wrists cross towards the
+            // centre of the chest. Blend between open and closed seals in idle.
+            const across=smooth((abs-.20)/.14)*smooth((y-.91)/.20)*
+              (1-smooth((y-1.47)/.20));
+            const wrist=smooth((abs-.38)/.25)*across;
+            const openX=x-sign*(.075*across+.39*wrist);
+            const closeX=x-sign*(.10*across+.53*wrist);
+            sealOpen[k]=openX;
+            sealOpen[k+1]=y+.10*wrist-.02*across;
+            sealOpen[k+2]=z+.10*across+.30*wrist;
+            sealClosed[k]=closeX;
+            sealClosed[k+1]=y+.15*wrist-.02*across;
+            sealClosed[k+2]=z+.13*across+.38*wrist;
+          }
+        }
+        // Never overwrite the cached source geometry shared by other fighters.
+        const geo=mesh.geometry.clone();
+        geo.morphAttributes.position=[
+          new THREE.Float32BufferAttribute(guard,3),
+          new THREE.Float32BufferAttribute(strike,3)
+        ];
+        if(sealOpen)geo.morphAttributes.position.push(
+          new THREE.Float32BufferAttribute(sealOpen,3),
+          new THREE.Float32BufferAttribute(sealClosed,3)
+        );
+        geo.morphTargetsRelative=false;
+        mesh.geometry=geo;
+        mesh.updateMorphTargets();
+        if(mesh.morphTargetInfluences){
+          mesh.morphTargetInfluences[0]=id==='naruto'?0:1;
+          mesh.morphTargetInfluences[1]=0;
+          if(id==='naruto'){mesh.morphTargetInfluences[2]=0;mesh.morphTargetInfluences[3]=1;}
+          morphMeshes.push(mesh);
+        }
+      });
+    }else{
+      figure.traverse(bone=>{
+        if(!bone.isBone)return;
+        const name=bone.name.toLowerCase().replace(/[^a-z0-9]/g,'');
+        const left=name.includes('left')||name.startsWith('lupper')||name.startsWith('lfore');
+        const right=name.includes('right')||name.startsWith('rupper')||name.startsWith('rfore');
+        if(!left&&!right)return;
+        const upper=/upperarm|shoulder/.test(name)&&!/forearm/.test(name);
+        const fore=/forearm|lowerarm/.test(name);
+        if(upper||fore)arms.push({bone,upper,sign:left?1:-1,x:bone.rotation.x,z:bone.rotation.z});
+      });
+    }
+  }
+  let chakra=null,lightningPaths=[];
+  if(featured){
+    chakra=new THREE.Group();chakra.visible=false;
+    chakra.position.set(.23,.14,.28);
+    if(id==='naruto'){
+      const core=new THREE.Mesh(new THREE.SphereGeometry(.087,14,10),
+        new THREE.MeshBasicMaterial({color:0x49d7ff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+      chakra.add(core);
+      for(let j=0;j<3;j++){
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(.11+j*.018,.007,5,26),
+          new THREE.MeshBasicMaterial({color:j%2?0xffffff:0x5ac7ff,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false}));
+        ring.rotation.set(Math.PI*j/3,Math.PI*(j+1)/4,0);chakra.add(ring);
+      }
+    }else{
+      // Chidori: electric forks only; no Rasengan sphere or torus.
+      for(let j=0;j<10;j++){
+        const positions=new Float32Array(8*3),geometry=new THREE.BufferGeometry();
+        geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+        const bolt=new THREE.Line(geometry,new THREE.LineBasicMaterial({
+          color:j%3===0?0xf1ffff:0x53bfff,transparent:true,opacity:j%3===0?1:.9,
+          blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false
+        }));
+        bolt.frustumCulled=false;chakra.add(bolt);lightningPaths.push({positions,geometry,j});
+      }
+      const sparks=new Float32Array(15*3),geometry=new THREE.BufferGeometry();
+      geometry.setAttribute('position',new THREE.BufferAttribute(sparks,3).setUsage(THREE.DynamicDrawUsage));
+      const pointCloud=new THREE.Points(geometry,new THREE.PointsMaterial({
+        color:0xd8faff,size:.031,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,depthTest:false
+      }));
+      pointCloud.frustumCulled=false;chakra.add(pointCloud);lightningPaths.sparks={sparks,geometry};
+    }
+    figure.add(chakra);
+  }
+  const baseScaleY=figure.scale.y;
+  return (dt,time,attacking,progress=-1,technique=0)=>{
+    if(mixer)mixer.update(Math.max(0,Math.min(dt,.08)));
+    if(featured){
+      const t=progress>=0?Math.max(0,Math.min(1,progress)):0;
+      const punch=progress>=0?Math.pow(Math.sin(Math.PI*t),2):0;
+      for(const m of morphMeshes){
+        m.morphTargetInfluences[1]=punch;
+        if(id==='naruto'&&m.morphTargetInfluences.length>=4){
+          const join=.5+.5*Math.sin(time*.0038);
+          m.morphTargetInfluences[0]=0;
+          m.morphTargetInfluences[2]=(1-punch)*(1-join);
+          m.morphTargetInfluences[3]=(1-punch)*join;
+        }else{
+          m.morphTargetInfluences[0]=1-punch;
+        }
+      }
+      figure.scale.y=baseScaleY*(1+.004*Math.sin(time*.002));
+      if(chakra){
+        chakra.visible=technique===2&&progress>.1&&progress<.88;
+        if(id==='naruto'){
+          chakra.rotation.y=time*.006;chakra.rotation.z=time*.004;
+          chakra.scale.setScalar(.95+.14*Math.sin(time*.012));
+        }else if(chakra.visible){
+          for(const bolt of lightningPaths){
+            const a=bolt.positions,j=bolt.j;
+            for(let k=0;k<8;k++){
+              const t=k/7,phase=time*.036+j*1.7+k*.83;
+              a[k*3]=Math.sin(phase)*(.024+.12*t)+Math.cos(j*1.1)*.07*t;
+              a[k*3+1]=Math.cos(phase*1.3)*(.024+.13*t)+Math.sin(j*1.4)*.06*t;
+              a[k*3+2]=t*(.22+.09*(j%3));
+            }
+            bolt.geometry.attributes.position.needsUpdate=true;
+          }
+          const o=lightningPaths.sparks;
+          if(o){
+            for(let k=0;k<15;k++){
+              const phase=time*.023+k*2.1,t=(k%5)/5;
+              o.sparks[3*k]=Math.sin(phase)*(.07+.15*t);
+              o.sparks[3*k+1]=Math.cos(phase*1.3)*(.08+.14*t);
+              o.sparks[3*k+2]=.02+.28*t;
+            }
+            o.geometry.attributes.position.needsUpdate=true;
+          }
+        }
+      }
+    }else if(!mixer){
+      figure.scale.y=baseScaleY*(1+.009*Math.sin(time*.0023));
+      if(!arms.length)figure.rotation.x=.013*Math.sin(time*.0013);
+    }
+    if(arms.length){
+      const breath=Math.sin(time*.0025)*.025;
+      for(const a of arms){
+        a.bone.rotation.z=a.z+a.sign*(a.upper?.43:-.46)+(a.upper?breath:0)+a.sign*(attacking?.14:0);
+        a.bone.rotation.x=a.x+(a.upper?.06:-.11);
+      }
+    }
+  };
+}
+function initArena3d(){
+  if(arena3d)return;
+  if(!window.THREE){arenaUnavailable=true;bindBattleImages();return}
+  const host=el('battle3d');
+  let renderer;
+  try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'})}
+  catch(error){arenaUnavailable=true;bindBattleImages();return}
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.setClearColor(0,0);renderer.autoClear=false;
+  host.appendChild(renderer.domElement);host.parentElement.classList.add('three-active');
+  const scene=new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xfff7ed,0xc6d3ea,1.1));
+  const light=new THREE.DirectionalLight(0xffffff,.8);light.position.set(-2,4,5);scene.add(light);
+  const camera=new THREE.OrthographicCamera(-1,1,.57,-.57,.01,20);camera.position.z=4;
+  let slots=[],width=0,height=0,last=0,bindSerial=0;
+  arena3d={trigger(side,index,technique){
+    const active=slots.find(x=>x.side===side&&x.index===index);
+    if(active){active.attackAt=performance.now();active.technique=technique}
+  },bind(){
+    const currentBind=++bindSerial;
+    slots=[];
+    for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
+      units.forEach((u,i)=>{
+        if(!upgradedFighters.has(u.id))return;
+        const unit=el(side+i),sprite=unit.querySelector('svg');
+        fetchHeroModel(u.id,model=>{
+          if(currentBind!==bindSerial||!unit.isConnected)return;
+          if(!model){showBattleImage(unit,u.id,side);return}
+          const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
+          slots.push({unit,sprite,fighter,side,index:i,motion:makeHeroMotion(u.id,fighter),attackAt:0,technique:0});unit.classList.add('has-model');
+        });
+      });
+    }
+  }};
+  function draw(time){
+    requestAnimationFrame(draw);
+    if(document.hidden||document.querySelector('.modal.open')||time-last<45)return;
+    const dt=last?Math.min(.08,(time-last)/1000):.045;
+    last=time;
+    const rect=host.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    if(width!==rect.width||height!==rect.height){
+      width=rect.width;height=rect.height;renderer.setSize(width,height);
+    }
+    renderer.setScissorTest(false);renderer.setViewport(0,0,width,height);renderer.clear();
+    for(const slot of slots){
+      const {unit,sprite,fighter,side,motion}=slot;
+      if(unit.classList.contains('down'))continue;
+      const r=sprite.getBoundingClientRect();if(!r.width||!r.height)continue;
+      const half=.57*r.width/r.height;camera.left=-half;camera.right=half;camera.updateProjectionMatrix();
+      const x=r.left-rect.left,y=rect.bottom-r.bottom;
+      renderer.setViewport(x,y,r.width,r.height);
+      renderer.setScissor(x,y,r.width,r.height);renderer.setScissorTest(true);renderer.clearDepth();
+      const elapsed=slot.attackAt?time-slot.attackAt:-1;
+      const attackProgress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
+      const attacking=attackProgress>=0;
+      if(motion)motion(dt,time,attacking,attackProgress,slot.technique);
+      const strike=attacking?Math.pow(Math.sin(Math.PI*attackProgress),2):0;
+      const direction=side==='allyTeam'?1:-1;
+      fighter.rotation.y=direction*(.29+.06*Math.sin(time/850)-.16*strike);
+      fighter.rotation.z=-direction*.13*strike;
+      fighter.rotation.x=-.12*strike;
+      fighter.position.x=direction*.14*strike;
+      fighter.position.y=.012*Math.sin(time/440)+.11*strike;
+      fighter.position.z=.07*strike;
+      scene.add(fighter);renderer.render(scene,camera);scene.remove(fighter);
+    }
+  }
+  arena3d.bind();requestAnimationFrame(draw);
+}
 function openModelPreview(){el('modelModal').classList.add('open');el('modelFrameHolder').innerHTML='<iframe class="model-frame" title="3D Naruto by ronildo.facanha" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen src="https://sketchfab.com/models/db14fc3de5b34b738e49ec3cdb83770a/embed?autostart=1&ui_infos=0"></iframe>'}
 function closeModelPreview(){el('modelModal').classList.remove('open');el('modelFrameHolder').innerHTML=''}
 
+const testBuild=location.pathname.includes('/test-3d/')||location.hostname==='terminal.local';
+const saveKey=testBuild?'narutoSave-3d-test':'narutoSave';
 let s;
-try{s=JSON.parse(localStorage.getItem('narutoSave')||'null')}catch(e){}
+try{s=JSON.parse(localStorage.getItem(saveKey)||(testBuild&&localStorage.getItem('narutoSave'))||'null')}catch(e){}
 s=Object.assign({coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100,critChance:5,critDamage:150},s||{});
 s.critChance=Number(s.critChance)||5;s.critDamage=Number(s.critDamage)||150;
 const roster=[
@@ -429,7 +751,7 @@ if(hpBar)hpBar.style.width=Math.max(0,100*u.curHp/u.maxHp)+'%';
 if(rageBar)rageBar.style.width=Math.max(0,u.rage||0)+'%';
 n.classList.toggle('down',u.curHp<=0);
 });
-el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+el('teamStatus').textContent='⚡ Команда: '+prettyPower(s.team.reduce((n,id)=>n+characterPower(roster.find(c=>c.id===id)),0))+' · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 return;
 }
 renderedLayout=layoutKey;
@@ -441,10 +763,11 @@ const row=side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middl
 const idx=counts[row]++,total=units.filter((v,j)=>(side==='allyTeam'?(s.formation[v.id]||'front'):(j<2?'front':j<4?'middle':'back'))===row).length;
 const bottom=total===1?24:(idx===0?43:8);
 const left=(side==='allyTeam'?allyXs:foeXs)[row];
-return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
+return '<div class="mini-unit '+(side==='foeTeam'?'enemy-unit ':'')+(u.curHp<=0?'down':'')+'" style="left:'+left+'%;bottom:'+bottom+'%" id="'+side+i+'">'+ninjaSVG(u)+'<span class="unit-name">'+u.name+'</span><span class="unit-power">⚡'+prettyPower(characterPower(u))+'</span><div class="unit-hp"><i style="width:'+Math.max(0,100*u.curHp/u.maxHp)+'%"></i></div><div class="rage-bar"><i style="width:'+(u.rage||0)+'%"></i></div></div>'
 }).join('');
 }
-el('teamStatus').textContent='👥 Команда: '+s.team.length+'/5 · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
+if(arena3d)arena3d.bind();else if(arenaUnavailable)bindBattleImages();
+el('teamStatus').textContent='⚡ Команда: '+prettyPower(s.team.reduce((n,id)=>n+characterPower(roster.find(c=>c.id===id)),0))+' · Противники: '+foes.filter(u=>u.curHp>0).length+'/5';
 
 }
 function renderFormationPreview(){
@@ -466,12 +789,46 @@ const slot=s.formationSlots.findIndex((x,i)=>formationRowForSlot(i)===row&&x===n
 if(slot<0){el('teamStatus').textContent='В этой линии нет свободного места — поменяй бойцов в схеме';return}
 putInSlot(slot,id);
 }
+// Fan prototype: external anime art, NOT the old in-game GLB snapshots.
+// Keep a local character render as a network-failure fallback.
+const portraitAtlas={
+  official:'https://cmsapi-frontend.naruto-official.com/site/api/naruto/Image/get?path=%2Fnaruto%2Fjp%2Fnews%2F2024%2F02%2F15%2FXq6cf34ilRuV37wK%2FN+acmag+556x556.jpg',
+  badge:'https://eeo.today/store/101/html/upload/save_image/686de107da702.jpg',
+  akatsuki:'https://i.quotev.com/3x75nr4t5sua.jpg'
+};
+const portraitFrames={
+  naruto:['official','0% 0%','440% 405%'],
+  sasuke:['official','50% 0%','440% 405%'],
+  kakashi:['official','100% 0%','440% 405%'],
+  gaara:['official','0% 50%','440% 405%'],
+  itachi:['official','50% 50%','440% 405%'],
+  deidara:['official','100% 50%','440% 405%'],
+  sakura:['badge','88% 12%','395% 395%'],
+  shikamaru:['badge','50% 50%','395% 395%'],
+  hinata:['badge','88% 50%','395% 395%'],
+  pain:['akatsuki','0% 0%','300% 300%'],
+  kisame:['akatsuki','50% 50%','300% 300%'],
+  konan:['akatsuki','100% 0%','300% 300%']
+};
+function heroAvatarHTML(c){
+  return '<span class="team-avatar" data-portrait="'+c.id+'" role="img" aria-label="Аниме-портрет '+c.name+'"></span>';
+}
+function applyExternalPortraits(scope=document){
+  scope.querySelectorAll('[data-portrait]').forEach(node=>{
+    const id=node.dataset.portrait,frame=portraitFrames[id];if(!frame)return;
+    node.style.backgroundImage='url("'+portraitAtlas[frame[0]]+'"),url("./test-3d/models/'+id+'.webp")';
+    node.style.backgroundPosition=frame[1]+',7.7% 2%';
+    node.style.backgroundSize=frame[2]+',auto 1550%';
+    node.style.backgroundRepeat='no-repeat,no-repeat';
+  });
+}
 function renderTeamCards(){
-renderFormationPreview();
-el('teamCards').innerHTML=roster.map(c=>{
-const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id);
-return '<div class="team-card '+(chosen?'chosen':'')+'"><div style="display:flex;align-items:center;gap:6px">'+ninjaSVG(c)+'<span><strong>'+c.name+'</strong><small>'+c.role+(chosen?' · Место '+(slot+1):'')+'</small></span></div><div style="display:flex;gap:5px;margin-top:8px"><button style="flex:1" onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" style="flex:1" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>'
-}).join('');
+  renderFormationPreview();
+  el('teamCards').innerHTML=roster.map(c=>{
+    const chosen=s.team.includes(c.id),slot=s.formationSlots.indexOf(c.id),p=heroData(c.id);
+    return '<div class="team-card '+(chosen?'chosen':'')+'"><div class="team-card-header">'+heroAvatarHTML(c)+'<div class="team-avatar-name"><strong>'+c.name+'</strong><small>⭐ Уровень '+p.level+' · '+c.role+(chosen?' · Место '+(slot+1):'')+'</small><span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="team-card-actions"><button onclick="toggleMember(\''+c.id+'\')">'+(chosen?'✓ На поле':'➕ Взять')+'</button><button class="profile-open" onclick="openCharacter(\''+c.id+'\')">🎒 Слоты</button></div></div>';
+  }).join('');
+  applyExternalPortraits(el('teamCards'));
 }
 function openCharacter(id){selectedProfile=id;el('teamModal').classList.remove('open');el('profileModal').classList.add('open');renderProfile()}
 function openTeam(){if(started&&!paused)togglePause();el('teamModal').classList.add('open');renderTeamCards()}
@@ -533,10 +890,46 @@ box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible'
 clearTimeout(window.rasenganCutinTimer);
 window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350);
 }
+function showChidoriStrike(layer,sx,sy,tx,ty){
+  const box=layer.getBoundingClientRect(),ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('class','chidori-bolts');
+  svg.setAttribute('viewBox','0 0 '+Math.max(1,box.width)+' '+Math.max(1,box.height));
+  svg.setAttribute('preserveAspectRatio','none');
+  const dx=tx-sx,dy=ty-sy,len=Math.max(1,Math.hypot(dx,dy)),nx=-dy/len,ny=dx/len;
+  const path=(points,width,color,opacity)=>{
+    const p=document.createElementNS(ns,'path');p.setAttribute('d',points);
+    p.setAttribute('fill','none');p.setAttribute('stroke',color);
+    p.setAttribute('stroke-width',width);
+    p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');
+    p.setAttribute('opacity',opacity);svg.appendChild(p);
+  };
+  for(let j=0;j<6;j++){
+    let points='M '+sx.toFixed(1)+' '+sy.toFixed(1);
+    for(let k=1;k<=9;k++){
+      const t=k/9,spread=k===9?0:Math.sin((j+1)*13.7+k*3.7)*(12+11*(j%3))*(1-t*.6);
+      const x=sx+dx*t+nx*spread,y=sy+dy*t+ny*spread;
+      points+=' L '+x.toFixed(1)+' '+y.toFixed(1);
+      if(k===3||k===6){
+        const bx=x+nx*(j%2===0?23:-23),by=y+ny*(j%2===0?23:-23);
+        path('M '+x.toFixed(1)+' '+y.toFixed(1)+' L '+bx.toFixed(1)+' '+by.toFixed(1),2,'#75d6ff',.8);
+      }
+    }
+    path(points,j===0?10:5,'#168fff',.32);
+    path(points,j===0?3.8:1.9,j%2===0?'#edffff':'#84d3ff',1);
+  }
+  layer.appendChild(svg);
+  if(svg.animate)svg.animate([{opacity:0,transform:'scale(.93)'},{opacity:1,transform:'scale(1)'},{opacity:.85},{opacity:0}],{duration:850,easing:'ease-out'});
+  setTimeout(()=>svg.remove(),930);
+  const flash=document.createElement('div');flash.className='chidori-impact';
+  flash.style.left=tx+'px';flash.style.top=ty+'px';layer.appendChild(flash);
+  setTimeout(()=>flash.remove(),700);
+}
 function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
+if(arena3d&&arena3d.trigger)arena3d.trigger(side,sourceIndex,action);
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
 const sx=from.left+from.width/2-box.left,sy=from.top+from.height*.43-box.top;
 const tx=to.left+to.width/2-box.left,ty=to.top+to.height*.4-box.top;
@@ -548,6 +941,7 @@ const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin
 void source.offsetWidth;source.classList.add(cls);
 setTimeout(()=>source.classList.remove(cls),1300);
 if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
+if(kind==='lightning'&&action===2){showChidoriStrike(layer,sx,sy,tx,ty);return}
 const fx=document.createElement('div');
 fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
 fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
@@ -658,108 +1052,123 @@ const p=heroData(id),b={atk:(p.level-1)*3,hp:(p.level-1)*12,speed:0,crit:0,critD
 for(const g of gearCatalog){const item=itemById(p.gear[g.slot]);if(item)b[g.bonus]+=g.value*(1+item.quality)}
 return b;
 }
+/* Combat power is derived from base stats, a character's level, and the
+   actual equipped items plus their improvement quality; no save migration. */
+function characterPower(c){
+  if(!c)return 0;
+  const p=heroData(c.id),b=heroBonuses(c.id);
+  return Math.max(1,Math.round((c.atk+b.atk)*22+(c.hp+b.hp)*3.2+
+    (c.spd+b.speed)*15+(5+b.crit)*8+(150+b.critDamage)*.9+p.level*70));
+}
+function prettyPower(v){return Number(v||0).toLocaleString('ru-RU')}
+
 function openProfile(){if(started&&!paused)togglePause();el('profileModal').classList.add('open');renderProfile()}
-function closeProfile(){el('profileModal').classList.remove('open');initTeams();render();openTeam()}
+function closeProfile(){el('profileModal').classList.remove('open');releaseProfile();initTeams();render();openTeam()}
 function selectProfile(id){selectedProfile=id;renderProfile()}
 function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
-const remoteHeroModels={"naruto":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Naruto%20Uzumaki/Naruto%20Uzumaki.glb",
-"sasuke":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sasuke%20Uchiha/Sasuke%20Uchiha.glb",
-"sakura":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Sakura%20Haruno/Sakura%20Haruno.glb",
-"kakashi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kakashi%20Hatake/Kakashi%20Hatake.glb",
-"hinata":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Hinata%20Hy%C5%ABga/Hinata%20Hy%C5%ABga.glb",
-"shikamaru":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Shikamaru%20Nara/Shikamaru%20Nara.glb",
-"gaara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Gaara/Gaara.glb",
-"itachi":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Itachi%20Uchiha/Itachi%20Uchiha.glb",
-"pain":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Pain/Pain.glb",
-"kisame":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Kisame%20Hoshigaki/Kisame%20Hoshigaki.glb",
-"deidara":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Deidara/Deidara.glb",
-"konan":"https://raw.githubusercontent.com/fchapoulliep/narutodex3d/main/public/models/Konan/Konan.glb"};
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,'./test-3d/models/'+hero.id+'.glb']));
+const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
+const modelAnimationClips={};
 function fetchHeroModel(id,callback){
 if(!remoteHeroModels[id]||typeof THREE==='undefined'||!THREE.GLTFLoader){callback(null);return}
 if(modelCache[id]){callback(modelCache[id].clone(true));return}
 if(pendingModels[id]){pendingModels[id].push(callback);return}
 pendingModels[id]=[callback];
-new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
+new THREE.GLTFLoader().load(remoteHeroModels[id],g=>{modelAnimationClips[id]=g.animations||[];modelCache[id]=g.scene;for(const cb of pendingModels[id]||[])cb(g.scene.clone(true));delete pendingModels[id]},undefined,e=>{console.warn('GLB not loaded',id,e);for(const cb of pendingModels[id]||[])cb(null);delete pendingModels[id]});
 }
 let heroRenderer=null;
+let releaseResize=null;
+let profileFrame=0;
+function releaseProfile(){
+  if(profileFrame){cancelAnimationFrame(profileFrame);profileFrame=0}
+  if(releaseResize){releaseResize.disconnect();releaseResize=null}
+  if(heroRenderer){heroRenderer.dispose();heroRenderer.forceContextLoss();heroRenderer=null}
+}
+
 function mountHero3D(hero){
 const host=el('hero3d');if(!host||host.dataset.hero!==hero.id)return;
-if(heroRenderer){try{heroRenderer.dispose()}catch(e){}heroRenderer=null}
-if(typeof THREE==='undefined'){host.innerHTML=ninjaSVG(hero);host.insertAdjacentHTML('beforeend','<span class="model-credit">3D временно недоступно</span>');return}
+// Reuse the same character GLB sources as the 5-on-5 arena; never change player progression.
+releaseProfile();
+if(typeof THREE==='undefined'||arenaUnavailable){mountTurntable(host,hero);return}
 try{
 host.innerHTML='';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x172840);
-const camera=new THREE.PerspectiveCamera(32,host.clientWidth/280,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(host.clientWidth,280);host.appendChild(renderer.domElement);heroRenderer=renderer;
-scene.add(new THREE.HemisphereLight(0xffffff,0x536485,2.2));const lamp=new THREE.DirectionalLight(0xffffff,2.1);lamp.position.set(3,6,5);scene.add(lamp);
+const scene=new THREE.Scene();scene.background=hero.id==='naruto'?null:new THREE.Color(0x172840);
+const camera=new THREE.PerspectiveCamera(32,host.clientWidth/host.clientHeight,.1,100);camera.position.set(0,1.9,6.6);camera.lookAt(0,1.35,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:hero.id==='naruto',powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);heroRenderer=renderer;
+scene.add(new THREE.HemisphereLight(0xffffff,0x8592a5,1.25));const lamp=new THREE.DirectionalLight(0xffffff,.85);lamp.position.set(3,6,5);scene.add(lamp);
 const group=new THREE.Group();scene.add(group);
-const palette={naruto:['#f28c23','#202938','#f8cf9d','#f2cf32'],sasuke:['#d6d8e4','#293553','#e7c7b1','#222432'],sakura:['#d85875','#f4bdcb','#f2d1bd','#ee8da9'],kakashi:['#4c6670','#1f3042','#e7c6b3','#c9d0d4'],hinata:['#c7b8dd','#252d49','#f1d2bf','#282941'],shikamaru:['#53744d','#333940','#dbbba5','#222b28'],gaara:['#7b3c38','#302c32','#ebc4a5','#ae4538'],itachi:['#272a31','#15171c','#dfc1b0','#1c2029'],pain:['#282c36','#16191f','#d8b8a5','#e58d44'],kisame:['#343b52','#262b35','#7185ad','#25364b'],deidara:['#292c32','#24262e','#f0cdb6','#e3c34f'],sasori:['#323438','#28262c','#e8c4a9','#bb493a']};
-const p=palette[hero.id]||palette.naruto;
-const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.84});
-const cloth=mat(p[0]),pants=mat(p[1]),skin=mat(p[2]),hair=mat(p[3]),dark=mat('#151e2c'),metal=mat('#9eaeb9');
-function shape(geo,m,x,y,z,sx=1,sy=1,sz=1){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);group.add(o);return o}
-const ball=new THREE.SphereGeometry(1,18,14),box=new THREE.BoxGeometry(1,1,1),tube=new THREE.CylinderGeometry(.5,.5,1,12);
-shape(tube,pants,-.24,.49,0,.31,.95,.33);shape(tube,pants,.24,.49,0,.31,.95,.33);
-shape(box,dark,-.24,.11,.12,.36,.19,.62);shape(box,dark,.24,.11,.12,.36,.19,.62);
-shape(tube,cloth,0,1.51,0,1.02,1.15,.61);
-shape(ball,skin,0,2.47,0,.41,.48,.36);
-shape(ball,hair,0,2.79,-.04,.45,.24,.38);
-for(const s of [-1,1]){
-let arm=shape(tube,cloth,s*.68,1.51,0,.29,.85,.28);arm.rotation.z=s*.16;
-shape(ball,skin,s*.75,1.02,.03,.15,.18,.15);
-shape(ball,dark,s*.17,2.48,.335,.043,.04,.018);
-}
-if(['naruto','kakashi','hinata','sakura'].includes(hero.id)){shape(box,metal,0,2.66,.345,.64,.17,.07);shape(box,dark,0,2.66,.39,.18,.11,.02)}
-if(hero.id==='naruto'){for(let i=0;i<7;i++){const a=i*Math.PI*2/7;let spike=shape(tube,hair,Math.cos(a)*.29,2.96,Math.sin(a)*.25,.16,.31,.16);spike.rotation.z=Math.cos(a)*-.5}}
-if(hero.id==='gaara')shape(ball,mat('#a78356'),.52,1.47,-.39,.49,.62,.37);
-if(['itachi','pain','kisame','deidara','sasori'].includes(hero.id)){shape(tube,mat('#191b25'),0,1.47,.12,1.12,1.23,.7);for(let i=0;i<3;i++)shape(ball,mat('#b53943'),(i-1)*.28,1.6,.52,.13,.09,.04)}
-if(hero.id==='sakura')shape(ball,hair,0,2.73,-.03,.46,.29,.4);
-const floor=new THREE.Mesh(new THREE.CircleGeometry(1.7,40),new THREE.MeshStandardMaterial({color:0x3b5672,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
-let drag=false,last=0,angle=.35;
-renderer.domElement.style.touchAction='pan-y';
-renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
+const floor=new THREE.Mesh(new THREE.CircleGeometry(.61,40),new THREE.MeshStandardMaterial({color:hero.id==='naruto'?0x9caa97:0x3b5672,transparent:hero.id==='naruto',opacity:hero.id==='naruto'?.72:1,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.visible=hero.id!=="naruto";scene.add(floor);
+let drag=false,last=0,angle=.10;
+renderer.domElement.style.touchAction=(hero.id==='naruto'||hero.id==='sasuke')?'pan-y':'none';
+if(hero.id!=='naruto'&&hero.id!=='sasuke')renderer.domElement.addEventListener('pointerdown',e=>{drag=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
 renderer.domElement.addEventListener('pointerup',()=>drag=false);
+renderer.domElement.addEventListener('pointercancel',()=>drag=false);
+renderer.domElement.addEventListener('lostpointercapture',()=>drag=false);
 renderer.domElement.addEventListener('pointermove',e=>{if(drag){angle+=(e.clientX-last)*.013;last=e.clientX;group.rotation.y=angle;renderer.render(scene,camera)}});
 group.rotation.y=angle;renderer.render(scene,camera);
+const note=document.createElement('span');note.className='model-credit';note.textContent='Загружаю 3D-модель…';host.appendChild(note);
+if(!upgradedFighters.has(hero.id)){note.textContent='Поверни персонажа пальцем';return}
 fetchHeroModel(hero.id,model=>{
-if(!model||heroRenderer!==renderer||!host.isConnected)return;
-while(group.children.length)group.remove(group.children[0]);
-model.updateMatrixWorld(true);
-const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
-if(!isFinite(size.x+size.y+size.z)||Math.max(size.x,size.y,size.z)<.00001)return;
-const holder=new THREE.Group();holder.add(model);
-model.position.sub(center);model.updateMatrixWorld(true);
-const centered=new THREE.Box3().setFromObject(model);
-const centeredSize=centered.getSize(new THREE.Vector3());
-const maxDimension=Math.max(centeredSize.x,centeredSize.y,centeredSize.z);
-holder.scale.setScalar(2.7/maxDimension);
-group.add(holder);group.updateMatrixWorld(true);
-const finalBox=new THREE.Box3().setFromObject(group);
-const finalSize=finalBox.getSize(new THREE.Vector3()),finalCenter=finalBox.getCenter(new THREE.Vector3());
-const fov=camera.fov*Math.PI/180,aspect=Math.max(.5,host.clientWidth/280);
-const fitDistance=Math.max(finalSize.y/(2*Math.tan(fov/2)),finalSize.x/(2*Math.tan(fov/2)*aspect));
-const distance=Math.max(7,fitDistance*2.2);
-camera.position.set(finalCenter.x,finalCenter.y,distance+finalCenter.z);
-camera.lookAt(finalCenter);camera.near=.01;camera.far=10000;camera.updateProjectionMatrix();
-group.rotation.y=angle;renderer.render(scene,camera);
-const note=host.querySelector('.model-credit');if(note)note.textContent='3D-модель · поверни пальцем';
+  if(heroRenderer!==renderer||!host.isConnected)return;
+  const fighter=model&&normalizedFighter(model);
+  if(!fighter){if(upgradedFighters.has(hero.id))mountTurntable(host,hero);else note.textContent='3D-модель не загрузилась';return}
+  while(group.children.length)group.remove(group.children[0]);
+  group.add(fighter);group.position.y=.5;
+  const motion=hero.id==='naruto'?makeNarutoProfileSeal(fighter):makeHeroMotion(hero.id,fighter);
+  // Cinematic roster view: no technique buttons, no spin controls.
+  let prevFrame=0;
+  function animateProfile(t){
+    if(heroRenderer!==renderer||!host.isConnected)return;
+    if(!document.hidden&&t-prevFrame>=48){
+      const dt=prevFrame?Math.min(.08,(t-prevFrame)/1000):.048;
+      motion(dt,t,false,-1,0);
+      if(hero.id==='naruto'){
+        // Hands keep their seal; only subtle breathing/weight shift is shown.
+        group.position.set(0,.5+.006*Math.sin(t*.00155),0);
+        group.rotation.set(0,.026*Math.sin(t*.00075),.008*Math.sin(t*.0011));
+      }else if(hero.id==='sasuke'){
+        group.position.y=.5+.004*Math.sin(t*.00165);
+        group.rotation.y=.03*Math.sin(t*.0009);
+      }
+      renderer.render(scene,camera);prevFrame=t;
+    }
+    profileFrame=requestAnimationFrame(animateProfile);
+  }
+  profileFrame=requestAnimationFrame(animateProfile);
+  function fit(){
+    const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;
+    renderer.setSize(w,h);camera.aspect=w/h;
+    const box=new THREE.Box3().setFromObject(fighter);
+    const sphere=box.getBoundingSphere(new THREE.Sphere());
+    const aperture=Math.atan(Math.tan(camera.fov*Math.PI/360)*Math.min(1,camera.aspect));
+    camera.position.set(0,.5,1.05*sphere.radius/Math.sin(aperture));
+    camera.lookAt(0,.5,0);camera.updateProjectionMatrix();renderer.render(scene,camera);
+  }
+  fit();
+  if(window.ResizeObserver){releaseResize=new ResizeObserver(fit);releaseResize.observe(host)}
+  if(hero.id==='naruto'||hero.id==='sasuke')note.remove();else note.textContent='Поверни персонажа пальцем';
 });
-const note=document.createElement('span');note.className='model-credit';note.textContent='Встроенная 3D-фигурка · поверни пальцем';host.appendChild(note);
-}catch(err){host.innerHTML=ninjaSVG(hero);console.warn('3D fallback',err)}
+}catch(err){mountTurntable(host,hero);console.warn('3D fallback',err)}
 }
 
 function renderProfile(){
-const c=roster.find(x=>x.id===selectedProfile)||roster[0],p=heroData(c.id),b=heroBonuses(c.id);
-el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+roster.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+const fighters=[...roster,...enemies];
+const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
+el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
+if(enemies.includes(c)){
+  el('profileContent').innerHTML='<div class="profile-hero"><div class="profile-model" id="hero3d" data-hero="'+c.id+'"></div><div class="hero-details">'+c.name+' · Акацуки · ⭐ Уровень '+heroData(c.id).level+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div><div class="profile-stats"><span>⚔️ Атака: '+c.atk+'</span><span>❤️ Базовое HP: '+c.hp+'</span><span>⚡ Скорость: '+c.spd+'</span></div>';
+  setTimeout(()=>mountHero3D(c),0);return;
+}
+const p=heroData(c.id),b=heroBonuses(c.id);
 let slots=gearCatalog.map(g=>{const item=itemById(p.gear[g.slot]);return '<button class="equip-slot '+(item?'equipped quality-'+item.quality:'')+'" onclick="slotClick(\''+g.slot+'\')"><b>'+g.icon+'</b>'+g.label+'<small>'+(item?qualities[item.quality].name+' ✓':'Пусто · выбрать')+'</small></button>'}).join('');
 let bag=s.inventory.map(item=>{
 const g=gearCatalog.find(x=>x.slot===item.slot),owner=gearOwner(item.id),q=qualities[item.quality],cost=upgradeCost(item);
 return '<div class="bag-item quality-'+item.quality+'"><b>'+g.icon+'</b><div>'+g.label+' · '+q.name+'</div><small>'+(owner?'На '+(roster.find(x=>x.id===owner)?.name||owner):'В сумке')+'</small><div class="bag-actions"><button onclick="equipItem('+item.id+')">'+(owner===selectedProfile?'Снять':'Надеть')+'</button><button '+(item.quality>=5?'disabled':'')+' onclick="improveItem('+item.id+')">'+(item.quality>=5?'MAX':'⬆️ '+cost+' 🪙')+'</button></div></div>';
 }).join('');
-el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+'<br>'+c.role+'</div></div>'+
+el('profileContent').innerHTML='<div class="profile-hero">'+'<div class="profile-model" id="hero3d" data-hero="'+c.id+'"><div class="profile-model-loading">3D-персонаж</div></div>'+'<div class="hero-details">'+c.name+'<br>⭐ Уровень '+p.level+' · '+c.role+'<span class="hero-power">⚡ '+prettyPower(characterPower(c))+'</span></div></div>'+
 '<h3 style="margin:12px 0 5px;color:#ffcc7c">Экипировка · 6 слотов</h3><div class="equip-grid">'+slots+'</div>'+
 '<div class="profile-stats"><span>⚔️ Атака: '+(c.atk+b.atk)+'</span><span>❤️ HP: '+(c.hp+b.hp)+'</span><span>⚡ Скорость: '+(c.spd+b.speed)+'</span><span>🎯 Крит: '+Math.min(100,s.critChance+b.crit)+'%</span><span>💥 Крит. урон: '+(s.critDamage+b.critDamage)+'%</span><span>🪙 Монеты: '+s.coins+'</span></div>'+
 '<div class="profile-actions"><button onclick="levelHero()">⬆️ Повысить уровень<br>'+levelCost(p)+' 🪙</button><button onclick="unequipAll()">📤 Снять всё в сумку</button></div>'+
@@ -824,7 +1233,7 @@ s.coins-=cost;item.quality++;save();initTeams();render();renderProfile();
 }
 let hp=s.maxHp,enemyHp=100+s.wave*25,maxEnemy=enemyHp,turn=0;
 let started=false,paused=false,timer=null;
-function save(){try{localStorage.setItem('narutoSave',JSON.stringify(s))}catch(e){console.warn('Save unavailable',e)}}
+function save(){try{localStorage.setItem(saveKey,JSON.stringify(s))}catch(e){console.warn('Save unavailable',e)}}
 function render(){
 el('coins').textContent=s.coins;el('level').textContent=s.level;el('wave').textContent=s.wave;el('speed').textContent=s.speed;
 el('hpbar').style.width=Math.max(0,hp/s.maxHp*100)+'%';el('enemybar').style.width=Math.max(0,enemyHp/maxEnemy*100)+'%';
@@ -879,13 +1288,22 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 render();
 }
 function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)return;timer=setTimeout(()=>battleRound(),2200)}
+function startPairDemo(){
+  if(!testBuild){startGame();return}
+  s.team=['naruto','sasuke','sakura','kakashi','hinata'];
+  s.formationSlots=[...s.team];ensureFormation();startGame();
+}
 function startGame(){clearTimeout(actionTimer);roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
 function togglePause(){
 if(!started){startGame();return}
 paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInProgress=false}else{roundInProgress=false;schedule()}el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
+if(testBuild)el('pairDemo').hidden=false;
+document.addEventListener('DOMContentLoaded',initArena3d);
 try{initTeams();render()}catch(e){console.error('Game initialization:',e);const info=el('startInfo');if(info)info.textContent='Инициализация: '+e.message}
 </script>
-</body>
+<footer class="model-credits">3D-модели <a href="https://sketchfab.com/3d-models/naruto-35d26667e16144a3aa73f5d2ab096654">Наруто</a> и <a href="https://sketchfab.com/3d-models/sasuke-5a64992077484a60a91770d6dfc86551">Саске</a> · Sketch Nerd (Meta Headz) · <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>. Для теста подготовлены игровые версии и ракурсы моделей. Геометрия и расцветка остальных десяти моделей созданы для Naruto Auto Arena.</footer></body>
 </html>
+
+
