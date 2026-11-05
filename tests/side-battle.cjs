@@ -42,7 +42,10 @@ run(`fetchHeroModel=(key,cb)=>cb(instantiateHero(sourceModels[key]));
 for(const id of ['naruto','sasuke','sakura','kakashi','hinata','itachi','pain','kisame','deidara','konan','madara','obito','gaara','shikamaru']){remoteHeroModels[id]=id+'.glb';upgradedFighters.add(id)}
 allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['itachi','pain','konan','madara','obito'].map(id=>({id}));`);
 load('test-3d/battle-environment.js');
+load('test-3d/battle-pose.js');
+load('test-3d/battle-cinematics.js');
 load('test-3d/battle-visual-upgrade.js');
+load('test-3d/battle-ultimate-fx.js');
 load('test-3d/battle-scene.js');
 let count=0,time=1000;const frame=()=>{time+=45;run(`nextFrame(${time})`)};
 for(const [w,h] of [[320,405],[390,440],[430,440],[650,440],[844,390]]){
@@ -58,6 +61,8 @@ const live=run('arena3d.effects()');
 assert.equal(live.length,1,'Each attack should mount exactly one 3D visual effect');
 if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&&technique===2)){
   assert.equal(typeof live[0].kind,'string','Normal attacks must not be swallowed by the 3D renderer');
+  if(technique===2)assert.equal(typeof live[0].ultimate,'string',
+    'Each non-Madara ultimate should have a unique 3D identity');
 }
 for(let tick=1;tick<=(technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
