@@ -91,6 +91,24 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.evaluate(()=>arena3d.effects().length),0,'Rebinding must dispose effects');
     assert.equal(errors.length,0,'Susanoo page errors: '+errors.join('; '));
     console.log('PASS: automatic Susanoo, mobile WebKit formation/strike screenshots, 9 casts, geometry cleanup and rebind.');
+    // Profile visual smoke: Susanoo must appear immediately without casting.
+    await page.evaluate(()=>openCharacter('madara'));
+    await page.waitForFunction(
+      ()=>!!document.querySelector('#hero3d[data-susanoo="active"] canvas'),
+      null,{timeout:25000});
+    await page.waitForTimeout(700);
+    const profile=await page.evaluate(()=>{
+      const host=document.getElementById('hero3d'),canvas=host.querySelector('canvas');
+      return {hero:host.dataset.hero,active:host.dataset.susanoo,
+        width:canvas.width,height:canvas.height};
+    });
+    assert.equal(profile.hero,'madara');
+    assert.equal(profile.active,'active');
+    assert(profile.width>100&&profile.height>100,'Madara must have a working profile WebGL canvas');
+    await page.locator('#hero3d').screenshot({path:'artifacts/madara-profile-susanoo-webkit.png'});
+    await page.evaluate(()=>closeProfile());
+    assert.equal(errors.length,0,'Madara profile page errors: '+errors.join('; '));
+    console.log('PASS: Madara profile has always-on 3D skeletal Susanoo in mobile WebKit.');
     await ctx.close();
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
