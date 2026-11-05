@@ -12,6 +12,7 @@ on:
     paths:
       - 'test-3d/**'
       - 'tests/side-battle.cjs'
+      - 'tests/battle-cinematics.cjs'
       - 'tests/madara-profile.cjs'
       - 'tests/battle-tempo.cjs'
       - 'tests/ultimate-cycle.cjs'
@@ -28,6 +29,10 @@ jobs:
         run: |
           node --check test-3d/battle-environment.js
           node --check test-3d/battle-scene.js
+          node --check test-3d/battle-pose.js
+          node --check test-3d/battle-cinematics.js
+          node --check test-3d/battle-visual-upgrade.js
+          node --check tests/battle-cinematics.cjs
           node --check test-3d/madara-profile.js
           node --check test-3d/battle-speed.js
           node --check test-3d/battle-backdrop.js
@@ -38,6 +43,7 @@ jobs:
       - name: Check fighters, formations and techniques
         run: |
           node tests/side-battle.cjs
+          node tests/battle-cinematics.cjs
           node tests/susanoo.cjs
           node tests/madara-profile.cjs
           node tests/battle-tempo.cjs
