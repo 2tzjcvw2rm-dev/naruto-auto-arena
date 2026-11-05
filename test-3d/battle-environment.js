@@ -3,7 +3,7 @@ function createKonohaOverlook(scene){
   const T=THREE;
   const material=(color,extra={})=>new T.MeshLambertMaterial({color,...extra});
   const basic=(color,extra={})=>new T.MeshBasicMaterial({color,...extra});
-  const stone=material(0xb1a187), stoneEdge=material(0x777569), moss=material(0x6e9470);
+  const stone=material(0x958472), stoneEdge=material(0x777569), moss=material(0x6e9470);
   scene.fog=new T.Fog(0xaac6be,66,112);
   // Painted distant panorama is fixed to the sky, while foreground props have real depth.
   const sky=document.createElement('canvas');sky.width=1024;sky.height=512;
@@ -42,8 +42,8 @@ function createKonohaOverlook(scene){
     const panorama=new T.Mesh(new T.PlaneGeometry(145,44),new T.MeshBasicMaterial({map:scene.background,fog:false,depthWrite:false}));
     panorama.position.set(0,3,-57);scene.add(panorama);
   }else scene.background=new T.Color(0x9ec9d2);
-  scene.add(new T.HemisphereLight(0xfff0d7,0x657e7b,1.07));
-  const sun=new T.DirectionalLight(0xffe1ab,.82);sun.position.set(-8,14,8);scene.add(sun);
+  scene.add(new T.HemisphereLight(0xfff0d7,0x657e7b,1.01));
+  const sun=new T.DirectionalLight(0xffe1ab,.76);sun.position.set(-8,14,8);scene.add(sun);
   function block(x,y,z,w,h,d,mat){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);scene.add(mesh);return mesh}
   // Broad sandstone training court; the model feet and their real shadows stay at y=0.
   const floor=new T.Mesh(new T.PlaneGeometry(54,19),stone);
@@ -97,7 +97,7 @@ function createKonohaOverlook(scene){
   for(let i=0;i<count;i++){
     const row=Math.floor(i/12),col=i%12,scale=.87+(i*13%7)*.13;
     const x=(col-5.5)*5.2+(row%2)*2.3,z=-19-row*6.2-(i%3)*.35;
-    const y=-5.2,h=1.75*scale;
+    const y=-6.15,h=1.4*scale;
     dummy.position.set(x,y+h/2,z);dummy.scale.set(1.9*scale,h,1.8*scale);dummy.rotation.set(0,0,0);dummy.updateMatrix();houses.setMatrixAt(i,dummy.matrix);
     dummy.position.y=y+h+.3*scale;dummy.scale.set(1.75*scale,scale,1.65*scale);dummy.rotation.y=0;dummy.updateMatrix();roofs.setMatrixAt(i,dummy.matrix);
     if(houses.setColorAt){houses.setColorAt(i,new T.Color(['#d5c0a0','#cdb998','#e0c8ab'][i%3]));roofs.setColorAt(i,new T.Color(['#b65c4b','#bd7756','#d09260','#738c7f'][i%4]));}
@@ -156,7 +156,7 @@ function createKonohaOverlook(scene){
     for(let i=0;i<leafCount;i++){
       const age=(seconds*(.14+seed(i+90)*.09)+seed(i+30))%1;
       const side=i%2?-1:1;
-      leafDummy.position.set(side*(6.8+seed(i)*11)+Math.sin(seconds*.8+i)*.5,4.4-age*5.1,-6.7-seed(i+12)*2.8);
+      leafDummy.position.set(i%6===0?(seed(i+23)-.5)*9+Math.sin(seconds*.65+i)*.55:side*(6.8+seed(i)*11)+Math.sin(seconds*.8+i)*.5,i%6===0?2.6-age*3.1:4.4-age*5.1,i%6===0?4.5:-6.7-seed(i+12)*2.8);
       leafDummy.rotation.set(seconds*.75+i,seconds*.45+i*.3,Math.sin(seconds+i)*.5);
       const scale=.65+seed(i+17)*.55;leafDummy.scale.setScalar(scale);leafDummy.updateMatrix();leaves.setMatrixAt(i,leafDummy.matrix);
     }
