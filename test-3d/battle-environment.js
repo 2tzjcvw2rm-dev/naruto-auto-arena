@@ -3,14 +3,14 @@ function createKonohaOverlook(scene){
   const T=THREE;
   const material=(color,extra={})=>new T.MeshLambertMaterial({color,...extra});
   const basic=(color,extra={})=>new T.MeshBasicMaterial({color,...extra});
-  const stone=material(0xc7b99d), stoneEdge=material(0x797f79), moss=material(0x6e9470);
-  scene.fog=new T.Fog(0xaac6be,35,98);
+  const stone=material(0xb1a187), stoneEdge=material(0x777569), moss=material(0x6e9470);
+  scene.fog=new T.Fog(0xaac6be,66,112);
   // Painted distant panorama is fixed to the sky, while foreground props have real depth.
   const sky=document.createElement('canvas');sky.width=1024;sky.height=512;
   const c=sky.getContext('2d');
   if(c&&typeof c.createLinearGradient==='function'){
     const g=c.createLinearGradient(0,0,0,512);
-    g.addColorStop(0,'#638dbc');g.addColorStop(.42,'#9ec9d2');g.addColorStop(.76,'#efd5aa');g.addColorStop(1,'#dbbd93');
+    g.addColorStop(0,'#4f8fcb');g.addColorStop(.42,'#85bed3');g.addColorStop(.76,'#eed0a3');g.addColorStop(1,'#d3b594');
     c.fillStyle=g;c.fillRect(0,0,1024,512);
     const glow=c.createRadialGradient(768,126,5,768,126,225);
     glow.addColorStop(0,'rgba(255,250,208,.77)');glow.addColorStop(.35,'rgba(255,238,188,.28)');glow.addColorStop(1,'rgba(255,237,191,0)');
@@ -39,13 +39,29 @@ function createKonohaOverlook(scene){
     }
     scene.background=new T.CanvasTexture(sky);
     scene.background.encoding=T.sRGBEncoding;
+    const panorama=new T.Mesh(new T.PlaneGeometry(145,44),new T.MeshBasicMaterial({map:scene.background,fog:false,depthWrite:false}));
+    panorama.position.set(0,3,-57);scene.add(panorama);
   }else scene.background=new T.Color(0x9ec9d2);
-  scene.add(new T.HemisphereLight(0xfff0d7,0x657e7b,1.3));
-  const sun=new T.DirectionalLight(0xffe1ab,.95);sun.position.set(-8,14,8);scene.add(sun);
+  scene.add(new T.HemisphereLight(0xfff0d7,0x657e7b,1.07));
+  const sun=new T.DirectionalLight(0xffe1ab,.82);sun.position.set(-8,14,8);scene.add(sun);
   function block(x,y,z,w,h,d,mat){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);scene.add(mesh);return mesh}
   // Broad sandstone training court; the model feet and their real shadows stay at y=0.
   const floor=new T.Mesh(new T.PlaneGeometry(54,19),stone);
   floor.rotation.x=-Math.PI/2;floor.position.set(0,-.045,1);scene.add(floor);
+  // Worn training-circle markings on the empty front half of the court.
+  const sigilMat=new T.MeshBasicMaterial({color:0x8a6355,transparent:true,opacity:.35,side:T.DoubleSide,depthWrite:false});
+  for(const [inside,outside] of [[2.88,3.04],[3.45,3.56]]){
+    const circle=new T.Mesh(new T.RingGeometry(inside,outside,72),sigilMat);
+    circle.rotation.x=-Math.PI/2;circle.position.set(0,.014,5);scene.add(circle);
+  }
+  const swirl=[];
+  for(let j=0;j<72;j++){
+    const t=j/72*Math.PI*3.65,next=(j+1)/72*Math.PI*3.65;
+    const radius=.24+j/72*2.2,radiusNext=.24+(j+1)/72*2.2;
+    swirl.push(Math.cos(t)*radius,.016,5+Math.sin(t)*radius,Math.cos(next)*radiusNext,.016,5+Math.sin(next)*radiusNext);
+  }
+  const crest=new T.LineSegments(new T.BufferGeometry().setAttribute('position',new T.Float32BufferAttribute(swirl,3)),new T.LineBasicMaterial({color:0x8a6355,transparent:true,opacity:.33,depthWrite:false}));
+  scene.add(crest);
   const seams=[];
   for(let x=-26;x<=26;x+=2.7)seams.push(x,.004,-8.3,x,.004,10.3);
   for(let z=-8.3;z<=10.3;z+=2.7)seams.push(-26,.004,z,26,.004,z);
@@ -80,8 +96,8 @@ function createKonohaOverlook(scene){
   const dummy=new T.Object3D();
   for(let i=0;i<count;i++){
     const row=Math.floor(i/12),col=i%12,scale=.87+(i*13%7)*.13;
-    const x=(col-5.5)*5.2+(row%2)*2.3,z=-17-row*6.2-(i%3)*.35;
-    const y=-4.75,h=1.9*scale;
+    const x=(col-5.5)*5.2+(row%2)*2.3,z=-19-row*6.2-(i%3)*.35;
+    const y=-5.2,h=1.75*scale;
     dummy.position.set(x,y+h/2,z);dummy.scale.set(1.9*scale,h,1.8*scale);dummy.rotation.set(0,0,0);dummy.updateMatrix();houses.setMatrixAt(i,dummy.matrix);
     dummy.position.y=y+h+.3*scale;dummy.scale.set(1.75*scale,scale,1.65*scale);dummy.rotation.y=0;dummy.updateMatrix();roofs.setMatrixAt(i,dummy.matrix);
     if(houses.setColorAt){houses.setColorAt(i,new T.Color(['#d5c0a0','#cdb998','#e0c8ab'][i%3]));roofs.setColorAt(i,new T.Color(['#b65c4b','#bd7756','#d09260','#738c7f'][i%4]));}
@@ -117,7 +133,7 @@ function createKonohaOverlook(scene){
     block(x,2.35,-7.2,.85,.16,.85,lanternStone);
   }
   // Subtle animated clouds float in world space, not on top of the UI.
-  const clouds=[],cloudMat=basic(0xfff8e8,{transparent:true,opacity:.45,depthWrite:false});
+  const clouds=[],cloudMat=basic(0xfff8e8,{transparent:true,opacity:.58,depthWrite:false});
   const cloudGeo=new T.SphereGeometry(1,9,6);
   for(let i=0;i<5;i++){
     const group=new T.Group();group.position.set(-27+i*13,10+(i%3)*2.6,-41-i%2*7);
@@ -140,7 +156,7 @@ function createKonohaOverlook(scene){
     for(let i=0;i<leafCount;i++){
       const age=(seconds*(.14+seed(i+90)*.09)+seed(i+30))%1;
       const side=i%2?-1:1;
-      leafDummy.position.set(side*(9+seed(i)*13)+Math.sin(seconds*.8+i)*.5,4.4-age*5.1,-6.7-seed(i+12)*2.8);
+      leafDummy.position.set(side*(6.8+seed(i)*11)+Math.sin(seconds*.8+i)*.5,4.4-age*5.1,-6.7-seed(i+12)*2.8);
       leafDummy.rotation.set(seconds*.75+i,seconds*.45+i*.3,Math.sin(seconds+i)*.5);
       const scale=.65+seed(i+17)*.55;leafDummy.scale.setScalar(scale);leafDummy.updateMatrix();leaves.setMatrixAt(i,leafDummy.matrix);
     }
