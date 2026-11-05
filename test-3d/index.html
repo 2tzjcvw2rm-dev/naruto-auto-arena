@@ -434,7 +434,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-waterfall1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./battle-scene.js?v=20261105-susanoo1" defer></script>
+<script src="./battle-scene.js?v=20261105-susanoo1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
 </head>
 <body>
 <header>
@@ -1320,7 +1320,19 @@ fetchHeroModel(CombatProfile.modelKey(hero.id,remoteHeroModels),model=>{
     });
   }
   group.add(fighter);group.position.y=.5;
-  const motion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):(CombatProfile.mount(hero.id,fighter,{renderer,scene,camera})||makeHeroMotion(hero.id,fighter));
+  const baseMotion=hero.id==='naruto'?makeNarutoChakraIdle(fighter):hero.id==='sasuke'?makeSasukeProfileMotion(fighter):(CombatProfile.mount(hero.id,fighter,{renderer,scene,camera})||makeHeroMotion(hero.id,fighter));
+  // Permanent, animated 3D ribs in Madara's profile. The original model,
+  // fingers-to-rotate turntable, stats and combat animations stay unchanged.
+  const profileSusanoo=hero.id==='madara'&&typeof window.createMadaraProfileSusanoo==='function'
+    ?window.createMadaraProfileSusanoo(THREE,group):null;
+  const motion=profileSusanoo?(dt,t,attacking,progress,step)=>{
+    baseMotion(dt,t,attacking,progress,step);
+    profileSusanoo(dt,t);
+  }:baseMotion;
+  if(profileSusanoo){
+    host.dataset.susanoo='active';
+    motion.dispose=()=>{profileSusanoo.dispose();baseMotion.dispose?.()};
+  }
   if(motion.dispose)profileCleanup=()=>motion.dispose();
   // Cinematic roster view: no technique buttons, no spin controls.
   let prevFrame=0;

@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - feature/madara-susanoo-20261105
+      - feature/madara-profile-susanoo-20261105
       - feature/konoha-animated-battle-20261105
       - feature/waterfall-gif-5v5-20261105
     paths:
