@@ -6,6 +6,7 @@ on:
       - feature/madara-susanoo-20261105
       - feature/madara-profile-susanoo-20261105
       - feature/calm-waterfall-manual-battle-speed-20261105
+      - feature/ultimate-every-third-turn-20261105
       - feature/konoha-animated-battle-20261105
       - feature/waterfall-gif-5v5-20261105
     paths:
@@ -13,6 +14,7 @@ on:
       - 'tests/side-battle.cjs'
       - 'tests/madara-profile.cjs'
       - 'tests/battle-tempo.cjs'
+      - 'tests/ultimate-cycle.cjs'
       - 'index.html'
       - '.github/workflows/arena-regression.yml'
   workflow_dispatch:
@@ -30,6 +32,7 @@ jobs:
           node --check test-3d/battle-speed.js
           node --check test-3d/battle-backdrop.js
           node --check tests/battle-tempo.cjs
+          node --check tests/ultimate-cycle.cjs
           node --check tests/madara-profile.cjs
           node --check tests/side-battle.cjs
       - name: Check fighters, formations and techniques
@@ -38,3 +41,4 @@ jobs:
           node tests/susanoo.cjs
           node tests/madara-profile.cjs
           node tests/battle-tempo.cjs
+          node tests/ultimate-cycle.cjs
