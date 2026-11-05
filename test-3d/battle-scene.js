@@ -55,12 +55,12 @@ function createMadaraSusanoo(THREE,scene,slot,target){
   const wave=new THREE.Group();scene.add(wave);
   const ring=mesh(new THREE.TorusGeometry(1,.04,6,40),core,wave);ring.rotation.x=-Math.PI/2;
   const burst=mesh(new THREE.SphereGeometry(1,12,8),veil,wave);burst.scale.set(1,.45,1);
-  let disposed=false,phase='charge';
+  let disposed=false,phase='charge',elapsedMs=0;
   const smooth=(x,a,b)=>THREE.MathUtils.smoothstep(x,a,b),aim=new THREE.Vector3(),end=new THREE.Vector3(),elbow=new THREE.Vector3();
   return {
     update(ms,ground){
       if(disposed)return false;
-      const p=ms/2300;if(p>=1){this.dispose();return false}
+      elapsedMs=ms;const p=ms/2300;if(p>=1){this.dispose();return false}
       phase=p<.16?'charge':p<.48?'forming':p<.62?'windup':p<.76?'strike':'dissolve';
       root.position.set(slot.actor.position.x,ground,slot.actor.position.z);root.quaternion.copy(slot.actor.quaternion);root.updateMatrixWorld(true);
       const fade=smooth(p,0,.12)*(1-smooth(p,.79,1)),pulse=1+.035*Math.sin(ms*.016);
@@ -85,7 +85,7 @@ function createMadaraSusanoo(THREE,scene,slot,target){
       wave.position.lerp(new THREE.Vector3(target?target.actor.position.x:root.position.x,ground+.12,target?target.actor.position.z:root.position.z),smooth(p,.71,.79));wave.scale.setScalar(.12+impact*1.4);
       return true;
     },
-    inspect(){return {phase,disposed,objects:root.children.length,height:3.65}},
+    inspect(){return {phase,elapsedMs,disposed,objects:root.children.length,height:3.65}},
     dispose(){if(disposed)return;disposed=true;scene.remove(root,wave);for(const r of resources)r.dispose();resources.clear()}
   };
 }

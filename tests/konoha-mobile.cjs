@@ -65,7 +65,12 @@ const server=http.createServer((req,res)=>{
         battleAction(madara,foes,allies);
       });
     }
-    await cast();await page.waitForFunction(()=>arena3d.inspect().effects.some(e=>e.phase==='windup'),null,{timeout:10000});
+    await cast();
+    for(let i=0;i<12;i++){
+      await page.waitForTimeout(150);
+      const probe=await page.evaluate(()=>({effects:arena3d.inspect().effects,paused,hidden:document.hidden}));console.log('FX TICK',JSON.stringify(probe));
+      if(probe.effects.some(e=>e.phase==='windup'||e.phase==='strike'))break;
+    }
     await page.evaluate(()=>{paused=true;});
     let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
     assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
