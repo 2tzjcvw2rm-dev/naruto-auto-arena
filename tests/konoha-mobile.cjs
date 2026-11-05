@@ -23,12 +23,8 @@ const server=http.createServer((req,res)=>{
     page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
     page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
     await page.goto('http://127.0.0.1:'+port+'/test-3d/',{waitUntil:'load',timeout:60000});
-    // A new save begins with one hero; form a five-hero QA team in memory only.
-    await page.evaluate(()=>{
-      s.team=['naruto','sasuke','sakura','kakashi','hinata'];
-      for(const id of s.team)s.formation[id]=s.formation[id]||'front';
-      initTeams();
-    });
+    // Use the game's own 5v5 demo to dismiss the welcome overlay and start combat.
+    await page.locator('#pairDemo').click();
     await page.waitForTimeout(6500);
     const diag=await page.evaluate(()=>{
       let inspection=null,inspectionError=null;
