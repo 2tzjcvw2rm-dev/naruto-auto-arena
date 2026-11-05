@@ -1,0 +1,11 @@
+# Side-view battle — staged in test-3d
+
+The test page uses one perspective scene for both teams, instead of rendering each model into a separate screen rectangle. Original formation slots map to front/middle/back world positions. Actors face their opposing team, turn toward their selected target, approach for melee attacks, and return home. Health/rage labels and existing DOM technique effects project from world coordinates. The GLBs, profile rendering, stats, combat timing and saves are unchanged.
+
+The scene adds a training courtyard, contact shadows and camera fitting for portrait/landscape aspect ratios. Existing combat effects are reused, including Pain's combat model and Shinra Tensei. Rendering is capped at 25 updates per second and device pixel ratio 1.5; pause/menu visibility suspends animation time.
+
+Validation: `node tests/side-battle.cjs` parses all 14 original character assets (texture decoding omitted for this GPU-free test), checks idle body bounds and ground contact across 320, 390, 430, 650 and 844 pixel widths and all three formation presets, and exercises all three techniques for each of the ten default fighters with return-to-slot assertions. It also loads Madara, Obito, Gaara and Shikamaru. This does not validate rendered textures, skin deformation, shader appearance, overlap or actual Safari frame rate.
+
+Publication status: test page only. Main index.html is intentionally unchanged pending successful WebGL visual QA. The available cloud browser cannot create a WebGL context; local Chrome launch is denied by the execution environment. Test page startup and fallback can be checked in the cloud browser, but the 3D appearance cannot be signed off there.
+
+Remaining release gate: inspect test-3d on WebGL-capable iPhone Safari in portrait and landscape; check all formations, all characters, Pain/Chidori/fire effects, attack travel/return, resize, pause and reopening profiles. Then apply the same battle-scene includes (with ./test-3d/ prefixes), initArena3d extraction, deferred DOMContentLoaded callback and projected playJutsu coordinates to root index.html. Do not replace the main page with the test page: their existing profile implementations differ.

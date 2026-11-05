@@ -432,8 +432,8 @@ button:active{transform:translateY(2px)}
 @media(max-width:370px){#profileContent .profile-stage-v3 .gear-float{width:65px;min-height:67px;padding:3px 1px}#profileContent .profile-stage-v3 .gear-float small{font-size:9px}#profileContent .profile-stage-v3{height:clamp(338px,53vh,420px)}}
 #hero3d[data-hero="madara"]{background:radial-gradient(circle at 50% 26%,#9b3b6040,transparent 35%),radial-gradient(ellipse at 50% 85%,#53375888,transparent 65%),linear-gradient(180deg,#171b29 0%,#2c1e34 68%,#1b1e2b 100%)!important}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
-</style><link rel="stylesheet" href="./battle-scene.css?v=20261105-side1">
-<script src="./battle-scene.js?v=20261105-side1" defer></script>
+</style><link rel="stylesheet" href="./battle-scene.css?v=20261105-side2">
+<script src="./battle-scene.js?v=20261105-side2" defer></script>
 </head>
 <body>
 <header>
@@ -1529,7 +1529,7 @@ paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInP
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
 if(testBuild)el('pairDemo').hidden=false;
-document.addEventListener('DOMContentLoaded',initArena3d);
+document.addEventListener('DOMContentLoaded',()=>initArena3d());
 document.addEventListener('DOMContentLoaded',()=>{
   const hero=new URLSearchParams(location.search).get('pose');
   if(hero && upgradedFighters.has(hero) && (CombatProfile.has(hero)||hero==='sasuke'||hero==='obito')) openCharacter(hero);

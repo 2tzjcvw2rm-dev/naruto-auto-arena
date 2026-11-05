@@ -53,6 +53,11 @@ function initArena3d(){
     camera.position.copy(center).addScaledVector(view,distance);camera.lookAt(center);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
   }
   function screenPoint(position){projected.copy(position).project(camera);return {x:(projected.x+1)*width/2,y:(1-projected.y)*height/2}}
+  function bodyBounds(slot){
+    slot.actor.updateMatrixWorld(true);bounds.makeEmpty();
+    for(const mesh of slot.bodyMeshes){if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));}
+    return bounds;
+  }
   function slotPoint(slot,y){return screenPoint(new THREE.Vector3(slot.actor.position.x,y,slot.actor.position.z))}
   arena3d={
     trigger(side,index,technique,targetSide,targetIndex){
@@ -75,12 +80,13 @@ function initArena3d(){
           const actor=new THREE.Group();actor.add(fighter);actor.scale.setScalar(1.65);actor.position.copy(home);actor.rotation.y=side==='allyTeam'?Math.PI/2:-Math.PI/2;scene.add(actor);
           const shadow=new THREE.Mesh(shadowGeometry,shadowMaterial);shadow.rotation.x=-Math.PI/2;shadow.position.copy(home);shadow.position.y=.012;scene.add(shadow);
           const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
-          slots.push({unit,model,bodyMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null});unit.classList.add('has-model');
+          const posedMeshes=bodyMeshes.map(mesh=>mesh.parent?mesh:model.getObjectByName(mesh.name)).filter(Boolean);
+          slots.push({unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null});unit.classList.add('has-model');
         });
       });
     },
     // Read-only diagnostics for responsive framing and animation verification.
-    inspect(){return {size:[width,height],slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{a.model.updateWorldMatrix(true,true);bounds.setFromObject(a.model);return {min:bounds.min.toArray(),max:bounds.max.toArray()}})()}))}}
+    inspect(){return {size:[width,height],slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})()}))}}
   };
   function draw(time){
     requestAnimationFrame(draw);
@@ -111,7 +117,7 @@ function initArena3d(){
       const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*14);
       if(motion)motion(suspended?0:dt,clock,p>=0,p,slot.technique);
       // Ground the actual animated model, excluding chakra and overhead HUD.
-      actor.position.y=0;actor.updateMatrixWorld(true);bounds.makeEmpty();for(const mesh of slot.bodyMeshes){if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));}actor.position.y=-bounds.min.y;
+      actor.position.y=0;bodyBounds(slot);actor.position.y=-bounds.min.y;
       shadow.position.set(actor.position.x,.012,actor.position.z);
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
