@@ -2,8 +2,10 @@ name: iPhone-size WebKit arena QA
 on:
   push:
     branches:
+      - main
       - feature/konoha-animated-battle-20261105
     paths:
+      - 'index.html'
       - 'test-3d/**'
       - 'tests/konoha-mobile.cjs'
       - '.github/workflows/konoha-mobile-qa.yml'
