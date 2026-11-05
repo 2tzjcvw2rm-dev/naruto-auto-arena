@@ -31,6 +31,7 @@ run(html.slice(html.indexOf('function instantiateHero('),html.indexOf('function 
 run(`fetchHeroModel=(key,cb)=>cb(instantiateHero(sourceModels[key]));
 for(const id of ['naruto','sasuke','sakura','kakashi','hinata','itachi','pain','kisame','deidara','konan','madara','obito','gaara','shikamaru']){remoteHeroModels[id]=id+'.glb';upgradedFighters.add(id)}
 allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['itachi','pain','kisame','deidara','konan'].map(id=>({id}));`);
+load('test-3d/battle-environment.js');
 load('test-3d/battle-scene.js');
 let count=0,time=1000;const frame=()=>{time+=45;run(`nextFrame(${time})`)};
 for(const [w,h] of [[320,405],[390,440],[430,440],[650,440],[844,390]]){
@@ -38,6 +39,7 @@ for(const rows of [['front','middle','middle','back','back'],['front','front','m
 context.dimensions={width:w,height:h};context.rows=rows;
 run(`viewport=dimensions;allies.forEach((u,i)=>s.formation[u.id]=rows[i]);if(!arena3d)initArena3d();else arena3d.bind();nextFrame(${time+=45});`);
 const state=run('arena3d.inspect()');assert.equal(state.slots.length,10);
+assert.equal(state.environment.name,'konoha-training-overlook');assert.equal(state.environment.houses,36);assert.equal(state.environment.clouds,5);assert.equal(state.environment.leaves,24);assert.equal(state.environment.courtY,0);
 for(const slot of state.slots){assert(slot.position.every(Number.isFinite));assert(Math.abs(slot.box.min[1])<.001,slot.id+' feet '+JSON.stringify(slot.box));for(const p of slot.box.corners)assert(p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h,slot.id+' outside '+w+'x'+h+': '+JSON.stringify(p));assert(Math.abs(slot.yaw-(slot.side==='allyTeam'?Math.PI/2:-Math.PI/2))<.001)}
 for(const side of ['allyTeam','foeTeam'])for(let index=0;index<5;index++)for(let technique=0;technique<3;technique++){
 run(`arena3d.trigger('${side}',${index},${technique},'${side==='allyTeam'?'foeTeam':'allyTeam'}',1);`);
