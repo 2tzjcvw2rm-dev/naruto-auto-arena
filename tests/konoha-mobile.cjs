@@ -70,7 +70,7 @@ const server=http.createServer((req,res)=>{
     await page.locator('.arena').screenshot({path:'artifacts/konoha-iphone-webkit.png'});
     console.log('PASS: WebKit iPhone-size battlefield; '+state.slots+' models; Konoha ambience; '+state.size.join('x')+'; no page errors.');
     // Exercise the production battleAction path, including automatic rage selection.
-    await page.evaluate(()=>{clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;});
+    await page.evaluate(()=>{BattleTempo.cancel('round');BattleTempo.cancel('action');clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;document.querySelectorAll('.jutsu-fx').forEach(node=>node.remove());});
     await page.clock.pauseAt(new Date(Date.now()+1000));
     async function advance(ms){for(let left=ms;left>0;left-=100)await page.clock.fastForward(Math.min(100,left));}
     async function cast(){
