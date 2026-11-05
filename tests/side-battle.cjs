@@ -42,6 +42,7 @@ run(`fetchHeroModel=(key,cb)=>cb(instantiateHero(sourceModels[key]));
 for(const id of ['naruto','sasuke','sakura','kakashi','hinata','itachi','pain','kisame','deidara','konan','madara','obito','gaara','shikamaru']){remoteHeroModels[id]=id+'.glb';upgradedFighters.add(id)}
 allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['itachi','pain','konan','madara','obito'].map(id=>({id}));`);
 load('test-3d/battle-environment.js');
+load('test-3d/battle-visual-upgrade.js');
 load('test-3d/battle-scene.js');
 let count=0,time=1000;const frame=()=>{time+=45;run(`nextFrame(${time})`)};
 for(const [w,h] of [[320,405],[390,440],[430,440],[650,440],[844,390]]){
@@ -53,12 +54,18 @@ assert.equal(state.environment.name,'konoha-training-overlook');assert.equal(sta
 for(const slot of state.slots){assert(slot.position.every(Number.isFinite));assert(Math.abs(slot.box.min[1]-state.visualGroundY)<.001,slot.id+' feet '+JSON.stringify(slot.box));assert(slot.foot.y>=h*.42&&slot.foot.y<=h*.94,slot.id+' feet off viewport '+w+'x'+h+': '+JSON.stringify(slot.foot));for(const p of slot.box.corners)assert(p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h,slot.id+' outside '+w+'x'+h+': '+JSON.stringify(p));assert(Math.abs(slot.yaw-(slot.side==='allyTeam'?Math.PI/2:-Math.PI/2))<.001)}
 for(const side of ['allyTeam','foeTeam'])for(let index=0;index<5;index++)for(let technique=0;technique<3;technique++){
 run(`arena3d.trigger('${side}',${index},${technique},'${side==='allyTeam'?'foeTeam':'allyTeam'}',1);`);
+const live=run('arena3d.effects()');
+assert.equal(live.length,1,'Each attack should mount exactly one 3D visual effect');
+if(!(side==='allyTeam'&&['madara'].includes((available.team[index]||''))&&technique===2)){
+  assert.equal(typeof live[0].kind,'string','Normal attacks must not be swallowed by the 3D renderer');
+}
 for(let tick=1;tick<=40;tick++)frame();
+assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }
 count++;
 }}
 run(`allies=['madara','obito','sakura','sasuke','naruto'].map(id=>({id}));allies.forEach((u,i)=>s.formation[u.id]=['front','middle','middle','back','back'][i]);arena3d.bind();nextFrame(${time+=45})`);
 assert.equal(run('arena3d.inspect().slots.length'),10);
-console.log('PASS: 10 active fighters, 4 archived fighters, 5 enemies, 14 retained GLBs, responsive formation, techniques and grounding; save data unchanged. GPU appearance still requires visual verification.');
+console.log('PASS: 10 active fighters, 4 archived fighters, original GLBs, responsive formation, 3D technique effects/disposal, impact choreography and grounding; save data unchanged. GPU appearance still requires visual verification.');
 })().catch(e=>{console.error(e);process.exit(1)});
