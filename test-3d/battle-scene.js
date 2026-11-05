@@ -68,6 +68,8 @@ function createMadaraSusanoo(THREE,scene,slot,target){
       aura.scale.set(.34*pulse,.83,.28*pulse);red.opacity*=1-smooth(p,.45,.7)*.65;
       const wind=smooth(p,.46,.59)*(1-smooth(p,.62,.7)),strike=smooth(p,.60,.73)*(1-smooth(p,.78,.96));
       aim.set(target?target.actor.position.x:slot.actor.position.x+2,ground+1.05,target?target.actor.position.z:slot.actor.position.z);root.worldToLocal(aim);
+      // Bound the arm's reach; the pressure wave covers long-range targets.
+      const reach=aim.clone().sub(arms[1].shoulder);if(reach.length()>2.6)aim.copy(arms[1].shoulder).add(reach.setLength(2.6));
       for(const a of arms){
         end.copy(a.hand);elbow.copy(a.elbow);
         if(a.sign===1){end.z-=wind*.9;end.y+=wind*.65;end.lerp(aim,strike);elbow.lerp(a.shoulder.clone().lerp(end,.53).add(new THREE.Vector3(.32,.12,0)),strike);}
@@ -78,7 +80,8 @@ function createMadaraSusanoo(THREE,scene,slot,target){
       particleGeo.attributes.position.needsUpdate=true;particleMat.opacity=fade*.75;
       for(let i=0;i<16;i++){const t=i*.9+Math.floor(ms/90)*.8;boltPositions[i*3]=Math.cos(t)*(.8+(i%2)*.16);boltPositions[i*3+1]=.7+(i/16)*2.3;boltPositions[i*3+2]=Math.sin(t)*.65}
       boltGeo.attributes.position.needsUpdate=true;boltMat.opacity=fade*(.3+.25*Math.sin(ms*.09));
-      const impact=smooth(p,.71,.94);wave.visible=p>=.71;wave.position.set(target?target.actor.position.x:root.position.x,ground+.12,target?target.actor.position.z:root.position.z);wave.scale.setScalar(.12+impact*1.4);
+      const impact=smooth(p,.71,.94);wave.visible=p>=.71;wave.position.copy(arms[1].fist.position);root.localToWorld(wave.position);
+      wave.position.lerp(new THREE.Vector3(target?target.actor.position.x:root.position.x,ground+.12,target?target.actor.position.z:root.position.z),smooth(p,.71,.79));wave.scale.setScalar(.12+impact*1.4);
       return true;
     },
     inspect(){return {phase,disposed,objects:root.children.length,height:3.65}},
@@ -151,7 +154,8 @@ function initArena3d(){
       if(active){
         active.effect?.dispose();active.effect=null;
         active.attackAt=clock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
-        if(active.id==='madara'&&technique===2){active.effect=createMadaraSusanoo(THREE,scene,active,active.target);return true}
+        if(active.id==='madara'&&technique===2){active.effect=createMadaraSusanoo(THREE,scene,active,active.target);
+          if(active.target){active.target.hitAt=clock+1817;active.target.hitFrom=active.home.clone()}return true}
       }
       return false;
     },
@@ -210,6 +214,11 @@ function initArena3d(){
         yaw=Math.atan2(dx,dz);
         const travel=susanoo?0:melee?Math.max(0,distance-1.15):.18;
         actor.position.x+=dx/distance*travel*blend;actor.position.z+=dz/distance*travel*blend;
+      }
+      const hitAge=slot.hitAt===undefined?-1:clock-slot.hitAt;
+      if(hitAge>=0&&hitAge<380&&slot.hitFrom){
+        const recoil=new THREE.Vector3().subVectors(home,slot.hitFrom);recoil.y=0;recoil.normalize();
+        actor.position.addScaledVector(recoil,.2*Math.sin(Math.PI*hitAge/380));
       }
       const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*14);
       if(motion)motion(suspended?0:dt,clock,p>=0,p,slot.technique);
