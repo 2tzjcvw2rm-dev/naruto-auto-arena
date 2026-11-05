@@ -434,7 +434,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-waterfall1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./battle-scene.js?v=20261105-susanoo1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
+<script src="./battle-scene.js?v=20261105-susanoo1" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
 </head>
 <body>
 <header>
@@ -456,7 +456,7 @@ button:active{transform:translateY(2px)}
 <div class="bar"><div id="enemybar" class="fill"></div></div></div>
 </div>
 <div class="stats">🪙 Монеты: <b id="coins">0</b> · ⚡ Скорость: <b id="speed">10</b></div>
-<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🥷 Персонажи</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="upgrades">
+<div id="criticalStats">🎯 Крит. шанс: <b id="critChance">5%</b> · 💥 Крит. урон: <b id="critDamage">150%</b></div><div class="controls"><button id="teamBtn" onclick="openTeam()">👥 Команда</button><button id="heroProfileBtn" onclick="openProfile()">🥷 Персонажи</button><button id="pauseButton" onclick="togglePause()">⏸ Пауза</button></div><div class="battle-tempo" id="battleSpeedControls" aria-label="Ручная скорость автобоя"><span>⏩ Скорость автобоя</span><div class="battle-tempo-options" role="group" aria-label="Ускорение боя"><button type="button" data-battle-speed="1" aria-pressed="true" onclick="BattleTempo.setSpeed(1)">×1</button><button type="button" data-battle-speed="2" aria-pressed="false" onclick="BattleTempo.setSpeed(2)">×2</button><button type="button" data-battle-speed="3" aria-pressed="false" onclick="BattleTempo.setSpeed(3)">×3</button></div></div><div class="upgrades">
 <button onclick="upgrade('damage')">⚔️ Урон<br>20 🪙</button>
 <button onclick="upgrade('speed')">⚡ Скорость<br>25 🪙</button>
 <button onclick="upgrade('hp')">❤️ HP<br>20 🪙</button><button onclick="upgrade('critChance')">🎯 Крит. шанс +2%<br>40 🪙</button><button onclick="upgrade('critDamage')">💥 Крит. урон +15%<br>40 🪙</button>
@@ -966,7 +966,7 @@ else if(s.team.length>=5){el('teamStatus').textContent='Максимум 5 ни�
 else s.team.push(id);
 ensureFormation();save();initTeams();renderTeamCards();
 }
-function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330)}
+function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330/BattleTempo.speed)}
 let battleRoundNumber=0;
 const skills={
 naruto:['Удар','Теневые клоны','Расенган'],sasuke:['Удар','Огненный шар','Чидори'],sakura:['Удар','Усиление команды','Великое исцеление'],
@@ -1018,7 +1018,7 @@ function showRasenganCutin(){
 let box=el('rasenganCutin');if(!box)return;
 box.classList.remove('visible');void box.offsetWidth;box.classList.add('visible');drawRasengan3D(box);
 clearTimeout(window.rasenganCutinTimer);
-window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350);
+window.rasenganCutinTimer=setTimeout(()=>box.classList.remove('visible'),1350/BattleTempo.speed);
 }
 function showChidoriStrike(layer,sx,sy,tx,ty){
   const box=layer.getBoundingClientRect(),ns='http://www.w3.org/2000/svg';
@@ -1049,11 +1049,11 @@ function showChidoriStrike(layer,sx,sy,tx,ty){
     path(points,j===0?3.8:1.9,j%2===0?'#edffff':'#84d3ff',1);
   }
   layer.appendChild(svg);
-  if(svg.animate)svg.animate([{opacity:0,transform:'scale(.93)'},{opacity:1,transform:'scale(1)'},{opacity:.85},{opacity:0}],{duration:850,easing:'ease-out'});
-  setTimeout(()=>svg.remove(),930);
+  if(svg.animate)svg.animate([{opacity:0,transform:'scale(.93)'},{opacity:1,transform:'scale(1)'},{opacity:.85},{opacity:0}],{duration:850/BattleTempo.speed,easing:'ease-out'});
+  setTimeout(()=>svg.remove(),930/BattleTempo.speed);
   const flash=document.createElement('div');flash.className='chidori-impact';
   flash.style.left=tx+'px';flash.style.top=ty+'px';layer.appendChild(flash);
-  setTimeout(()=>flash.remove(),700);
+  setTimeout(()=>flash.remove(),700/BattleTempo.speed);
 }
 function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
@@ -1068,17 +1068,17 @@ const cls=kind==='melee'?'jutsu-melee':kind==='heal'||kind==='support'?'jutsu-he
 source.style.setProperty('--strike',side==='allyTeam'?'22px':'-22px');
 source.style.setProperty('--chakra',color);
 source.classList.remove('jutsu-melee','jutsu-cast','jutsu-ultimate','jutsu-heal');
-const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin='50% 75%';sprite.animate([{transform:'translateY(0) rotate(0deg)'},{transform:action===2?'translateY(-16px) rotate(-9deg)':'translateY(-7px) rotate(-6deg)'},{transform:action===0?'translateX(14px) rotate(12deg)':'translateX(5px) rotate(5deg)'},{transform:'translateY(0) rotate(0deg)'}],{duration:1500,easing:'ease-in-out'});}
+const sprite=source.querySelector('svg');if(sprite){sprite.style.transformOrigin='50% 75%';sprite.animate([{transform:'translateY(0) rotate(0deg)'},{transform:action===2?'translateY(-16px) rotate(-9deg)':'translateY(-7px) rotate(-6deg)'},{transform:action===0?'translateX(14px) rotate(12deg)':'translateX(5px) rotate(5deg)'},{transform:'translateY(0) rotate(0deg)'}],{duration:1500/BattleTempo.speed,easing:'ease-in-out'});}
 void source.offsetWidth;source.classList.add(cls);
-setTimeout(()=>source.classList.remove(cls),1300);
-if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850)}
+setTimeout(()=>source.classList.remove(cls),1300/BattleTempo.speed);
+if(target!==source&&kind!=='heal'&&kind!=='support'){const hurtSprite=target.querySelector('svg');if(hurtSprite)hurtSprite.animate([{transform:'translateX(0)'},{transform:'translateX(8px) rotate(7deg)'},{transform:'translateX(-4px)'},{transform:'translateX(0)'}],{duration:650/BattleTempo.speed});target.classList.add('jutsu-hurt');setTimeout(()=>target.classList.remove('jutsu-hurt'),850/BattleTempo.speed)}
 if(kind==='lightning'&&action===2){showChidoriStrike(layer,sx,sy,tx,ty);return}
 const fx=document.createElement('div');
 fx.className='jutsu-fx '+(['fire','sand','water','bomb','orb','lightning'].includes(kind)&&action===2?'jutsu-area ':kind==='heal'||kind==='support'?'jutsu-support ':kind==='shadow'?'jutsu-shadow ':kind==='clones'?'jutsu-clones ':'');
 fx.style.setProperty('--x',sx+'px');fx.style.setProperty('--y',sy+'px');
 fx.style.setProperty('--dx',(tx-sx)+'px');fx.style.setProperty('--dy',(ty-sy)+'px');fx.style.setProperty('--fx',color);
 fx.dataset.icon=icon;layer.appendChild(fx);
-setTimeout(()=>fx.remove(),1350);
+setTimeout(()=>fx.remove(),1350/BattleTempo.speed);
 }
 function battleAction(unit,own,opponents){
 if(unit.curHp<=0||!opponents.some(x=>x.curHp>0))return;
@@ -1118,7 +1118,7 @@ if(own===allies)showDamage(dmg,crit);
 log((ult?'🔥 УЛЬТА! ':'')+unit.name+' · '+skill+' → '+target.name+': −'+dmg+(crit?' 💥 КРИТ':''));
 }
 }
-function finishBattle(won){clearTimeout(actionTimer);roundInProgress=false;
+function finishBattle(won){BattleTempo.cancel('action');roundInProgress=false;
 if(won){winWave();battleRoundNumber=0;return}
 log('⌛ 12 раундов закончились. Команда восстанавливается!');
 battleRoundNumber=0;initTeams();if(el('roundIndicator'))el('roundIndicator').textContent='Раунд 1 / 12';
@@ -1137,7 +1137,7 @@ function step(){
 if(!started||paused){roundInProgress=false;return}
 if(i<order.length&&allies.some(u=>u.curHp>0)&&foes.some(u=>u.curHp>0)){
 const a=order[i++];battleAction(a.u,a.own,a.enemy);render();
-actionTimer=setTimeout(()=>{renderTeams();step()},2450);return;
+actionTimer=BattleTempo.after('action',2450,()=>{renderTeams();step()});return;
 }
 roundInProgress=false;
 if(!foes.some(u=>u.curHp>0))finishBattle(true);
@@ -1509,7 +1509,7 @@ n.textContent=critical?'КРИТ! −'+d:'−'+d;
 n.style.left=(critical?'45%':'57%');
 n.style.top=(18+Math.floor(Math.random()*13))+'%';
 arena.appendChild(n);
-setTimeout(()=>n.remove(),1200);
+setTimeout(()=>n.remove(),1200/BattleTempo.speed);
 pulse('shockwave',500);
 }
 function upgrade(type){
@@ -1546,16 +1546,16 @@ if(hp<=0){hp=s.maxHp;log('Наруто восстановился!')}
 }
 render();
 }
-function schedule(){clearTimeout(timer);if(!started||paused||roundInProgress)return;timer=setTimeout(()=>battleRound(),2200)}
+function schedule(){BattleTempo.cancel('round');if(!started||paused||roundInProgress)return;timer=BattleTempo.after('round',2200,()=>battleRound())}
 function startPairDemo(){
   if(!testBuild){startGame();return}
   s.team=['naruto','sasuke','sakura','kakashi','hinata'];
   s.formationSlots=[...s.team];ensureFormation();startGame();
 }
-function startGame(){clearTimeout(actionTimer);roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
+function startGame(){BattleTempo.cancel('action');roundInProgress=false;battleRoundNumber=0;started=true;paused=false;el('startOverlay').style.display='none';el('pauseButton').textContent='⏸ Пауза';try{initTeams();log('⚔️ Бой начался!');schedule()}catch(e){console.error('Battle startup:',e);log('Ошибка боя: '+e.message)}}
 function togglePause(){
 if(!started){startGame();return}
-paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInProgress=false}else{roundInProgress=false;schedule()}el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
+paused=!paused;if(paused){BattleTempo.cancel('action');BattleTempo.cancel('round');roundInProgress=false}else{roundInProgress=false;schedule()}el('pauseButton').textContent=paused?'▶️ Продолжить':'⏸ Пауза';
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
 if(testBuild)el('pairDemo').hidden=false;
