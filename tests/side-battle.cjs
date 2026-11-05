@@ -18,6 +18,7 @@ assert(html.includes("const previousTeam="),'Unavailable old team slots must be 
 
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
 load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
+run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
 run(`let arena3d=null,arenaUnavailable=false,paused=false;
 const modelAnimationClips={},remoteHeroModels={},upgradedFighters=new Set();
