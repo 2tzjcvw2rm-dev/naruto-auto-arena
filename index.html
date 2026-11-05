@@ -1041,12 +1041,14 @@ const front=alive.filter(x=>own===allies?foes.indexOf(x)<2:s.formation[x.id]==='
 const middle=alive.filter(x=>s.formation[x.id]==='middle');
 const pool=front.length?front:own===foes&&middle.length?middle:alive;
 const target=pool[Math.floor(Math.random()*pool.length)];
-const ult=unit.rage>=100,secondary=!ult&&((battleRoundNumber+own.indexOf(unit))%3===0);
+// Per-fighter cycle: first action is an attack, second a technique, third the ultimate.
+// Rage is charged individually; battle speed and global round number never affect it.
+const ult=unit.rage>=100,secondary=!ult&&unit.rage>=50;
 const action=ult?2:secondary?1:0,skill=(skills[unit.id]||['Удар','Техника','Ульта'])[action];
 let dmg=0,healed=0,crit=false;
 document.querySelectorAll('.mini-unit').forEach(n=>n.classList.remove('acting-now'));const acting=el((own===allies?'allyTeam':'foeTeam')+own.indexOf(unit));if(acting)acting.classList.add('acting-now');
 const feed=el('battleFeed');if(feed){feed.textContent=(ult?'🔥 УЛЬТА · ':action===1?'✨ ТЕХНИКА · ':'⚔️ АТАКА · ')+unit.name+' · '+skill;feed.classList.toggle('ult-label',ult)}
-if(ult)unit.rage=0;else unit.rage=Math.min(100,(unit.rage||0)+(secondary?26:17));
+if(ult)unit.rage=0;else unit.rage=Math.min(100,(unit.rage||0)+50);
 if(unit.id==='sakura'&&action===2){
 const hurt=own.filter(x=>x.curHp>0).sort((a,b)=>a.curHp/a.maxHp-b.curHp/b.maxHp)[0];
 if(hurt){healed=Math.min(hurt.maxHp-hurt.curHp,Math.round(hurt.maxHp*.52));hurt.curHp+=healed;playJutsu(unit,own===allies?'allyTeam':'foeTeam',own.indexOf(unit),own===allies?'allyTeam':'foeTeam',own.indexOf(hurt),action,el((own===allies?'allyTeam':'foeTeam')+own.indexOf(hurt)));log('💚 Сакура лечит '+hurt.name+' на '+healed+' HP')}
