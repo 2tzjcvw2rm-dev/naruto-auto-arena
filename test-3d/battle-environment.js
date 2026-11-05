@@ -3,8 +3,8 @@ function createKonohaOverlook(scene){
   const T=THREE;
   const material=(color,extra={})=>new T.MeshLambertMaterial({color,...extra});
   const basic=(color,extra={})=>new T.MeshBasicMaterial({color,...extra});
-  const stone=material(0x958472), stoneEdge=material(0x777569), moss=material(0x6e9470);
-  scene.fog=new T.Fog(0xaac6be,66,112);
+  const stone=material(0xc9b18a), stoneEdge=material(0x7d705f), moss=material(0x75a26f);
+  scene.fog=new T.Fog(0x97b9b8,88,170);
   // Painted distant panorama is fixed to the sky, while foreground props have real depth.
   const sky=document.createElement('canvas');sky.width=1024;sky.height=512;
   const c=sky.getContext('2d');
@@ -37,6 +37,114 @@ function createKonohaOverlook(scene){
       c.fillStyle=['#ac584f','#ae7559','#667f74','#c0825a'][i%4];c.fill();
       c.fillStyle='rgba(55,72,70,.5)';c.fillRect(x+6,y+7,4,5);
     }
+
+    // Second art pass: an anime-style panorama with cohesive village architecture.
+    // Use native Canvas2D, not remote files, so it stays crisp and works offline.
+    c.clearRect(0,0,1024,512);
+    const skyFade=c.createLinearGradient(0,0,0,512);
+    skyFade.addColorStop(0,'#3879b9'); skyFade.addColorStop(.36,'#70b7d0');
+    skyFade.addColorStop(.73,'#d2e5cb'); skyFade.addColorStop(1,'#f3dfba');
+    c.fillStyle=skyFade;c.fillRect(0,0,1024,512);
+    const sunHaze=c.createRadialGradient(775,120,15,775,120,300);
+    sunHaze.addColorStop(0,'rgba(255,251,219,.96)');
+    sunHaze.addColorStop(.28,'rgba(255,234,176,.45)');
+    sunHaze.addColorStop(1,'rgba(255,232,176,0)');
+    c.fillStyle=sunHaze;c.fillRect(450,0,574,430);
+    c.beginPath();c.arc(780,115,33,0,Math.PI*2);c.fillStyle='#fff3ce';c.fill();
+    function mountain(points,fill,stroke){
+      c.beginPath();c.moveTo(0,512);
+      for(const p of points)c.lineTo(p[0],p[1]);
+      c.lineTo(1024,512);c.closePath();c.fillStyle=fill;c.fill();
+      if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke();}
+    }
+    function cloud(x,y,s){
+      c.save();c.translate(x,y);c.scale(s,s);
+      const aura=c.createRadialGradient(0,4,6,0,4,99);
+      aura.addColorStop(0,'rgba(255,250,232,.7)');aura.addColorStop(1,'rgba(255,250,232,0)');
+      c.fillStyle=aura;c.fillRect(-150,-85,300,170);
+      c.fillStyle='rgba(255,255,243,.82)';
+      c.beginPath();c.moveTo(-95,15);
+      c.bezierCurveTo(-77,-6,-55,-12,-35,-7);c.bezierCurveTo(-15,-38,22,-29,35,-12);
+      c.bezierCurveTo(62,-25,83,-10,93,8);c.bezierCurveTo(53,20,-38,23,-95,15);
+      c.fill();c.restore();
+    }
+    cloud(140,98,.85);cloud(455,78,.66);cloud(918,179,.48);
+    // Layered distant hills under clear air, with uneven peaks instead of a flat strip.
+    mountain([[0,290],[58,262],[106,285],[153,244],[218,279],[276,230],[322,260],[386,235],[450,292],[519,242],[583,286],[643,250],[696,296],[760,230],[835,278],[904,233],[972,284],[1024,258]],'#9db8b1','#81a7aa');
+    mountain([[0,350],[76,308],[142,330],[203,284],[279,318],[341,292],[408,350],[469,305],[541,332],[608,286],[677,348],[756,312],[837,332],[922,302],[1024,349]],'#6d9e98','#5f9290');
+    // Distant forest canopy: alternating dark needles and broadleaf peaks.
+    mountain([[0,409],[34,373],[66,390],[99,355],[136,390],[166,361],[201,384],[245,355],[278,390],[319,354],[361,387],[402,361],[443,396],[484,348],[528,385],[570,362],[618,404],[663,363],[720,397],[761,360],[807,385],[852,353],[905,391],[956,356],[1024,385]],'#467c6d');
+    // Hokage rock cliff, etched into sandstone in the upper-right panorama.
+    c.save();c.beginPath();c.moveTo(592,411);c.lineTo(607,278);
+    c.lineTo(637,251);c.lineTo(654,229);c.lineTo(688,241);
+    c.lineTo(717,215);c.lineTo(758,231);c.lineTo(790,207);
+    c.lineTo(827,220);c.lineTo(861,206);c.lineTo(894,229);
+    c.lineTo(927,212);c.lineTo(969,237);c.lineTo(1003,257);
+    c.lineTo(1024,278);c.lineTo(1024,434);c.closePath();
+    const cliff=c.createLinearGradient(0,225,0,430);
+    cliff.addColorStop(0,'#c5b19b');cliff.addColorStop(.57,'#aa9587');cliff.addColorStop(1,'#806f6c');
+    c.fillStyle=cliff;c.fill();c.clip();
+    c.strokeStyle='rgba(90,81,77,.28)';c.lineWidth=4;
+    for(let i=0;i<14;i++){const x=604+i*31;
+      c.beginPath();c.moveTo(x,236+(i%4)*18);
+      c.lineTo(x-16,287+(i%5)*15);c.lineTo(x+4,346+(i%3)*15);c.lineTo(x-8,430);c.stroke();}
+    for(let i=0;i<4;i++){
+      const x=665+i*85,y=285+(i%2)*-3;
+      // Profile shapes carved from the rock, with dark silhouette shadow and pale ridge.
+      c.fillStyle='#877a73';c.beginPath();
+      c.moveTo(x-28,y-22);c.quadraticCurveTo(x-29,y-57,x,y-62);
+      c.quadraticCurveTo(x+32,y-61,x+29,y-25);
+      c.lineTo(x+23,y+15);c.lineTo(x+14,y+36);
+      c.lineTo(x-17,y+36);c.closePath();c.fill();
+      c.fillStyle='#cbbba4';c.beginPath();c.moveTo(x-28,y-28);
+      c.quadraticCurveTo(x-10,y-54,x+14,y-49);c.quadraticCurveTo(x+30,y-38,x+24,y-10);
+      c.lineTo(x+21,y+20);c.quadraticCurveTo(x+8,y+33,x-13,y+28);
+      c.quadraticCurveTo(x-25,y+14,x-28,y-28);c.fill();
+      c.strokeStyle='#746f6b';c.lineWidth=3;
+      c.beginPath();c.moveTo(x-21,y-21);c.quadraticCurveTo(x,y-29,x+19,y-19);
+      c.moveTo(x-17,y-6);c.lineTo(x-5,y-9);c.moveTo(x+7,y-9);c.lineTo(x+17,y-6);
+      c.moveTo(x+1,y-4);c.lineTo(x-4,y+12);c.lineTo(x+5,y+14);
+      c.moveTo(x-11,y+23);c.quadraticCurveTo(x,y+26,x+11,y+21);c.stroke();
+      c.strokeStyle='rgba(248,226,181,.7)';c.lineWidth=2;
+      c.beginPath();c.moveTo(x-22,y-30);c.lineTo(x-11,y-43);c.stroke();
+    }
+    c.restore();
+    // Inhabited Leaf Village: winding rooftops, shadowed facades and tiled eaves.
+    c.fillStyle='rgba(243,224,181,.23)';c.fillRect(0,376,1024,136);
+    function house(x,y,w,h,roofColor,wallColor){
+      c.fillStyle='rgba(36,62,64,.2)';c.fillRect(x+5,y+4,w,h);
+      c.fillStyle=wallColor;c.fillRect(x,y,w,h);
+      c.fillStyle='#74665c';c.fillRect(x,y+h-5,w,5);
+      c.fillStyle='#6d625c';c.fillRect(x+w*.18,y+h*.36,w*.17,h*.24);
+      c.fillRect(x+w*.62,y+h*.36,w*.17,h*.24);
+      c.fillStyle='#f1daa9';c.fillRect(x+w*.2,y+h*.38,w*.12,3);
+      c.fillRect(x+w*.64,y+h*.38,w*.12,3);
+      c.fillStyle=roofColor;c.beginPath();
+      c.moveTo(x-9,y+3);c.lineTo(x+w*.45,y-h*.4);c.lineTo(x+w+9,y+3);
+      c.lineTo(x+w+3,y+9);c.lineTo(x-4,y+9);c.closePath();c.fill();
+      c.strokeStyle='#6e5d5c';c.lineWidth=2;
+      c.beginPath();c.moveTo(x-9,y+4);c.lineTo(x+w*.45,y-h*.4);
+      c.lineTo(x+w+9,y+4);c.stroke();
+      c.strokeStyle='rgba(251,217,176,.36)';c.lineWidth=1;
+      for(let k=1;k<=3;k++){const ty=y-h*.4+(h*.4)*k/4;
+        c.beginPath();c.moveTo(x+w*.45-(w*.45+8)*k/4,ty);
+        c.lineTo(x+w*.45+(w*.55+8)*k/4,ty);c.stroke();}
+    }
+    const roofs=['#b65b4f','#cb8053','#a34d4b','#768f89','#cb946c'];
+    const walls=['#d2bd9f','#dbc8aa','#c7b19c','#e3c9a6'];
+    for(let row=0;row<3;row++){
+      const n=row===0?18:row===1?16:14;
+      for(let i=0;i<n;i++){
+        const w=34+((i*13+row*5)%15),gap=5;
+        const x=i*(1024/n)-17+row*11,y=398+row*39+(i*7%11);
+        house(x,y,w,27+row*4,roofs[(i+row)%5],walls[(i+row*3)%4]);
+      }
+    }
+    // Distinctive timber and ceramic rooftop silhouettes at the overlook.
+    c.fillStyle='#536e66';
+    for(let i=0;i<35;i++){const x=i*31+((i*7)%11),y=496+(i%5)*4;
+      c.beginPath();c.moveTo(x-7,y);c.lineTo(x+5,y-11);c.lineTo(x+19,y);c.closePath();c.fill();}
+
     scene.background=new T.CanvasTexture(sky);
     scene.background.encoding=T.sRGBEncoding;
     const panorama=new T.Mesh(new T.PlaneGeometry(145,44),new T.MeshBasicMaterial({map:scene.background,fog:false,depthWrite:false}));
@@ -124,6 +232,48 @@ function createKonohaOverlook(scene){
     }
     swaying.push({node:crown,phase:i});
   }
+
+  // Warm training-ground detailing: stone edging, moss, grass and old timber.
+  // All props remain behind or outside the two formations; no interactive meshes.
+  const tileTint=basic(0xe2c99c,{transparent:true,opacity:.19,depthWrite:false,side:T.DoubleSide});
+  const tileGeometry=new T.PlaneGeometry(1.9,.56);
+  const tileCount=46,tileMesh=new T.InstancedMesh(tileGeometry,tileTint,tileCount);
+  const tileDummy=new T.Object3D();
+  for(let i=0;i<tileCount;i++){
+    const edge=Math.floor(i/23),a=i%23;
+    tileDummy.position.set(-26+a*2.36, .008,edge===0?-7.05:8.25);
+    tileDummy.rotation.set(-Math.PI/2,0,(i%5-2)*.025);
+    tileDummy.scale.set(.68+(i%3)*.07,1,1);tileDummy.updateMatrix();
+    tileMesh.setMatrixAt(i,tileDummy.matrix);
+  }
+  tileMesh.instanceMatrix.needsUpdate=true;scene.add(tileMesh);
+  const turf=basic(0x6d9966,{transparent:true,opacity:.42,side:T.DoubleSide,depthWrite:false});
+  const turfGeo=new T.CircleGeometry(1,9),turfPatch=new T.InstancedMesh(turfGeo,turf,34);
+  for(let i=0;i<34;i++){
+    const left=i%2===0,x=(left?-1:1)*(11+(i*19%16));
+    const z=-7.3+(i*17%15);
+    tileDummy.position.set(x,.011,z);tileDummy.rotation.set(-Math.PI/2,0,i*2.4);
+    tileDummy.scale.set(.3+(i%4)*.12,.11+(i%3)*.12,1);tileDummy.updateMatrix();
+    turfPatch.setMatrixAt(i,tileDummy.matrix);
+  }
+  turfPatch.instanceMatrix.needsUpdate=true;scene.add(turfPatch);
+  const wood=material(0x845d49),woodLight=material(0xa97857),bannerMat=basic(0xb54e49,{side:T.DoubleSide});
+  // Academy training racks at far edges; distant so silhouettes remain unobstructed.
+  for(const sign of [-1,1]){
+    const x=sign*23.5,z=-7.25;
+    block(x-1.3,2.4,z,.3,4.8,.3,wood);
+    block(x+1.3,2.4,z,.3,4.8,.3,wood);
+    block(x,4.65,z,3.1,.36,.36,woodLight);
+    block(x,3.9,z+.02,1.45,1.06,.12,bannerMat);
+    const emblem=new T.Mesh(new T.RingGeometry(.23,.29,20),basic(0xf7d6a0,{side:T.DoubleSide}));
+    emblem.position.set(x,3.94,z+.09);scene.add(emblem);
+    // Wood practice targets and fence posts, separate from characters' contact shadows.
+    for(let k=0;k<2;k++){
+      const post=new T.Mesh(new T.CylinderGeometry(.18,.24,2,7),wood);
+      post.position.set(x+sign*(2.6+k*.75),.95,z-1.3);scene.add(post);
+    }
+  }
+
   // Carved lanterns give the courtyard warm points of interest.
   const lanternStone=material(0x6c7068),lanternLight=basic(0xffd7a0);
   for(const x of [-13.5,13.5]){
@@ -133,7 +283,7 @@ function createKonohaOverlook(scene){
     block(x,2.35,-7.2,.85,.16,.85,lanternStone);
   }
   // Subtle animated clouds float in world space, not on top of the UI.
-  const clouds=[],cloudMat=basic(0xfff8e8,{transparent:true,opacity:.58,depthWrite:false});
+  const clouds=[],cloudMat=basic(0xfff8e8,{transparent:true,opacity:.32,depthWrite:false});
   const cloudGeo=new T.SphereGeometry(1,9,6);
   for(let i=0;i<5;i++){
     const group=new T.Group();group.position.set(-27+i*13,10+(i%3)*2.6,-41-i%2*7);
