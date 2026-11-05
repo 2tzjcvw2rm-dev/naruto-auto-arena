@@ -786,7 +786,7 @@ let s;
 try{s=JSON.parse(localStorage.getItem(saveKey)||(testBuild&&localStorage.getItem('narutoSave'))||'null')}catch(e){}
 s=Object.assign({coins:0,level:1,wave:1,damage:12,speed:10,maxHp:100,critChance:5,critDamage:150},s||{});
 s.critChance=Number(s.critChance)||5;s.critDamage=Number(s.critDamage)||150;
-const roster=[
+const fullRoster=[
 {id:'naruto',name:'Наруто',role:'Атака',color:'#f19b2c',hair:'#f8d13d',skin:'#f4bd8c',hp:125,atk:16,spd:12},
 {id:'sasuke',name:'Саске',role:'Урон',color:'#4e5793',hair:'#1c2232',skin:'#e7bba0',hp:105,atk:21,spd:15},
 {id:'sakura',name:'Сакура',role:'Лечение',color:'#d45d77',hair:'#f6a0b7',skin:'#f4c1aa',hp:115,atk:12,spd:11},
@@ -797,19 +797,36 @@ const roster=[
 {id:'madara',name:'Мадара Учиха',role:'Урон',color:'#982c42',hair:'#161821',skin:'#d7b09b',hp:150,atk:23,spd:14},
 {id:'obito',name:'Обито Учиха',role:'Контроль',color:'#383147',hair:'#1c1c24',skin:'#e0a473',hp:130,atk:19,spd:16}
 ];
-const enemies=[
+const fullEnemies=[
 {id:'itachi',name:'Итачи',color:'#272b34',hair:'#16151d',skin:'#d9b7aa',hp:110,atk:16,spd:13},
 {id:'pain',name:'Пейн',color:'#33343e',hair:'#ec8c4d',skin:'#d6b7a3',hp:125,atk:16,spd:11},
 {id:'kisame',name:'Кисаме',color:'#333c4e',hair:'#425b78',skin:'#7495ad',hp:145,atk:14,spd:9},
 {id:'deidara',name:'Дейдара',color:'#252c35',hair:'#e9cf79',skin:'#e4c0a1',hp:95,atk:19,spd:14},
 {id:'konan',name:'Конан',color:'#33303a',hair:'#627da2',skin:'#d8b5a0',hp:115,atk:16,spd:12}
 ];
+// Temporarily unavailable pending better licensed 3D models. Their
+// data and existing GLBs are preserved for a later return.
+const unavailableFighters=new Set(['shikamaru','gaara','kisame','deidara']);
+const roster=fullRoster.filter(hero=>!unavailableFighters.has(hero.id));
+const enemies=[
+  ...fullEnemies.filter(hero=>!unavailableFighters.has(hero.id)),
+  // Available GLBs take the two vacant enemy slots. These distinct objects
+  // must not mark the same playable heroes as enemy-only in profile UI.
+  ...['madara','obito'].map(id=>({...fullRoster.find(hero=>hero.id===id)}))
+];
 function ninjaSVG(c){
 return '<svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg"><path d="M21 115L16 65Q20 56 32 53H50Q62 56 65 66L60 115" fill="'+c.color+'" stroke="#252c39" stroke-width="3"/><path d="M31 91L29 116M50 91L51 116" stroke="#242c38" stroke-width="6"/><path d="M18 65L12 89L24 95M63 65L69 89L58 95" fill="none" stroke="'+c.color+'" stroke-width="11"/><ellipse cx="40" cy="34" rx="20" ry="25" fill="'+c.skin+'" stroke="#47352f" stroke-width="2"/><path d="M18 34L14 21L27 23L25 9L35 16L42 3L48 15L60 8L58 23L68 21L62 35L55 21L25 24Z" fill="'+c.hair+'" stroke="#30313b" stroke-width="2"/><path d="M23 34L57 34L56 43L24 43Z" fill="#2a3545"/><rect x="33" y="35" width="15" height="7" rx="2" fill="#b8c4cc"/><path d="M27 48L35 48M46 48L54 48" stroke="#272936" stroke-width="3"/><path d="M36 56Q40 59 45 56" fill="none" stroke="#a15c50" stroke-width="2"/></svg>';
 }
-s.team=Array.isArray(s.team)?s.team.filter(id=>roster.some(r=>r.id===id)):['naruto'];
+// Keep the old number of selected slots when replacing unavailable fighters;
+// preserve s.heroProgress, saved inventory and equipped gear unchanged.
+const previousTeam=Array.isArray(s.team)?[...new Set(s.team)]:['naruto'];
+s.team=previousTeam.filter(id=>roster.some(hero=>hero.id===id));
 if(!s.team.includes('naruto'))s.team.unshift('naruto');
-s.team=[...new Set(s.team)].slice(0,5);
+for(const hero of roster){
+  if(s.team.length>=Math.min(5,Math.max(1,previousTeam.length)))break;
+  if(!s.team.includes(hero.id))s.team.push(hero.id);
+}
+s.team=s.team.slice(0,5);
 s.formation=s.formation||{};
 const formationRows=['front','middle','back'];
 const rowNames={front:'🛡️ Передняя',middle:'⚔️ Средняя',back:'💚 Задняя'};
@@ -1366,7 +1383,7 @@ function stageGearSlots(progress,locked){
  }).join('');
 }
 function renderProfile(){
- const fighters=[...roster,...enemies];
+ const fighters=[...roster,...enemies.filter(enemy=>!roster.some(hero=>hero.id===enemy.id))];
  const c=fighters.find(x=>x.id===selectedProfile)||roster[0];
  const isEnemy=enemies.includes(c),p=heroData(c.id),b=heroBonuses(c.id);
  el('profileChoose').innerHTML='<select style="width:100%;padding:11px;background:#25364b;color:white;border-radius:9px;margin-bottom:10px" onchange="selectProfile(this.value)">'+fighters.map(x=>'<option value="'+x.id+'" '+(x.id===c.id?'selected':'')+'>'+x.name+'</option>').join('')+'</select>';
@@ -1431,7 +1448,7 @@ function equipGearFromPicker(id){closeGearPicker();equipItem(id)}
 function removeGearFromSlot(slot){delete heroData(selectedProfile).gear[slot];closeGearPicker();save();initTeams();render();renderProfile()}
 function slotClick(slot){
  const config=gearCatalog.find(g=>g.slot===slot);
- if(!config||enemies.some(e=>e.id===selectedProfile))return;
+ if(!config||!roster.some(hero=>hero.id===selectedProfile))return;
  closeGearPicker();
  const equipped=itemById(heroData(selectedProfile).gear[slot]);
  const items=s.inventory.filter(i=>i.slot===slot).slice().sort((a,b)=>b.quality-a.quality);
