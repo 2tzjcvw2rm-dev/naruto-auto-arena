@@ -9,22 +9,10 @@ function initArena3d(){
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
   renderer.outputEncoding=THREE.sRGBEncoding;
   host.appendChild(renderer.domElement);host.parentElement.classList.add('three-active','side-battle');
-  const scene=new THREE.Scene();scene.background=new THREE.Color(0xa9c5ce);
-  scene.fog=new THREE.Fog(0xa9c5ce,22,65);
-  scene.add(new THREE.HemisphereLight(0xfff5df,0x788b9b,1.15));
-  const light=new THREE.DirectionalLight(0xffedcf,.85);light.position.set(-4,9,6);scene.add(light);
+  const scene=new THREE.Scene();
   const camera=new THREE.PerspectiveCamera(32,1,.1,100);
-  const stone=new THREE.MeshLambertMaterial({color:0xa7a293});
-  const floor=new THREE.Mesh(new THREE.PlaneGeometry(180,180),stone);
-  floor.rotation.x=-Math.PI/2;floor.position.y=-.025;scene.add(floor);
-  // Training courtyard, with real perspective and subdued paving seams.
-  const lines=[];
-  for(let i=-12;i<=12;i+=2){lines.push(i,0,-12,i,0,12,-12,0,i,12,0,i)}
-  const grid=new THREE.LineSegments(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(lines,3)),new THREE.LineBasicMaterial({color:0x7f8075,transparent:true,opacity:.3}));scene.add(grid);
-  function block(x,y,z,w,h,d,color){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));m.position.set(x,y,z);scene.add(m)}
-  block(0,.5,-6,26,1,.45,0x777e73);block(0,1.05,-6,26,.15,.65,0xc8bd9f);
-  for(let x=-12;x<=12;x+=3){block(x,1.7,-6,.15,1.3,.15,0x596b63);block(x,2.35,-6,3,.12,.15,0x596b63)}
-  for(const x of [-9,9]){block(x,1,-4,.3,2,.3,0x82654b);const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,1),new THREE.MeshLambertMaterial({color:0x4c735b}));crown.position.set(x,3.2,-4);scene.add(crown)}
+  // Environmental decoration is deliberately independent of camera/formation logic.
+  const environment=createKonohaOverlook(scene);
   const shadowCanvas=document.createElement('canvas');shadowCanvas.width=shadowCanvas.height=64;
   const ctx=shadowCanvas.getContext('2d'),gradient=ctx.createRadialGradient(32,32,2,32,32,32);
   gradient.addColorStop(0,'rgba(22,30,27,.48)');gradient.addColorStop(1,'rgba(22,30,27,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
@@ -86,7 +74,7 @@ function initArena3d(){
       });
     },
     // Read-only diagnostics for responsive framing and animation verification.
-    inspect(){return {size:[width,height],slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})()}))}}
+    inspect(){return {size:[width,height],environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})()}))}}
   };
   function draw(time){
     requestAnimationFrame(draw);
@@ -94,6 +82,7 @@ function initArena3d(){
     const dt=last?Math.min(.08,(time-last)/1000):.04;last=time;
     const suspended=paused||!!document.querySelector('#profileModal.open,#teamModal.open,#bagModal.open');
     if(!suspended)clock+=dt*1000;
+    environment.update(suspended?0:dt,clock/1000);
     const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;
     if(width!==rect.width||height!==rect.height){width=rect.width;height=rect.height;renderer.setSize(width,height);fit()}
     for(const slot of slots){
