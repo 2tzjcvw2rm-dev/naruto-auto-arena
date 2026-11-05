@@ -8,3 +8,21 @@
 .arena.side-battle .mini-unit.down{opacity:0!important}
 .arena.side-battle #battle3d canvas{display:block;width:100%;height:100%}
 .arena.side-battle:after{z-index:9;background:radial-gradient(ellipse at center,transparent 65%,#25364422)}
+
+/* Approved animated waterfall: behind the untouched 5v5 WebGL formation. */
+.arena.side-battle.three-active #battle3d{
+  background:#8abb6e url("./assets/waterfall-battle.gif?v=20261105-waterfall1") center 48% / cover no-repeat;
+}
+.arena.side-battle.three-active #battle3d canvas{
+  display:block;
+  background:transparent!important;
+}
+/* Remove only the legacy CSS landscape, not units, HUD, combat or FX. */
+.arena.side-battle.three-active > .sun,
+.arena.side-battle.three-active > .mountain,
+.arena.side-battle.three-active > .clouds,
+.arena.side-battle.three-active > .hokage,
+.arena.side-battle.three-active > .village,
+.arena.side-battle.three-active > .ground{
+  display:none!important;
+}
