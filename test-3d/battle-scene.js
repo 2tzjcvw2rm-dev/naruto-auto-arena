@@ -3,7 +3,8 @@ function createMadaraSusanoo(THREE,scene,slot,target){
   const root=new THREE.Group();root.name='madara-skeletal-susanoo';scene.add(root);
   const resources=new Set(),materials=[];
   const material=(color,opacity)=>{const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});m.userData.alpha=opacity;materials.push(m);resources.add(m);return m};
-  const bone=material(0x9864ff,.58),core=material(0xe3b6ff,.8),veil=material(0x7128db,.09),red=material(0xff285f,.7);
+  const bone=material(0x7438d9,.72),core=material(0xe3b6ff,.8),veil=material(0x7128db,.09),red=material(0xff285f,.7);
+  bone.blending=THREE.NormalBlending;veil.blending=THREE.NormalBlending;
   const parts=[];
   const mesh=(geo,mat,parent=root)=>{resources.add(geo);const m=new THREE.Mesh(geo,mat);parent.add(m);return m};
   const tube=(points,radius,mat,parent=root)=>mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),20,radius,6,false),mat,parent);
@@ -115,7 +116,7 @@ function initArena3d(){
   gradient.addColorStop(0,'rgba(22,30,27,.48)');gradient.addColorStop(1,'rgba(22,30,27,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
   const shadowMap=new THREE.CanvasTexture(shadowCanvas),shadowGeometry=new THREE.PlaneGeometry(1.5,1.1);
   const shadowMaterial=new THREE.MeshBasicMaterial({map:shadowMap,transparent:true,depthWrite:false});
-  let slots=[],width=0,height=0,last=0,clock=0,bindSerial=0;
+  let slots=[],width=0,height=0,last=0,clock=0,bindSerial=0,effectClock=0;
   // Waterfall GIF is a 2D backdrop. Its turf begins below the original
   // 3D ground plane: shift VISUAL grounding only (no formation/camera change).
   // Portrait needs more downward adjustment; landscape has less vertical space.
@@ -153,9 +154,9 @@ function initArena3d(){
       const active=slots.find(x=>x.side===side&&x.index===index);
       if(active){
         active.effect?.dispose();active.effect=null;
-        active.attackAt=clock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
+        active.attackAt=clock;active.effectAt=effectClock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
         if(active.id==='madara'&&technique===2){active.effect=createMadaraSusanoo(THREE,scene,active,active.target);
-          if(active.target){active.target.hitAt=clock+1817;active.target.hitFrom=active.home.clone()}return true}
+          if(active.target){active.target.hitAt=effectClock+1817;active.target.hitFrom=active.home.clone()}return true}
       }
       return false;
     },
@@ -186,9 +187,10 @@ function initArena3d(){
   function draw(time){
     requestAnimationFrame(draw);
     if(document.hidden||time-last<40)return;
-    const dt=last?Math.min(.08,(time-last)/1000):.04;last=time;
+    const wallDt=last?Math.min(1,(time-last)/1000):.04;
+    const dt=Math.min(.08,wallDt);last=time;
     const suspended=paused||!!document.querySelector('#profileModal.open,#teamModal.open,#bagModal.open');
-    if(!suspended)clock+=dt*1000;
+    if(!suspended){clock+=dt*1000;effectClock+=wallDt*1000;}
     environment.update(suspended?0:dt,clock/1000);
     const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;
     if(width!==rect.width||height!==rect.height){width=rect.width;height=rect.height;renderer.setSize(width,height);fit()}
@@ -201,7 +203,7 @@ function initArena3d(){
       if(!actor.visible){slot.effect?.dispose();slot.effect=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
       const duration=susanoo?2300:1400;
-      const elapsed=slot.attackAt===null?-1:clock-slot.attackAt,p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
+      const elapsed=slot.attackAt===null?-1:susanoo?effectClock-slot.effectAt:clock-slot.attackAt,p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
       const direction=side==='allyTeam'?1:-1;
       const target=slot.target,enemyTarget=target&&target.side!==side;
       const kind=(jutsuVisuals[(side==='allyTeam'?allies:foes)[slot.index].id]||jutsuVisuals.naruto)[slot.technique][0];
@@ -215,7 +217,7 @@ function initArena3d(){
         const travel=susanoo?0:melee?Math.max(0,distance-1.15):.18;
         actor.position.x+=dx/distance*travel*blend;actor.position.z+=dz/distance*travel*blend;
       }
-      const hitAge=slot.hitAt===undefined?-1:clock-slot.hitAt;
+      const hitAge=slot.hitAt===undefined?-1:effectClock-slot.hitAt;
       if(hitAge>=0&&hitAge<380&&slot.hitFrom){
         const recoil=new THREE.Vector3().subVectors(home,slot.hitFrom);recoil.y=0;recoil.normalize();
         actor.position.addScaledVector(recoil,.2*Math.sin(Math.PI*hitAge/380));

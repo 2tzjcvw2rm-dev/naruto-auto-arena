@@ -65,18 +65,18 @@ const server=http.createServer((req,res)=>{
         battleAction(madara,foes,allies);
       });
     }
-    await cast();await page.waitForTimeout(1150);
+    await cast();await page.waitForFunction(()=>arena3d.inspect().effects.some(e=>e.phase==='windup'),null,{timeout:10000});
     await page.evaluate(()=>{paused=true;});
-    let fx=await page.evaluate(()=>arena3d.inspect());
+    let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
     assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
     assert.equal(await page.locator('.jutsu-fx').count(),0,'No emoji overlay for Susanoo');
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-forming-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForTimeout(550);await page.evaluate(()=>{paused=true;});
+    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.inspect().effects.some(e=>e.phase==='strike'),null,{timeout:10000});await page.evaluate(()=>{paused=true;});
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-strike-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForTimeout(1000);
+    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.inspect().effects.length===0,null,{timeout:10000});
     fx=await page.evaluate(()=>arena3d.inspect());assert.equal(fx.effects.length,0,'Effect must expire');
     const baseline=fx.memory.geometries;
-    for(let i=0;i<8;i++){await cast();await page.waitForTimeout(2600);}
+    for(let i=0;i<8;i++){await cast();await page.waitForFunction(()=>arena3d.inspect().effects.length===0,null,{timeout:10000});}
     fx=await page.evaluate(()=>arena3d.inspect());
     assert.equal(fx.effects.length,0,'Repeated effects must expire');
     assert(fx.memory.geometries<=baseline+1,'Geometry leak: '+JSON.stringify({baseline,after:fx.memory}));
