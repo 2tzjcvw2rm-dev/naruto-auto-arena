@@ -31,6 +31,18 @@
   }
   function updateControls(){
     document.documentElement.style.setProperty('--battle-speed',String(speed));
+    // Use pre-computed CSS time values. Safari supports custom-property durations
+    // even on versions without CSS Values 4 duration division.
+    const ms={
+      '--battle-jutsu-melee':620,'--battle-jutsu-cast':660,
+      '--battle-jutsu-ultimate':800,'--battle-jutsu-heal':850,
+      '--battle-jutsu-hurt':380,'--battle-fx':650,
+      '--battle-fx-area':850,'--battle-fx-support':950,
+      '--battle-damage':900
+    };
+    for(const [name,milliseconds] of Object.entries(ms)){
+      document.documentElement.style.setProperty(name,(milliseconds/speed)+'ms');
+    }
     const row=document.getElementById('battleSpeedControls');
     if(!row)return;
     row.querySelectorAll('[data-battle-speed]').forEach(button=>{
