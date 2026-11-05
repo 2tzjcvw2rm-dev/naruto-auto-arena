@@ -153,13 +153,24 @@ function initArena3d(){
   arena3d={
     trigger(side,index,technique,targetSide,targetIndex){
       const active=slots.find(x=>x.side===side&&x.index===index);
-      if(active){
-        active.effect?.dispose();active.effect=null;
-        active.attackAt=clock;active.effectAt=effectClock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
-        if(active.id==='madara'&&technique===2){active.effect=createMadaraSusanoo(THREE,scene,active,active.target);
-          if(active.target){active.target.hitAt=effectClock+1817;active.target.hitFrom=active.home.clone()}return true}
+      if(!active)return false;
+      const target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
+      if(!target)return false; // Keep original 2D fallback during GLB loading.
+      active.effect?.dispose();active.effect=null;
+      active.attackAt=effectClock;active.effectAt=effectClock;
+      active.technique=technique;active.target=target;
+      const susanoo=active.id==='madara'&&technique===2;
+      const visual=(jutsuVisuals[active.id]||jutsuVisuals.naruto)[technique];
+      active.effect=susanoo?createMadaraSusanoo(THREE,scene,active,target):
+        (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null);
+      if(target.side!==side){
+        target.hitAt=effectClock+(susanoo?1817:760);
+        target.hitFrom=active.home.clone();
+        // Battle HP updates immediately. Preserve a knocked-out model until
+        // the impact reaches it, then honor the normal 'down' state.
+        target.downGraceUntil=Math.max(target.downGraceUntil||0,effectClock+(susanoo?2120:1090));
       }
-      return false;
+      return true;
     },
     effects(){return slots.filter(a=>a.effect).map(a=>a.effect.inspect())},
     point(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);return slot?slotPoint(slot,1):null},
@@ -179,16 +190,16 @@ function initArena3d(){
           const shadow=new THREE.Mesh(shadowGeometry,shadowMaterial);shadow.rotation.x=-Math.PI/2;shadow.position.copy(home);shadow.position.y=.012;scene.add(shadow);
           const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
           const posedMeshes=bodyMeshes.map(mesh=>mesh.parent?mesh:model.getObjectByName(mesh.name)).filter(Boolean);
-          slots.push({id:u.id,unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null});unit.classList.add('has-model');
+          slots.push({id:u.id,unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null,phase:'idle',downGraceUntil:0});unit.classList.add('has-model');
         });
       });
     },
     // Read-only diagnostics for responsive framing and animation verification.
-    inspect(){return {size:[width,height],effects:slots.filter(a=>a.effect).map(a=>a.effect.inspect()),memory:{...renderer.info?.memory},visualGroundY,environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})(),foot:screenPoint(new THREE.Vector3(a.actor.position.x,visualGroundY,a.actor.position.z))}))}}
+    inspect(){return {size:[width,height],effects:slots.filter(a=>a.effect).map(a=>a.effect.inspect()),memory:{...renderer.info?.memory},visualGroundY,environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,phase:a.phase,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})(),foot:screenPoint(new THREE.Vector3(a.actor.position.x,visualGroundY,a.actor.position.z))}))}}
   };
   function draw(time){
     requestAnimationFrame(draw);
-    if(document.hidden||time-last<40)return;
+    if(document.hidden||time-last<24)return;
     const wallDt=last?Math.min(1,(time-last)/1000):.04;
     const dt=Math.min(.08,wallDt);last=time;
     const suspended=paused||!!document.querySelector('#profileModal.open,#teamModal.open,#bagModal.open');
@@ -201,39 +212,50 @@ function initArena3d(){
     // place the existing fighters and their contact shadows on the GIF grass.
     visualGroundY=height>=width?-2.65:-1.1;
     for(const slot of slots){
-      const {unit,actor,model,shadow,side,home,motion}=slot;
-      actor.visible=!unit.classList.contains('down');shadow.visible=actor.visible;
+      const {unit,actor,shadow,side,home,motion}=slot;
+      actor.visible=!unit.classList.contains('down')||effectClock<(slot.downGraceUntil||0);
+      shadow.visible=actor.visible;
       if(!actor.visible){slot.effect?.dispose();slot.effect=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
       const duration=susanoo?2300:1400;
-      const elapsed=slot.attackAt===null?-1:susanoo?effectClock-slot.effectAt:clock-slot.attackAt,p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
-      const direction=side==='allyTeam'?1:-1;
-      const target=slot.target,enemyTarget=target&&target.side!==side;
-      const kind=(jutsuVisuals[(side==='allyTeam'?allies:foes)[slot.index].id]||jutsuVisuals.naruto)[slot.technique][0];
+      const elapsed=slot.attackAt===null?-1:effectClock-slot.effectAt;
+      const p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
+      const direction=side==='allyTeam'?1:-1,target=slot.target;
+      const enemyTarget=target&&target.side!==side;
+      const kind=(jutsuVisuals[slot.id]||jutsuVisuals.naruto)[slot.technique][0];
       const melee=enemyTarget&&(slot.technique===0||kind==='melee');
-      const blend=p<0?0:p<.34?THREE.MathUtils.smoothstep(p,0,.34):p<.58?1:1-THREE.MathUtils.smoothstep(p,.58,1);
+      // Distinct readable phases: anticipate, approach, plant, strike, retreat.
+      const ease=(t,a,b)=>THREE.MathUtils.smoothstep(t,a,b);
+      const advance=p<0?0:ease(p,.10,.31)*(1-ease(p,.60,.93));
+      const impact=p<0?0:ease(p,.42,.52)*(1-ease(p,.59,.73));
+      slot.phase=p<0?'idle':p<.10?'anticipate':p<.31?'approach':p<.43?'windup':p<.62?'strike':p<.93?'retreat':'recover';
       actor.position.copy(home);
       let yaw=direction*Math.PI/2;
       if(enemyTarget&&p>=0){
-        const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.hypot(dx,dz);
+        const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.max(.01,Math.hypot(dx,dz));
         yaw=Math.atan2(dx,dz);
-        const travel=susanoo?0:melee?Math.max(0,distance-1.15):.18;
-        actor.position.x+=dx/distance*travel*blend;actor.position.z+=dz/distance*travel*blend;
+        const travel=susanoo?0:melee?Math.max(0,distance-1.2):.16;
+        actor.position.x+=dx/distance*travel*advance;
+        actor.position.z+=dz/distance*travel*advance;
       }
       const hitAge=slot.hitAt===undefined?-1:effectClock-slot.hitAt;
-      if(hitAge>=0&&hitAge<380&&slot.hitFrom){
-        const recoil=new THREE.Vector3().subVectors(home,slot.hitFrom);recoil.y=0;recoil.normalize();
-        actor.position.addScaledVector(recoil,.2*Math.sin(Math.PI*hitAge/380));
+      if(hitAge>=0&&hitAge<420&&slot.hitFrom){
+        const recoil=new THREE.Vector3().subVectors(home,slot.hitFrom);recoil.y=0;
+        if(recoil.lengthSq()>.0001){
+          recoil.normalize();actor.position.addScaledVector(recoil,.26*Math.sin(Math.PI*hitAge/420));
+        }
       }
-      const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*tempo*14);
+      const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));
+      actor.rotation.y+=delta*Math.min(1,dt*tempo*10);
+      // Slight full-body response also works for the unrigged user GLBs.
+      actor.rotation.z=(p>=0?-.045*direction*impact:0)
+        +(hitAge>=0&&hitAge<420?-.035*direction*Math.sin(Math.PI*hitAge/420):0);
       if(motion)motion(suspended?0:dt*tempo,clock,p>=0,p,slot.technique);
       if(susanoo&&p>=0){
-        // The supplied Madara GLB has no skeleton. Keep its mesh intact;
-        // ground a controlled full-body brace while the spectral arm articulates.
         slot.fighter.rotation.z=0;
-        slot.fighter.rotation.x=-.07*Math.sin(Math.PI*p)+.08*THREE.MathUtils.smoothstep(p,.60,.72)*(1-THREE.MathUtils.smoothstep(p,.76,1));
+        slot.fighter.rotation.x=-.07*Math.sin(Math.PI*p)+.08*ease(p,.60,.72)*(1-ease(p,.76,1));
       }else if(slot.id==='madara')slot.fighter.rotation.x=0;
-      // Ground the actual animated model, excluding chakra and overhead HUD.
+      // Recompute footing after all rotations; shadows remain on the GIF grass.
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
