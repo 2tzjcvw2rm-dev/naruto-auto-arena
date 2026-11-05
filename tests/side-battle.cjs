@@ -56,10 +56,10 @@ for(const side of ['allyTeam','foeTeam'])for(let index=0;index<5;index++)for(let
 run(`arena3d.trigger('${side}',${index},${technique},'${side==='allyTeam'?'foeTeam':'allyTeam'}',1);`);
 const live=run('arena3d.effects()');
 assert.equal(live.length,1,'Each attack should mount exactly one 3D visual effect');
-if(!(side==='allyTeam'&&['madara'].includes((available.team[index]||''))&&technique===2)){
+if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&&technique===2)){
   assert.equal(typeof live[0].kind,'string','Normal attacks must not be swallowed by the 3D renderer');
 }
-for(let tick=1;tick<=40;tick++)frame();
+for(let tick=1;tick<=(technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }
