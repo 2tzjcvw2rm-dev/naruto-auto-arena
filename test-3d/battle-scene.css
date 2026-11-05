@@ -11,7 +11,7 @@
 
 /* Approved animated waterfall: behind the untouched 5v5 WebGL formation. */
 .arena.side-battle.three-active #battle3d{
-  background:#8abb6e url("./assets/waterfall-battle.gif?v=20261105-waterfall1") center 48% / cover no-repeat;
+  background:#8abb6e url("./assets/waterfall-battle.gif?v=20261105-waterfall2") center bottom / cover no-repeat;
 }
 .arena.side-battle.three-active #battle3d canvas{
   display:block;
@@ -25,4 +25,12 @@
 .arena.side-battle.three-active > .village,
 .arena.side-battle.three-active > .ground{
   display:none!important;
+}
+
+/* On portrait iPhones, raise the grass horizon behind fighter feet. */
+@media (max-width:550px) and (orientation:portrait){
+  .arena.side-battle.three-active #battle3d{
+    background-size:auto 130%;
+    background-position:center bottom;
+  }
 }
