@@ -34,3 +34,60 @@
     background-position:center bottom;
   }
 }
+
+
+/* User-controlled autobattle speed: not the purchasable ninja speed stat. */
+.battle-tempo{
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;
+  margin:8px auto 12px;padding:6px 8px;width:fit-content;max-width:100%;
+  color:#f1dec1;font-size:13px;font-weight:750;
+  background:#1a293a;border:1px solid #64788c;border-radius:13px;
+}
+.battle-tempo-options{display:flex;gap:5px}
+.battle-tempo-options button{
+  font-size:15px;font-weight:900;color:#e5e9f5;min-width:51px;
+  padding:7px 10px;line-height:1.25;min-height:36px;border-radius:9px;
+  background:#283e55;border:1px solid #7790a8;
+}
+.battle-tempo-options button.active,
+.battle-tempo-options button[aria-pressed="true"]{
+  background:#f4bc63;color:#172231;border-color:#ffe2a3;
+  box-shadow:0 0 0 1px #efc66b66;
+}
+.battle-tempo-options button:focus-visible{outline:3px solid #b8e8ff;outline-offset:2px}
+@media(max-width:385px){.battle-tempo{gap:5px;margin-top:6px}.battle-tempo-options button{min-width:46px;padding:6px 8px}}
+
+/* These durations track the same 1x/2x/3x value as game logic and WebGL. */
+.arena .mini-unit.jutsu-melee{animation-duration:var(--battle-jutsu-melee,.62s)!important}
+.arena .mini-unit.jutsu-cast{animation-duration:var(--battle-jutsu-cast,.66s)!important}
+.arena .mini-unit.jutsu-ultimate{animation-duration:var(--battle-jutsu-ultimate,.8s)!important}
+.arena .mini-unit.jutsu-heal{animation-duration:var(--battle-jutsu-heal,.85s)!important}
+.arena .mini-unit.jutsu-hurt{animation-duration:var(--battle-jutsu-hurt,.38s)!important}
+.arena .jutsu-fx{animation-duration:var(--battle-fx,.65s)!important}
+.arena .jutsu-fx.jutsu-area{animation-duration:var(--battle-fx-area,.85s)!important}
+.arena .jutsu-fx.jutsu-support{animation-duration:var(--battle-fx-support,.95s)!important}
+.arena .damage-pop{animation-duration:var(--battle-damage,.9s)!important}
+
+/* Freeze the low-frame-rate landscape and reveal just 9% of its old motion.
+   Every waterfall frame can still be seen subtly, but cliffs, grass and horizon
+   remain anchored. The CSS overlay is behind transparent 3D fighter canvas. */
+.arena.side-battle.three-active #battle3d.waterfall-calm{
+  background-image:var(--waterfall-still)!important;
+}
+.arena.side-battle.three-active #battle3d.waterfall-calm::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:url("./assets/waterfall-battle.gif?v=20261105-waterfall2");
+  background-position:center bottom;background-size:cover;background-repeat:no-repeat;
+  opacity:.09;
+}
+.arena.side-battle.three-active #battle3d.waterfall-calm canvas{
+  position:relative;z-index:1;background:transparent!important;
+}
+@media(max-width:550px) and (orientation:portrait){
+  .arena.side-battle.three-active #battle3d.waterfall-calm::before{
+    background-position:center bottom;background-size:auto 130%;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .arena.side-battle.three-active #battle3d.waterfall-calm::before{display:none}
+}
