@@ -57,10 +57,11 @@ const server=http.createServer((req,res)=>{
     await page.waitForTimeout(1600);
     const state=await page.evaluate(()=>{
       const x=arena3d.inspect(),canvas=document.querySelector('#battle3d canvas');
-      return {env:x.environment,slots:x.slots.length,canvas:!!canvas,webgl:!!canvas&&!!canvas.getContext('webgl'),size:x.size,positions:x.slots.map(p=>({side:p.side,home:p.home,position:p.position,yaw:p.yaw}))};
+      return {env:x.environment,slots:x.slots.length,canvas:!!canvas,webgl:!!canvas&&!!canvas.getContext('webgl'),size:x.size,rigs:x.slots.map(p=>({id:p.id,bones:p.rig?.bones||0,rigged:!!p.rig?.rigged})),positions:x.slots.map(p=>({side:p.side,home:p.home,position:p.position,yaw:p.yaw}))};
     });
     assert.equal(state.env.name,'konoha-training-overlook');
     assert.equal(state.slots,10);
+    console.log('WEBKIT JOINTS',JSON.stringify(state.rigs));
     assert(state.canvas,'WebGL canvas is missing');
     assert(state.size[0]>100&&state.size[1]>100,'Battle canvas has no dimensions');
     assert(state.positions.every(p=>p.position.every(Number.isFinite)&&p.home.every(Number.isFinite)),'Non-finite fighter position');
@@ -109,6 +110,10 @@ const server=http.createServer((req,res)=>{
     let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
     assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
     assert.equal(fx.effects[0].phase,'windup','Full skeleton must form before strike');
+    const cinema=await page.evaluate(()=>({state:BattleCinematics.inspect(),
+      title:document.querySelector('.arena-cinematic-heading')?.textContent}));
+    assert.equal(cinema.state?.id,'madara','Madara ultimate should activate cinematic title');
+    assert(cinema.title.includes('Сусаноо'),'Correct skill name should be visible in WebKit');
     assert.equal(await page.locator('.jutsu-fx').count(),0,'No emoji overlay for Susanoo');
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-forming-webkit.png'});
     await page.evaluate(()=>{paused=false;});await advance(400);await page.evaluate(()=>{paused=true;});
@@ -116,6 +121,7 @@ const server=http.createServer((req,res)=>{
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-strike-webkit.png'});
     await page.evaluate(()=>{paused=false;});await advance(2600);
     fx=await page.evaluate(()=>arena3d.inspect());assert.equal(fx.effects.length,0,'Effect must expire');
+    assert.equal(await page.evaluate(()=>BattleCinematics.inspect()),null,'Ultimate caption must expire with the effect');
     const baseline=fx.memory.geometries;
     for(let i=0;i<8;i++){await cast();await advance(2600);}
     fx=await page.evaluate(()=>arena3d.inspect());
