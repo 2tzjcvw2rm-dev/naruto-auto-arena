@@ -23,11 +23,17 @@ const server=http.createServer((req,res)=>{
     page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
     page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
     await page.goto('http://127.0.0.1:'+port+'/test-3d/',{waitUntil:'load',timeout:60000});
+    // A new save begins with one hero; form a five-hero QA team in memory only.
+    await page.evaluate(()=>{
+      s.team=['naruto','sasuke','sakura','kakashi','hinata'];
+      for(const id of s.team)s.formation[id]=s.formation[id]||'front';
+      initTeams();
+    });
     await page.waitForTimeout(6500);
     const diag=await page.evaluate(()=>{
       let inspection=null,inspectionError=null;
       try{inspection=typeof arena3d!=='undefined'&&arena3d?arena3d.inspect():null}catch(e){inspectionError=e.message}
-      return {three:typeof THREE,arena:typeof arena3d,unavailable:typeof arenaUnavailable!=='undefined'?arenaUnavailable:null,slots:inspection?.slots?.length,environment:inspection?.environment?.name,inspectionError,canvas:!!document.querySelector('#battle3d canvas'),team:typeof allies!=='undefined'?allies.length:null,foes:typeof foes!=='undefined'?foes.length:null};
+      return {three:typeof THREE,arena:typeof arena3d,unavailable:typeof arenaUnavailable!=='undefined'?arenaUnavailable:null,slots:inspection?.slots?.length,slotIds:inspection?.slots?.map(x=>x.id),cachedModels:typeof modelCache!=='undefined'?Object.keys(modelCache):[],environment:inspection?.environment?.name,inspectionError,canvas:!!document.querySelector('#battle3d canvas'),team:typeof allies!=='undefined'?allies.map(x=>x.id):null,foes:typeof foes!=='undefined'?foes.map(x=>x.id):null};
     });
     console.log('WEBKIT DIAG',JSON.stringify(diag),'PAGE ERRORS',JSON.stringify(errors));
     fs.mkdirSync('artifacts',{recursive:true});
