@@ -25,6 +25,10 @@ function initArena3d(){
   const shadowMap=new THREE.CanvasTexture(shadowCanvas),shadowGeometry=new THREE.PlaneGeometry(1.5,1.1);
   const shadowMaterial=new THREE.MeshBasicMaterial({map:shadowMap,transparent:true,depthWrite:false});
   let slots=[],width=0,height=0,last=0,clock=0,bindSerial=0;
+  // Waterfall GIF is a 2D backdrop. Its turf begins below the original
+  // 3D ground plane: shift VISUAL grounding only (no formation/camera change).
+  // Portrait needs more downward adjustment; landscape has less vertical space.
+  let visualGroundY=0;
   const bounds=new THREE.Box3(),projected=new THREE.Vector3();
   function formationPosition(side,units,index){
     const rowFor=(u,i)=>side==='allyTeam'?(s.formation[u.id]||'front'):(i<2?'front':i<4?'middle':'back');
@@ -52,7 +56,7 @@ function initArena3d(){
     for(const mesh of slot.bodyMeshes){if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));}
     return bounds;
   }
-  function slotPoint(slot,y){return screenPoint(new THREE.Vector3(slot.actor.position.x,y,slot.actor.position.z))}
+  function slotPoint(slot,y){return screenPoint(new THREE.Vector3(slot.actor.position.x,y+visualGroundY,slot.actor.position.z))}
   arena3d={
     trigger(side,index,technique,targetSide,targetIndex){
       const active=slots.find(x=>x.side===side&&x.index===index);
@@ -80,7 +84,7 @@ function initArena3d(){
       });
     },
     // Read-only diagnostics for responsive framing and animation verification.
-    inspect(){return {size:[width,height],environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})()}))}}
+    inspect(){return {size:[width,height],visualGroundY,environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})(),foot:screenPoint(new THREE.Vector3(a.actor.position.x,visualGroundY,a.actor.position.z))}))}}
   };
   function draw(time){
     requestAnimationFrame(draw);
@@ -91,6 +95,9 @@ function initArena3d(){
     environment.update(suspended?0:dt,clock/1000);
     const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;
     if(width!==rect.width||height!==rect.height){width=rect.width;height=rect.height;renderer.setSize(width,height);fit()}
+    // Preserve the exact x/z lanes, yaw, scale and camera. Only visually
+    // place the existing fighters and their contact shadows on the GIF grass.
+    visualGroundY=height>=width?-2.65:-1.1;
     for(const slot of slots){
       const {unit,actor,model,shadow,side,home,motion}=slot;
       actor.visible=!unit.classList.contains('down');shadow.visible=actor.visible;
@@ -112,8 +119,8 @@ function initArena3d(){
       const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*14);
       if(motion)motion(suspended?0:dt,clock,p>=0,p,slot.technique);
       // Ground the actual animated model, excluding chakra and overhead HUD.
-      actor.position.y=0;bodyBounds(slot);actor.position.y=-bounds.min.y;
-      shadow.position.set(actor.position.x,.012,actor.position.z);
+      actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
+      shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }
