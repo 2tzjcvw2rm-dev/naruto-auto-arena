@@ -58,15 +58,15 @@
 @media(max-width:385px){.battle-tempo{gap:5px;margin-top:6px}.battle-tempo-options button{min-width:46px;padding:6px 8px}}
 
 /* These durations track the same 1x/2x/3x value as game logic and WebGL. */
-.arena .mini-unit.jutsu-melee{animation-duration:calc(.62s / var(--battle-speed,1))!important}
-.arena .mini-unit.jutsu-cast{animation-duration:calc(.66s / var(--battle-speed,1))!important}
-.arena .mini-unit.jutsu-ultimate{animation-duration:calc(.8s / var(--battle-speed,1))!important}
-.arena .mini-unit.jutsu-heal{animation-duration:calc(.85s / var(--battle-speed,1))!important}
-.arena .mini-unit.jutsu-hurt{animation-duration:calc(.38s / var(--battle-speed,1))!important}
-.arena .jutsu-fx{animation-duration:calc(.65s / var(--battle-speed,1))!important}
-.arena .jutsu-fx.jutsu-area{animation-duration:calc(.85s / var(--battle-speed,1))!important}
-.arena .jutsu-fx.jutsu-support{animation-duration:calc(.95s / var(--battle-speed,1))!important}
-.arena .damage-pop{animation-duration:calc(.9s / var(--battle-speed,1))!important}
+.arena .mini-unit.jutsu-melee{animation-duration:var(--battle-jutsu-melee,.62s)!important}
+.arena .mini-unit.jutsu-cast{animation-duration:var(--battle-jutsu-cast,.66s)!important}
+.arena .mini-unit.jutsu-ultimate{animation-duration:var(--battle-jutsu-ultimate,.8s)!important}
+.arena .mini-unit.jutsu-heal{animation-duration:var(--battle-jutsu-heal,.85s)!important}
+.arena .mini-unit.jutsu-hurt{animation-duration:var(--battle-jutsu-hurt,.38s)!important}
+.arena .jutsu-fx{animation-duration:var(--battle-fx,.65s)!important}
+.arena .jutsu-fx.jutsu-area{animation-duration:var(--battle-fx-area,.85s)!important}
+.arena .jutsu-fx.jutsu-support{animation-duration:var(--battle-fx-support,.95s)!important}
+.arena .damage-pop{animation-duration:var(--battle-damage,.9s)!important}
 
 /* Freeze the low-frame-rate landscape and reveal just 9% of its old motion.
    Every waterfall frame can still be seen subtly, but cliffs, grass and horizon
