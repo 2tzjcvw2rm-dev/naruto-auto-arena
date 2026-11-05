@@ -676,11 +676,13 @@ function makeHeroMotion(id,figure){
     if(mixer)mixer.update(Math.max(0,Math.min(dt,.08)));
     if(featured){
       const t=progress>=0?Math.max(0,Math.min(1,progress)):0;
-      const punch=progress>=0?Math.pow(Math.sin(Math.PI*t),2):0;
+      const smooth=(v,a,b)=>{const n=Math.max(0,Math.min(1,(v-a)/(b-a)));return n*n*(3-2*n)};
+      const pulse=Math.pow(Math.sin(Math.PI*t),2);
+      const punch=progress<0?0:id==='naruto'&&technique===1?0:technique===2?smooth(t,.14,.34)*(1-smooth(t,.73,.96))*.95:pulse;
       for(const m of morphMeshes){
         m.morphTargetInfluences[1]=punch;
         if(id==='naruto'&&m.morphTargetInfluences.length>=4){
-          const join=.5+.5*Math.sin(time*.0038);
+          const join=progress>=0&&technique===1?.97:.5+.5*Math.sin(time*.0038);
           m.morphTargetInfluences[0]=0;
           m.morphTargetInfluences[2]=(1-punch)*(1-join);
           m.morphTargetInfluences[3]=(1-punch)*join;
