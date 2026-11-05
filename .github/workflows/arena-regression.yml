@@ -24,4 +24,6 @@ jobs:
           node --check test-3d/battle-scene.js
           node --check tests/side-battle.cjs
       - name: Check fighters, formations and techniques
-        run: node tests/side-battle.cjs
+        run: |
+          node tests/side-battle.cjs
+          node tests/susanoo.cjs
