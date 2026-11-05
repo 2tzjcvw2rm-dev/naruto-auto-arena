@@ -4,11 +4,13 @@ on:
     branches:
       - main
       - feature/madara-susanoo-20261105
+      - feature/madara-profile-susanoo-20261105
       - feature/konoha-animated-battle-20261105
       - feature/waterfall-gif-5v5-20261105
     paths:
       - 'test-3d/**'
       - 'tests/side-battle.cjs'
+      - 'tests/madara-profile.cjs'
       - 'index.html'
       - '.github/workflows/arena-regression.yml'
   workflow_dispatch:
@@ -22,8 +24,11 @@ jobs:
         run: |
           node --check test-3d/battle-environment.js
           node --check test-3d/battle-scene.js
+          node --check test-3d/madara-profile.js
+          node --check tests/madara-profile.cjs
           node --check tests/side-battle.cjs
       - name: Check fighters, formations and techniques
         run: |
           node tests/side-battle.cjs
           node tests/susanoo.cjs
+          node tests/madara-profile.cjs
