@@ -1,3 +1,91 @@
+/* Skeletal Susanoo: world-space geometry, bounded lifetime, no model mutation. */
+function createMadaraSusanoo(THREE,scene,slot,target){
+  const root=new THREE.Group();root.name='madara-skeletal-susanoo';scene.add(root);
+  const resources=new Set(),materials=[];
+  const material=(color,opacity)=>{const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});m.userData.alpha=opacity;materials.push(m);resources.add(m);return m};
+  const bone=material(0x9864ff,.58),core=material(0xe3b6ff,.8),veil=material(0x7128db,.09),red=material(0xff285f,.7);
+  const parts=[];
+  const mesh=(geo,mat,parent=root)=>{resources.add(geo);const m=new THREE.Mesh(geo,mat);parent.add(m);return m};
+  const tube=(points,radius,mat,parent=root)=>mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),20,radius,6,false),mat,parent);
+  const reveal=(object,start)=>{parts.push({object,start});return object};
+  // Front is local +Z, matching each actor's yaw. Open ribs keep Madara visible.
+  const spine=reveal(new THREE.Group(),.12);root.add(spine);
+  tube([[0,.42,-.36],[0,1.3,-.56],[0,2.35,-.53],[0,3.45,-.33]],.09,core,spine);
+  const jointGeo=new THREE.IcosahedronGeometry(.13,1);resources.add(jointGeo);
+  for(let i=0;i<10;i++){const v=mesh(jointGeo,bone,spine);v.position.set(0,.64+i*.28,-.51);v.scale.set(1.35,.65,1)}
+  for(let i=0;i<6;i++){
+    const pair=reveal(new THREE.Group(),.16+i*.035);root.add(pair);
+    const y=1.02+i*.31,w=.62+Math.sin(i/5*Math.PI)*.26;
+    for(const sign of [-1,1]){
+      const path=[[0,y+.1,-.5],[sign*w*.8,y+.18,-.35],[sign*w,y,.18],[sign*w*.76,y-.16,.58],[sign*.17,y-.19,.69]];
+      tube(path,.065,bone,pair);tube(path,.024,core,pair);
+    }
+  }
+  tube([[0,1,.67],[0,1.6,.72],[0,2.4,.62],[0,2.78,.35]],.07,core);
+  const shoulders=reveal(new THREE.Group(),.34);root.add(shoulders);
+  for(const sign of [-1,1]){
+    tube([[0,2.95,-.4],[sign*.55,3.03,-.3],[sign*1.02,2.85,0]],.11,bone,shoulders);
+    const cap=mesh(new THREE.IcosahedronGeometry(.29,1),bone,shoulders);cap.position.set(sign*1.03,2.86,0);
+  }
+  // Articulated humerus / forearm / five knuckles; one side punches, the other guards.
+  const cylinder=new THREE.CylinderGeometry(1,1,1,7);resources.add(cylinder);
+  function limb(a,b,r,parent){const m=mesh(cylinder,bone,parent);setLimb(m,a,b,r);return m}
+  const up=new THREE.Vector3(0,1,0);
+  function setLimb(m,a,b,r){m.position.copy(a).add(b).multiplyScalar(.5);const d=b.clone().sub(a);m.scale.set(r,d.length(),r);m.quaternion.setFromUnitVectors(up,d.normalize())}
+  const arms=[];
+  for(const sign of [-1,1]){
+    const group=reveal(new THREE.Group(),.39);root.add(group);
+    const shoulder=new THREE.Vector3(sign*1.03,2.85,0),elbow=new THREE.Vector3(sign*1.3,2.13,.12),hand=new THREE.Vector3(sign*.95,1.83,.66);
+    const upper=limb(shoulder,elbow,.12,group),fore=limb(elbow,hand,.15,group);
+    const fist=mesh(new THREE.IcosahedronGeometry(.25,1),core,group);fist.scale.set(1,1.1,1.35);
+    for(let k=0;k<4;k++){const knuckle=mesh(jointGeo,bone,fist);knuckle.scale.set(.6,1,1.2);knuckle.position.set((k-1.5)*.12,.03,.2)}
+    arms.push({sign,shoulder,elbow,hand,upper,fore,fist,group});
+  }
+  const shell=mesh(new THREE.SphereGeometry(1,12,10),veil);shell.position.y=1.8;shell.scale.set(.98,1.68,.83);
+  const aura=mesh(new THREE.SphereGeometry(1,12,8),red);aura.position.y=.86;aura.scale.set(.34,.83,.28);
+  // Eyes sit in front of the source head, inside the aura, not on a screen overlay.
+  const eyes=new THREE.Group();root.add(eyes);
+  for(const x of [-.065,.065]){const e=mesh(new THREE.SphereGeometry(.025,6,4),red,eyes);e.position.set(x,1.48,.18)}
+  const count=72,positions=new Float32Array(count*3),particleGeo=new THREE.BufferGeometry();particleGeo.setAttribute('position',new THREE.BufferAttribute(positions,3));resources.add(particleGeo);
+  const particleMat=new THREE.PointsMaterial({color:0xbb87ff,size:.055,transparent:true,opacity:.8,depthWrite:false,blending:THREE.AdditiveBlending});resources.add(particleMat);
+  const particles=new THREE.Points(particleGeo,particleMat);root.add(particles);
+  const boltGeo=new THREE.BufferGeometry(),boltPositions=new Float32Array(8*3*2);boltGeo.setAttribute('position',new THREE.BufferAttribute(boltPositions,3));resources.add(boltGeo);
+  const boltMat=new THREE.LineBasicMaterial({color:0xe4baff,transparent:true,opacity:.65,depthWrite:false});resources.add(boltMat);root.add(new THREE.LineSegments(boltGeo,boltMat));
+  const wave=new THREE.Group();scene.add(wave);
+  const ring=mesh(new THREE.TorusGeometry(1,.04,6,40),core,wave);ring.rotation.x=-Math.PI/2;
+  const burst=mesh(new THREE.SphereGeometry(1,12,8),veil,wave);burst.scale.set(1,.45,1);
+  let disposed=false,phase='charge';
+  const smooth=(x,a,b)=>THREE.MathUtils.smoothstep(x,a,b),aim=new THREE.Vector3(),end=new THREE.Vector3(),elbow=new THREE.Vector3();
+  return {
+    update(ms,ground){
+      if(disposed)return false;
+      const p=ms/2300;if(p>=1){this.dispose();return false}
+      phase=p<.16?'charge':p<.48?'forming':p<.62?'windup':p<.76?'strike':'dissolve';
+      root.position.set(slot.actor.position.x,ground,slot.actor.position.z);root.quaternion.copy(slot.actor.quaternion);root.updateMatrixWorld(true);
+      const fade=smooth(p,0,.12)*(1-smooth(p,.79,1)),pulse=1+.035*Math.sin(ms*.016);
+      for(const m of materials)m.opacity=m.userData.alpha*fade*(m===bone?pulse:1);
+      for(const item of parts){const amount=smooth(p,item.start,item.start+.12);item.object.visible=amount>0;item.object.scale.setScalar(Math.max(.001,amount))}
+      aura.scale.set(.34*pulse,.83,.28*pulse);red.opacity*=1-smooth(p,.45,.7)*.65;
+      const wind=smooth(p,.46,.59)*(1-smooth(p,.62,.7)),strike=smooth(p,.60,.73)*(1-smooth(p,.78,.96));
+      aim.set(target?target.actor.position.x:slot.actor.position.x+2,ground+1.05,target?target.actor.position.z:slot.actor.position.z);root.worldToLocal(aim);
+      for(const a of arms){
+        end.copy(a.hand);elbow.copy(a.elbow);
+        if(a.sign===1){end.z-=wind*.9;end.y+=wind*.65;end.lerp(aim,strike);elbow.lerp(a.shoulder.clone().lerp(end,.53).add(new THREE.Vector3(.32,.12,0)),strike);}
+        else {end.y+=smooth(p,.38,.52)*.55;end.z+=.2;}
+        setLimb(a.upper,a.shoulder,elbow,.12);setLimb(a.fore,elbow,end,.15);a.fist.position.copy(end);a.fist.rotation.x=-wind*.7+strike*1.3;
+      }
+      for(let i=0;i<count;i++){const t=i*2.39996+ms*.0016,r=.55+(i%7)/12;positions[i*3]=Math.cos(t)*r;positions[i*3+1]=((i/count*3.5+ms*.0012)%3.5);positions[i*3+2]=Math.sin(t)*r*.8}
+      particleGeo.attributes.position.needsUpdate=true;particleMat.opacity=fade*.75;
+      for(let i=0;i<16;i++){const t=i*.9+Math.floor(ms/90)*.8;boltPositions[i*3]=Math.cos(t)*(.8+(i%2)*.16);boltPositions[i*3+1]=.7+(i/16)*2.3;boltPositions[i*3+2]=Math.sin(t)*.65}
+      boltGeo.attributes.position.needsUpdate=true;boltMat.opacity=fade*(.3+.25*Math.sin(ms*.09));
+      const impact=smooth(p,.71,.94);wave.visible=p>=.71;wave.position.set(target?target.actor.position.x:root.position.x,ground+.12,target?target.actor.position.z:root.position.z);wave.scale.setScalar(.12+impact*1.4);
+      return true;
+    },
+    inspect(){return {phase,disposed,objects:root.children.length,height:3.65}},
+    dispose(){if(disposed)return;disposed=true;scene.remove(root,wave);for(const r of resources)r.dispose();resources.clear()}
+  };
+}
+
 /* Shared battlefield only. Profiles, GLBs and saved combat state stay independent. */
 function initArena3d(){
   if(arena3d)return;
@@ -60,12 +148,17 @@ function initArena3d(){
   arena3d={
     trigger(side,index,technique,targetSide,targetIndex){
       const active=slots.find(x=>x.side===side&&x.index===index);
-      if(active){active.attackAt=clock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);}
+      if(active){
+        active.effect?.dispose();active.effect=null;
+        active.attackAt=clock;active.technique=technique;active.target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
+        if(active.id==='madara'&&technique===2){active.effect=createMadaraSusanoo(THREE,scene,active,active.target);return true}
+      }
+      return false;
     },
     point(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);return slot?slotPoint(slot,1):null},
     bind(){
       const currentBind=++bindSerial;
-      for(const slot of slots){slot.motion?.dispose?.();scene.remove(slot.actor,slot.shadow)}
+      for(const slot of slots){slot.effect?.dispose();slot.motion?.dispose?.();scene.remove(slot.actor,slot.shadow)}
       slots=[];
       for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]])units.forEach((u,i)=>{
         const unit=el(side+i);if(!unit||!upgradedFighters.has(u.id))return;
@@ -79,12 +172,12 @@ function initArena3d(){
           const shadow=new THREE.Mesh(shadowGeometry,shadowMaterial);shadow.rotation.x=-Math.PI/2;shadow.position.copy(home);shadow.position.y=.012;scene.add(shadow);
           const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
           const posedMeshes=bodyMeshes.map(mesh=>mesh.parent?mesh:model.getObjectByName(mesh.name)).filter(Boolean);
-          slots.push({unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null});unit.classList.add('has-model');
+          slots.push({id:u.id,unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,attackAt:null,technique:0,target:null});unit.classList.add('has-model');
         });
       });
     },
     // Read-only diagnostics for responsive framing and animation verification.
-    inspect(){return {size:[width,height],visualGroundY,environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})(),foot:screenPoint(new THREE.Vector3(a.actor.position.x,visualGroundY,a.actor.position.z))}))}}
+    inspect(){return {size:[width,height],effects:slots.filter(a=>a.effect).map(a=>a.effect.inspect()),memory:{...renderer.info?.memory},visualGroundY,environment:environment.inspect(),slots:slots.map(a=>({id:(a.side==='allyTeam'?allies:foes)[a.index].id,side:a.side,position:a.actor.position.toArray(),home:a.home.toArray(),yaw:a.actor.rotation.y,visible:a.actor.visible,box:(()=>{bodyBounds(a);const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(screenPoint(new THREE.Vector3(x,y,z)));return {min:bounds.min.toArray(),max:bounds.max.toArray(),corners}})(),foot:screenPoint(new THREE.Vector3(a.actor.position.x,visualGroundY,a.actor.position.z))}))}}
   };
   function draw(time){
     requestAnimationFrame(draw);
@@ -101,8 +194,10 @@ function initArena3d(){
     for(const slot of slots){
       const {unit,actor,model,shadow,side,home,motion}=slot;
       actor.visible=!unit.classList.contains('down');shadow.visible=actor.visible;
-      if(!actor.visible)continue;
-      const elapsed=slot.attackAt===null?-1:clock-slot.attackAt,p=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
+      if(!actor.visible){slot.effect?.dispose();slot.effect=null;continue}
+      const susanoo=slot.id==='madara'&&slot.technique===2;
+      const duration=susanoo?2300:1400;
+      const elapsed=slot.attackAt===null?-1:clock-slot.attackAt,p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
       const direction=side==='allyTeam'?1:-1;
       const target=slot.target,enemyTarget=target&&target.side!==side;
       const kind=(jutsuVisuals[(side==='allyTeam'?allies:foes)[slot.index].id]||jutsuVisuals.naruto)[slot.technique][0];
@@ -113,14 +208,21 @@ function initArena3d(){
       if(enemyTarget&&p>=0){
         const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.hypot(dx,dz);
         yaw=Math.atan2(dx,dz);
-        const travel=melee?Math.max(0,distance-1.15):.18;
+        const travel=susanoo?0:melee?Math.max(0,distance-1.15):.18;
         actor.position.x+=dx/distance*travel*blend;actor.position.z+=dz/distance*travel*blend;
       }
       const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*14);
       if(motion)motion(suspended?0:dt,clock,p>=0,p,slot.technique);
+      if(susanoo&&p>=0){
+        // The supplied Madara GLB has no skeleton. Keep its mesh intact;
+        // ground a controlled full-body brace while the spectral arm articulates.
+        slot.fighter.rotation.z=0;
+        slot.fighter.rotation.x=-.07*Math.sin(Math.PI*p)+.08*THREE.MathUtils.smoothstep(p,.60,.72)*(1-THREE.MathUtils.smoothstep(p,.76,1));
+      }else if(slot.id==='madara')slot.fighter.rotation.x=0;
       // Ground the actual animated model, excluding chakra and overhead HUD.
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
+      if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }
