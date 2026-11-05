@@ -4,15 +4,21 @@ function initArena3d(){
   if(!window.THREE){arenaUnavailable=true;bindBattleImages();return}
   const host=el('battle3d');
   let renderer;
-  try{renderer=new THREE.WebGLRenderer({alpha:false,antialias:true,powerPreference:'low-power'})}
+  try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'})}
   catch(error){arenaUnavailable=true;bindBattleImages();return}
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  // The approved waterfall GIF is the battle backdrop; keep WebGL translucent.
+  if(renderer.setClearColor)renderer.setClearColor(0x000000,0);
   renderer.outputEncoding=THREE.sRGBEncoding;
   host.appendChild(renderer.domElement);host.parentElement.classList.add('three-active','side-battle');
   const scene=new THREE.Scene();
   const camera=new THREE.PerspectiveCamera(32,1,.1,100);
   // Environmental decoration is deliberately independent of camera/formation logic.
   const environment=createKonohaOverlook(scene);
+  // Retain lighting and diagnostics, but hide the old 3D landscape geometry.
+  // This must happen before fighters, shadows and jutsu effects are mounted.
+  scene.children.forEach(node=>{if(!node.isLight)node.visible=false});
+  scene.background=null;scene.fog=null;
   const shadowCanvas=document.createElement('canvas');shadowCanvas.width=shadowCanvas.height=64;
   const ctx=shadowCanvas.getContext('2d'),gradient=ctx.createRadialGradient(32,32,2,32,32,32);
   gradient.addColorStop(0,'rgba(22,30,27,.48)');gradient.addColorStop(1,'rgba(22,30,27,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,64,64);
