@@ -92,6 +92,9 @@ const server=http.createServer((req,res)=>{
     assert.equal(errors.length,0,'Susanoo page errors: '+errors.join('; '));
     console.log('PASS: automatic Susanoo, mobile WebKit formation/strike screenshots, 9 casts, geometry cleanup and rebind.');
     // Profile visual smoke: Susanoo must appear immediately without casting.
+    // Earlier battle tests intentionally freeze Playwright's clock; resume it
+    // so renderProfile's asynchronous GLB mount can run.
+    await page.clock.resume();
     await page.evaluate(()=>openCharacter('madara'));
     await page.waitForFunction(
       ()=>!!document.querySelector('#hero3d[data-susanoo="active"] canvas'),
