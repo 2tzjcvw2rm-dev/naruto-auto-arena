@@ -6,6 +6,16 @@ context.window=context;context.self=context;context.document={hidden:false,query
 vm.createContext(context);const run=s=>vm.runInContext(s,context);const load=p=>run(fs.readFileSync(p,'utf8'));
 load('test-3d/vendor/three.min.js');load('test-3d/vendor/GLTFLoader.js');
 const html=fs.readFileSync(process.env.NARUTO_TEST_PAGE||'test-3d/index.html','utf8');
+const rosterStart=html.indexOf('const fullRoster='),rosterEnd=html.indexOf('function ninjaSVG(',rosterStart);
+assert(rosterStart>=0&&rosterEnd>rosterStart,'Active roster definitions missing');
+run(html.slice(rosterStart,rosterEnd));
+const available=JSON.parse(run('JSON.stringify({team:roster.map(x=>x.id),foes:enemies.map(x=>x.id),archived:[...unavailableFighters]})'));
+assert.deepEqual(available.team,['naruto','sasuke','sakura','kakashi','hinata','madara','obito']);
+assert.deepEqual(available.foes,['itachi','pain','konan','madara','obito']);
+assert.deepEqual(available.archived,['shikamaru','gaara','kisame','deidara']);
+assert.equal(new Set(available.foes).size,5);
+assert(html.includes("const previousTeam="),'Unavailable old team slots must be migrated');
+
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
 load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
@@ -30,7 +40,7 @@ for(const name of names){const g=await parse(name);context.loadedModel=g.scene;r
 run(html.slice(html.indexOf('function instantiateHero('),html.indexOf('function fetchHeroModel(')));
 run(`fetchHeroModel=(key,cb)=>cb(instantiateHero(sourceModels[key]));
 for(const id of ['naruto','sasuke','sakura','kakashi','hinata','itachi','pain','kisame','deidara','konan','madara','obito','gaara','shikamaru']){remoteHeroModels[id]=id+'.glb';upgradedFighters.add(id)}
-allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['itachi','pain','kisame','deidara','konan'].map(id=>({id}));`);
+allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['itachi','pain','konan','madara','obito'].map(id=>({id}));`);
 load('test-3d/battle-environment.js');
 load('test-3d/battle-scene.js');
 let count=0,time=1000;const frame=()=>{time+=45;run(`nextFrame(${time})`)};
@@ -48,7 +58,7 @@ const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`
 }
 count++;
 }}
-run(`allies=['madara','obito','gaara','shikamaru','naruto'].map(id=>({id}));allies.forEach((u,i)=>s.formation[u.id]=['front','middle','middle','back','back'][i]);arena3d.bind();nextFrame(${time+=45})`);
+run(`allies=['madara','obito','sakura','sasuke','naruto'].map(id=>({id}));allies.forEach((u,i)=>s.formation[u.id]=['front','middle','middle','back','back'][i]);arena3d.bind();nextFrame(${time+=45})`);
 assert.equal(run('arena3d.inspect().slots.length'),10);
-console.log('PASS: 14 original models, 5 viewport sizes, 3 formations, three techniques and return-to-slot; no profiles or save data edited. GPU appearance still requires visual verification.');
+console.log('PASS: 10 active fighters, 4 archived fighters, 5 enemies, 14 retained GLBs, responsive formation, techniques and grounding; save data unchanged. GPU appearance still requires visual verification.');
 })().catch(e=>{console.error(e);process.exit(1)});
