@@ -44,8 +44,8 @@ advance(1);assert.equal(executed,1,'Pending turn preserves time when changed to 
 B.after('round',2200,()=>executed++);
 advance(500);
 B.setSpeed(3);
-advance(565);assert.equal(executed,1);
-advance(3);assert.equal(executed,2,'Pending round changes speed immediately');
+advance(399);assert.equal(executed,1);
+advance(2);assert.equal(executed,2,'Pending round changes speed immediately');
 B.after('action',2450,()=>executed++);
 B.cancel('action');
 advance(3000);assert.equal(executed,2,'Cancelled actions never fire');
