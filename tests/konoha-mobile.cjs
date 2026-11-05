@@ -20,6 +20,7 @@ const server=http.createServer((req,res)=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
     const page=await ctx.newPage(),errors=[];
+    await page.clock.install();
     page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
     page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
     await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load',timeout:60000});
@@ -57,6 +58,8 @@ const server=http.createServer((req,res)=>{
     console.log('PASS: WebKit iPhone-size battlefield; '+state.slots+' models; Konoha ambience; '+state.size.join('x')+'; no page errors.');
     // Exercise the production battleAction path, including automatic rage selection.
     await page.evaluate(()=>{clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;});
+    await page.clock.pauseAt(new Date(Date.now()+1000));
+    async function advance(ms){for(let left=ms;left>0;left-=100)await page.clock.fastForward(Math.min(100,left));}
     async function cast(){
       await page.evaluate(()=>{
         paused=false;
@@ -66,17 +69,19 @@ const server=http.createServer((req,res)=>{
       });
     }
     await cast();
-    await page.waitForFunction(()=>{if(arena3d.effects().some(e=>e.phase==='windup')){paused=true;return true}return false},null,{timeout:10000});
+    await advance(1200);await page.evaluate(()=>{paused=true;});
     let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
     assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
+    assert.equal(fx.effects[0].phase,'windup','Full skeleton must form before strike');
     assert.equal(await page.locator('.jutsu-fx').count(),0,'No emoji overlay for Susanoo');
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-forming-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>{if(arena3d.effects().some(e=>e.phase==='strike')){paused=true;return true}return false},null,{timeout:10000});
+    await page.evaluate(()=>{paused=false;});await advance(400);await page.evaluate(()=>{paused=true;});
+    assert.equal(await page.evaluate(()=>arena3d.effects()[0]?.phase),'strike');
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-strike-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.effects().length===0,null,{timeout:10000});
+    await page.evaluate(()=>{paused=false;});await advance(2600);
     fx=await page.evaluate(()=>arena3d.inspect());assert.equal(fx.effects.length,0,'Effect must expire');
     const baseline=fx.memory.geometries;
-    for(let i=0;i<8;i++){await cast();await page.waitForFunction(()=>arena3d.effects().length===0,null,{timeout:10000});}
+    for(let i=0;i<8;i++){await cast();await advance(2600);}
     fx=await page.evaluate(()=>arena3d.inspect());
     assert.equal(fx.effects.length,0,'Repeated effects must expire');
     assert(fx.memory.geometries<=baseline+1,'Geometry leak: '+JSON.stringify({baseline,after:fx.memory}));
