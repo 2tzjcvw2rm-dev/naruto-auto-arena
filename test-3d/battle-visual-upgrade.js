@@ -3,7 +3,116 @@
  * Timed entirely by the battle clock so manual 1x/2x/3x affects every phase. */
 (function(){
 'use strict';
+
+/* Itachi-only 3D battle choreography. This module is battle-clock driven,
+   keeps the GLB unmodified and owns/disposes its effect geometries. */
+function createItachiBattleFX(THREE,scene,slot,target,technique){
+  const root=new THREE.Group();root.name=technique===1?'itachi-fireball':'itachi-crows';scene.add(root);
+  const resources=new Set(),flames=[],birds=[];
+  function mat(color,opacity=1,additive=true){
+    const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,
+      blending:additive?THREE.AdditiveBlending:THREE.NormalBlending,side:THREE.DoubleSide});
+    resources.add(m);return m;
+  }
+  function add(geometry,material,parent=root){
+    resources.add(geometry);const m=new THREE.Mesh(geometry,material);parent.add(m);return m;
+  }
+  const hot=mat(0xff6a14,.92),white=mat(0xffef91,.92),black=mat(0x17121e,.98,false);
+  const purple=mat(0x9d43dd,.77),shade=mat(0x402049,.9,false);
+  const smooth=(v,a,b)=>THREE.MathUtils.smoothstep(v,a,b);
+  const origin=new THREE.Vector3(),destination=new THREE.Vector3();
+  let orb=null,core=null;
+  if(technique===1){
+    orb=add(new THREE.SphereGeometry(.37,18,12),hot);
+    core=add(new THREE.SphereGeometry(.25,12,10),white);
+    for(let i=0;i<16;i++)flames.push(add(new THREE.ConeGeometry(.12,.53,6),i%4?hot:white));
+  }else{
+    const wing=new THREE.BufferGeometry();
+    wing.setAttribute('position',new THREE.Float32BufferAttribute([
+      0,0,0,-.21,.10,-.10,-.52,.025,-.34,
+      0,0,0,-.52,.025,-.34,-.15,-.08,-.18],3));
+    wing.computeVertexNormals();resources.add(wing);
+    for(let i=0;i<12;i++){
+      const bird=new THREE.Group();root.add(bird);
+      const body=add(new THREE.SphereGeometry(.12,8,6),black,bird);body.scale.set(.7,.55,1.55);
+      const left=new THREE.Group(),right=new THREE.Group();
+      left.position.x=-.055;right.position.x=.055;right.scale.x=-1;
+      bird.add(left,right);
+      add(wing,shade,left);add(wing,shade,right);
+      birds.push({bird,left,right});
+    }
+    for(let i=0;i<12;i++)flames.push(add(new THREE.ConeGeometry(.1,.43,6),i%3===0?purple:black));
+  }
+  const ring=add(new THREE.TorusGeometry(1,.055,6,38),technique===1?hot:purple);
+  ring.rotation.x=-Math.PI/2;
+  const blast=add(new THREE.SphereGeometry(.35,12,8),technique===1?white:purple);
+  let disposed=false,elapsedMs=0,phase='charge';
+  return {
+    update(ms,ground){
+      if(disposed)return false;
+      elapsedMs=ms;const p=Math.max(0,ms/1400);
+      if(p>=1){this.dispose();return false;}
+      phase=p<.28?'charge':p<.53?'release':p<.77?'impact':'fade';
+      origin.set(slot.actor.position.x,ground+1.38,slot.actor.position.z);
+      destination.set(target.actor.position.x,ground+1.12,target.actor.position.z);
+      const toward=destination.clone().sub(origin);toward.y=0;
+      if(toward.lengthSq()>.0001)origin.addScaledVector(toward.normalize(),.37);
+      const hit=smooth(p,.52,.68)*(1-smooth(p,.82,1));
+      ring.visible=hit>.015;ring.position.set(destination.x,ground+.12,destination.z);
+      ring.scale.setScalar(.03+hit*(technique===1?1.2:1.5));
+      blast.visible=hit>.015;blast.position.copy(destination);
+      blast.scale.setScalar(.02+hit*(technique===1?2.2:1.6));
+      if(technique===1){
+        const power=smooth(p,.06,.25)*(1-smooth(p,.62,.79));
+        const pos=origin.clone().lerp(destination,smooth(p,.33,.62));
+        const swell=(.26+.28*power)*(1+.09*Math.sin(ms*.035));
+        orb.position.copy(pos);core.position.copy(pos);
+        orb.scale.setScalar(swell/.37);core.scale.setScalar(swell/.29);
+        orb.visible=core.visible=power>.02;
+        for(let i=0;i<flames.length;i++){
+          const f=flames[i],angle=i*2.39996+ms*.014;
+          f.position.set(pos.x+Math.cos(angle)*swell*.75,
+            pos.y+Math.sin(angle)*swell*.75,pos.z-.13-(i%4)*.09);
+          f.rotation.set(angle*.17,angle*.23,Math.cos(angle)*.32);
+          f.scale.setScalar((.55+power*.7)*(1+.13*Math.sin(angle)));
+          f.visible=power>.02;
+        }
+      }else{
+        const flight=smooth(p,.21,.72),fade=smooth(p,.1,.25)*(1-smooth(p,.84,1));
+        const face=Math.atan2(destination.x-origin.x,destination.z-origin.z);
+        for(let i=0;i<birds.length;i++){
+          const o=birds[i],a=i*2.39996+ms*.007;
+          o.bird.position.copy(origin).lerp(destination,flight);
+          o.bird.position.x+=Math.cos(a)*(.2+.48*(1-flight));
+          o.bird.position.y+=Math.sin(a*1.3)*(.14+(i%4)*.075);
+          o.bird.position.z+=Math.sin(a)*(.2+.36*(1-flight));
+          o.bird.rotation.set(Math.sin(a)*.19,face+Math.sin(a)*.24,Math.cos(a)*.18);
+          o.bird.scale.setScalar((.85+(i%4)*.11)*fade);
+          o.bird.visible=fade>.02;
+          const flap=Math.sin(ms*.038+i*.82)*.76;
+          o.left.rotation.z=flap;o.right.rotation.z=flap;
+        }
+        for(let i=0;i<flames.length;i++){
+          const f=flames[i],a=i*2.39996;
+          f.position.set(destination.x+Math.cos(a)*(.16+(i%4)*.1),
+            ground+.27+Math.abs(Math.sin(ms*.013+i))*.16,
+            destination.z+Math.sin(a)*(.16+(i%4)*.1));
+          f.rotation.z=.26*Math.sin(ms*.012+i);
+          f.scale.setScalar(.01+hit*(.95+.2*Math.sin(i+ms*.012)));
+          f.visible=hit>.015;
+        }
+      }
+      return true;
+    },
+    inspect(){return {kind:technique===1?'itachi-fireball':'itachi-crows',
+      technique,phase,elapsedMs,disposed,objects:root.children.length};},
+    dispose(){if(disposed)return;disposed=true;scene.remove(root);
+      for(const resource of resources)resource.dispose();resources.clear();}
+  };
+}
 window.createArenaTechniqueFX=function(THREE,scene,slot,target,technique,kind,color){
+  if(slot.id==='itachi'&&(technique===1||technique===2))
+    return createItachiBattleFX(THREE,scene,slot,target,technique);
   const root=new THREE.Group();root.name='jutsu-'+slot.id+'-'+technique;scene.add(root);
   const resources=new Set(),mats=[];
   const mat=(c,alpha=1)=>{

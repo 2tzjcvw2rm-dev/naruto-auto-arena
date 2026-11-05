@@ -14,6 +14,7 @@ function group(name){
     if(tokens.includes('r')||/^r(arm|forearm|hand|leg|foot|thigh|calf)/.test(n))side='right';
     if(tokens.includes('l')||/^l(arm|forearm|hand|leg|foot|thigh|calf)/.test(n))side='left';
   }
+  if(/head/.test(n))return 'head';
   if(!side)return null;
   let limb=null;
   if(/forearm|lowerarm|elbow/.test(n))limb='forearm';
@@ -21,6 +22,7 @@ function group(name){
   else if(/upperleg|upleg|thigh/.test(n))limb='thigh';
   else if(/lowerleg|calf|shin|leg/.test(n)&&!/finger|twist|foot|toe|end/.test(n))limb='calf';
   else if(/foot|ankle/.test(n)&&!/toe/.test(n))limb='foot';
+  else if(/hand|wrist/.test(n)&&!/finger|thumb/.test(n))limb='hand';
   return limb?side+'-'+limb:null;
 }
 const specs={
@@ -60,6 +62,16 @@ window.BattlePose={
           fore=name.endsWith('-forearm'),thigh=name.endsWith('-thigh'),
           calf=name.endsWith('-calf'),foot=name.endsWith('-foot');
         const sign=right?1:-1;
+        if(id==='itachi'&&!idle&&(technique===1||technique===2)){
+          const seal=technique===1?ease(p,.06,.22)*(1-ease(p,.39,.58)):0;
+          const sweep=technique===2?ease(p,.09,.25)*(1-ease(p,.51,.78)):0;
+          if(name==='head'){bone.rotation.x+=.21*seal-.045*sweep;continue;}
+          if(arm){bone.rotation.x-=.70*seal+(right?.91:.23)*sweep;
+            bone.rotation.z+=sign*(.43*seal+.18*sweep);continue;}
+          if(fore){bone.rotation.x-=sign*.72*seal+(right?.40:.08)*sweep;
+            bone.rotation.z+=sign*.33*seal;continue;}
+          if(name.endsWith('-hand')){bone.rotation.z-=sign*.21*seal;continue;}
+        }
         if(arm){
           const thrust=technique===0?punch*.75:technique===1?brace*.36:wave*.88;
           // Lightning users thrust right; Hinata and Pain use both hands.
