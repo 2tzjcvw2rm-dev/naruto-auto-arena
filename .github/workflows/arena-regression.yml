@@ -1,0 +1,25 @@
+name: 3D arena regression
+on:
+  push:
+    branches:
+      - main
+      - feature/konoha-animated-battle-20261105
+    paths:
+      - 'test-3d/**'
+      - 'tests/side-battle.cjs'
+      - 'index.html'
+      - '.github/workflows/arena-regression.yml'
+  workflow_dispatch:
+jobs:
+  side-view-battle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript syntax
+        run: |
+          node --check test-3d/battle-environment.js
+          node --check test-3d/battle-scene.js
+          node --check tests/side-battle.cjs
+      - name: Check fighters, formations and techniques
+        run: node tests/side-battle.cjs
