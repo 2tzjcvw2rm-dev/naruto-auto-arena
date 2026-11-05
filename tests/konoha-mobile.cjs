@@ -28,6 +28,19 @@ const server=http.createServer((req,res)=>{
     await page.evaluate(()=>{s.team=['naruto','sasuke','sakura','kakashi','hinata'];s.formationSlots=[...s.team];ensureFormation();});
     await page.locator('#startButton').click();
     await page.waitForTimeout(6500);
+    // Check actual on-screen controls, not just a detached speed variable.
+    for(const value of [2,3,1]){
+      const button=page.locator('#battleSpeedControls [data-battle-speed="'+value+'"]');
+      await button.click();
+      assert.equal(await page.evaluate(()=>BattleTempo.speed),value,'Manual '+value+'x button must change game speed');
+      assert.equal(await button.getAttribute('aria-pressed'),'true','Selected speed button must be highlighted');
+    }
+    // GIF's nine-frame full-screen shaking must be replaced by a stable
+    // painted frame with only a very faint moving waterfall overlay.
+    await page.waitForFunction(
+      ()=>document.getElementById('battle3d')?.classList.contains('waterfall-calm'),
+      null,{timeout:12000});
+    assert.equal(await page.evaluate(()=>document.getElementById('battle3d')?.dataset.backgroundMotion),'subtle');
     const diag=await page.evaluate(()=>{
       let inspection=null,inspectionError=null;
       try{inspection=typeof arena3d!=='undefined'&&arena3d?arena3d.inspect():null}catch(e){inspectionError=e.message}
