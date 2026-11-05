@@ -1,0 +1,45 @@
+/* Cinematic 3D ultimate overlay: visual-only, cannot intercept touches. */
+.arena .arena-cinematic{
+  pointer-events:none;position:absolute;inset:0;overflow:hidden;
+  z-index:16;display:none;isolation:isolate;opacity:0;
+}
+.arena .arena-cinematic.active{display:block}
+.arena-cinematic-veil{
+  position:absolute;inset:0;background:
+    radial-gradient(ellipse at center,#070f2705 15%,#020819e0 98%),
+    linear-gradient(120deg,#0a1526cc,#11101bb0 50%,#0a1526b8);
+  opacity:0;will-change:opacity;
+}
+.arena-cinematic-flash{
+  position:absolute;inset:-35%;opacity:0;
+  background:radial-gradient(circle at center,var(--cinema-accent,#9fcfff) 0%,transparent 59%);
+  mix-blend-mode:screen;will-change:opacity,transform;
+}
+.arena-cinematic-banner{
+  position:absolute;left:5%;top:12%;max-width:90%;
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  filter:drop-shadow(0 3px 12px #000b);
+  will-change:transform,opacity;
+}
+.arena-cinematic-tag{
+  padding:2px 8px;border-radius:3px;
+  font:700 clamp(9px,2.8vw,13px)/1.3 system-ui,sans-serif;
+  letter-spacing:.12em;color:#fafcff;background:#0b1624b8;
+  border-left:3px solid var(--cinema-accent,#9fcfff);
+}
+.arena-cinematic-heading{
+  color:#fff9ec;font:900 clamp(13px,4vw,25px)/1.25 system-ui,sans-serif;
+  text-shadow:0 2px 0 #0d2130,0 0 16px var(--cinema-accent,#9fcfff);
+  overflow-wrap:break-word;
+}
+.arena-cinematic-rule{
+  height:3px;width:80%;max-width:245px;
+  transform-origin:left center;background:var(--cinema-accent,#9fcfff);
+  border-radius:3px;box-shadow:0 0 13px var(--cinema-accent,#9fcfff);
+}
+@media (max-width:420px){
+  .arena-cinematic-banner{top:9%;left:6%;right:5%}
+}
+@media(prefers-reduced-motion:reduce){
+  .arena-cinematic-flash{display:none}
+}
