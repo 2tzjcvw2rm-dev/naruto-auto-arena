@@ -32,6 +32,10 @@ const server=http.createServer((req,res)=>{
       return {three:typeof THREE,arena:typeof arena3d,unavailable:typeof arenaUnavailable!=='undefined'?arenaUnavailable:null,slots:inspection?.slots?.length,slotIds:inspection?.slots?.map(x=>x.id),cachedModels:typeof modelCache!=='undefined'?Object.keys(modelCache):[],environment:inspection?.environment?.name,inspectionError,canvas:!!document.querySelector('#battle3d canvas'),team:typeof allies!=='undefined'?allies.map(x=>x.id):null,foes:typeof foes!=='undefined'?foes.map(x=>x.id):null};
     });
     console.log('WEBKIT DIAG',JSON.stringify(diag),'PAGE ERRORS',JSON.stringify(errors));
+    assert.deepEqual(diag.foes,['itachi','pain','konan','madara','obito'],'Active enemy lineup must be five supported GLBs');
+    assert.equal(diag.foes.length,5,'Autobattle must retain five opponents');
+    assert(!diag.team.some(id=>['shikamaru','gaara','kisame','deidara'].includes(id)),'Unavailable fighters cannot appear in a saved team');
+
     fs.mkdirSync('artifacts',{recursive:true});
     await page.locator('.arena').screenshot({path:'artifacts/konoha-iphone-debug.png'});
     await page.waitForFunction(()=>typeof arena3d!=='undefined'&&arena3d&&arena3d.inspect().slots.length===10,null,{timeout:20000});
