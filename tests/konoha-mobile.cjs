@@ -81,6 +81,29 @@ const server=http.createServer((req,res)=>{
         battleAction(madara,foes,allies);
       });
     }
+    // Exercise the real combat handler, not an isolated simulation:
+    // each fighter's own first and second turns charge the THIRD-turn ultimate.
+    const naturalCycle=await page.evaluate(()=>{
+      const madara=foes.find(u=>u.id==='madara');
+      madara.rage=0;
+      allies.forEach(u=>{u.curHp=u.maxHp=100000;});
+      const values=[];
+      for(let n=0;n<3;n++){
+        battleAction(madara,foes,allies);
+        values.push({rage:madara.rage,caption:document.getElementById('battleFeed').textContent,
+          susanoo:arena3d.effects().length});
+      }
+      document.querySelectorAll('.jutsu-fx').forEach(node=>node.remove());
+      return values;
+    });
+    assert.deepEqual(naturalCycle.map(x=>x.rage),[50,100,0],
+      'Madara charges 50%, then 100%, then auto-casts and resets on the third action');
+    assert(naturalCycle[0].caption.includes('АТАКА'));
+    assert(naturalCycle[1].caption.includes('ТЕХНИКА'));
+    assert(naturalCycle[2].caption.includes('УЛЬТА')&&naturalCycle[2].caption.includes('Сусаноо'));
+    assert.equal(naturalCycle[2].susanoo,1,'Third turn must create the 3D Susanoo');
+    console.log('PASS: real Madara third-turn ultimate with 0/50/100% cycle in mobile WebKit.');
+    // Continue existing Susanoo frame-by-frame rendering and disposal checks.
     await cast();
     await advance(1200);await page.evaluate(()=>{paused=true;});
     let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
