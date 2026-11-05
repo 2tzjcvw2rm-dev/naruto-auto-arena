@@ -66,29 +66,24 @@ const server=http.createServer((req,res)=>{
       });
     }
     await cast();
-    for(let i=0;i<12;i++){
-      await page.waitForTimeout(150);
-      const probe=await page.evaluate(()=>({effects:arena3d.inspect().effects,paused,hidden:document.hidden}));console.log('FX TICK',JSON.stringify(probe));
-      if(probe.effects.some(e=>e.phase==='windup'||e.phase==='strike'))break;
-    }
-    await page.evaluate(()=>{paused=true;});
+    await page.waitForFunction(()=>{if(arena3d.effects().some(e=>e.phase==='windup')){paused=true;return true}return false},null,{timeout:10000});
     let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
     assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
     assert.equal(await page.locator('.jutsu-fx').count(),0,'No emoji overlay for Susanoo');
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-forming-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.inspect().effects.some(e=>e.phase==='strike'),null,{timeout:10000});await page.evaluate(()=>{paused=true;});
+    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>{if(arena3d.effects().some(e=>e.phase==='strike')){paused=true;return true}return false},null,{timeout:10000});
     await page.locator('.arena').screenshot({path:'artifacts/susanoo-strike-webkit.png'});
-    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.inspect().effects.length===0,null,{timeout:10000});
+    await page.evaluate(()=>{paused=false;});await page.waitForFunction(()=>arena3d.effects().length===0,null,{timeout:10000});
     fx=await page.evaluate(()=>arena3d.inspect());assert.equal(fx.effects.length,0,'Effect must expire');
     const baseline=fx.memory.geometries;
-    for(let i=0;i<8;i++){await cast();await page.waitForFunction(()=>arena3d.inspect().effects.length===0,null,{timeout:10000});}
+    for(let i=0;i<8;i++){await cast();await page.waitForFunction(()=>arena3d.effects().length===0,null,{timeout:10000});}
     fx=await page.evaluate(()=>arena3d.inspect());
     assert.equal(fx.effects.length,0,'Repeated effects must expire');
     assert(fx.memory.geometries<=baseline+1,'Geometry leak: '+JSON.stringify({baseline,after:fx.memory}));
     const madara=fx.slots.find(u=>u.id==='madara');
     assert(Math.abs(madara.position[0]-madara.home[0])<.001&&Math.abs(madara.position[2]-madara.home[2])<.001,'Madara must return home');
     await cast();await page.evaluate(()=>arena3d.bind());await page.waitForTimeout(500);
-    assert.equal(await page.evaluate(()=>arena3d.inspect().effects.length),0,'Rebinding must dispose effects');
+    assert.equal(await page.evaluate(()=>arena3d.effects().length),0,'Rebinding must dispose effects');
     assert.equal(errors.length,0,'Susanoo page errors: '+errors.join('; '));
     console.log('PASS: automatic Susanoo, mobile WebKit formation/strike screenshots, 9 casts, geometry cleanup and rebind.');
     await ctx.close();

@@ -43,7 +43,8 @@ function createMadaraSusanoo(THREE,scene,slot,target){
     arms.push({sign,shoulder,elbow,hand,upper,fore,fist,group});
   }
   const shell=mesh(new THREE.SphereGeometry(1,12,10),veil);shell.position.y=1.8;shell.scale.set(.98,1.68,.83);
-  const aura=mesh(new THREE.SphereGeometry(1,12,8),red);aura.position.y=.86;aura.scale.set(.34,.83,.28);
+  const auraMat=material(0x9c276e,.10);auraMat.blending=THREE.NormalBlending;
+  const aura=mesh(new THREE.SphereGeometry(1,12,8),auraMat);aura.position.y=.86;aura.scale.set(.34,.83,.28);
   // Eyes sit in front of the source head, inside the aura, not on a screen overlay.
   const eyes=new THREE.Group();root.add(eyes);
   for(const x of [-.065,.065]){const e=mesh(new THREE.SphereGeometry(.025,6,4),red,eyes);e.position.set(x,1.48,.18)}
@@ -160,6 +161,7 @@ function initArena3d(){
       }
       return false;
     },
+    effects(){return slots.filter(a=>a.effect).map(a=>a.effect.inspect())},
     point(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);return slot?slotPoint(slot,1):null},
     bind(){
       const currentBind=++bindSerial;
