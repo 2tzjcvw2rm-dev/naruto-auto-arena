@@ -32,6 +32,7 @@ jobs:
           node --check test-3d/battle-pose.js
           node --check test-3d/battle-cinematics.js
           node --check test-3d/battle-visual-upgrade.js
+          node --check test-3d/battle-ultimate-fx.js
           node --check tests/battle-cinematics.cjs
           node --check test-3d/madara-profile.js
           node --check test-3d/battle-speed.js
