@@ -434,7 +434,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-waterfall1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./battle-scene.js?v=20261105-groundfix1" defer></script>
+<script src="./battle-scene.js?v=20261105-susanoo1" defer></script>
 </head>
 <body>
 <header>
@@ -1059,7 +1059,7 @@ function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTa
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
-if(arena3d&&arena3d.trigger)arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex);
+if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex))return;
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
 const sourcePoint=arena3d?.point?.(side,sourceIndex),targetPoint=arena3d?.point?.(targetSide,targetIndex);
 const sx=sourcePoint?.x??(from.left+from.width/2-box.left),sy=sourcePoint?.y??(from.top+from.height*.43-box.top);

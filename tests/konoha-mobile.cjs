@@ -20,11 +20,13 @@ const server=http.createServer((req,res)=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
     const page=await ctx.newPage(),errors=[];
+    await page.clock.install();
     page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
     page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
-    await page.goto('http://127.0.0.1:'+port+'/test-3d/',{waitUntil:'load',timeout:60000});
+    await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load',timeout:60000});
     // Use the game's own 5v5 demo to dismiss the welcome overlay and start combat.
-    await page.locator('#pairDemo').click();
+    await page.evaluate(()=>{s.team=['naruto','sasuke','sakura','kakashi','hinata'];s.formationSlots=[...s.team];ensureFormation();});
+    await page.locator('#startButton').click();
     await page.waitForTimeout(6500);
     const diag=await page.evaluate(()=>{
       let inspection=null,inspectionError=null;
@@ -54,6 +56,41 @@ const server=http.createServer((req,res)=>{
     fs.mkdirSync('artifacts',{recursive:true});
     await page.locator('.arena').screenshot({path:'artifacts/konoha-iphone-webkit.png'});
     console.log('PASS: WebKit iPhone-size battlefield; '+state.slots+' models; Konoha ambience; '+state.size.join('x')+'; no page errors.');
+    // Exercise the production battleAction path, including automatic rage selection.
+    await page.evaluate(()=>{clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;});
+    await page.clock.pauseAt(new Date(Date.now()+1000));
+    async function advance(ms){for(let left=ms;left>0;left-=100)await page.clock.fastForward(Math.min(100,left));}
+    async function cast(){
+      await page.evaluate(()=>{
+        paused=false;
+        const madara=foes.find(u=>u.id==='madara');madara.rage=100;
+        allies.forEach(u=>{u.curHp=u.maxHp=100000;});
+        battleAction(madara,foes,allies);
+      });
+    }
+    await cast();
+    await advance(1200);await page.evaluate(()=>{paused=true;});
+    let fx=await page.evaluate(()=>arena3d.inspect());console.log('SUSANOO',JSON.stringify(fx.effects));
+    assert.equal(fx.effects.length,1,'Automatic Madara ultimate must create a 3D effect');
+    assert.equal(fx.effects[0].phase,'windup','Full skeleton must form before strike');
+    assert.equal(await page.locator('.jutsu-fx').count(),0,'No emoji overlay for Susanoo');
+    await page.locator('.arena').screenshot({path:'artifacts/susanoo-forming-webkit.png'});
+    await page.evaluate(()=>{paused=false;});await advance(400);await page.evaluate(()=>{paused=true;});
+    assert.equal(await page.evaluate(()=>arena3d.effects()[0]?.phase),'strike');
+    await page.locator('.arena').screenshot({path:'artifacts/susanoo-strike-webkit.png'});
+    await page.evaluate(()=>{paused=false;});await advance(2600);
+    fx=await page.evaluate(()=>arena3d.inspect());assert.equal(fx.effects.length,0,'Effect must expire');
+    const baseline=fx.memory.geometries;
+    for(let i=0;i<8;i++){await cast();await advance(2600);}
+    fx=await page.evaluate(()=>arena3d.inspect());
+    assert.equal(fx.effects.length,0,'Repeated effects must expire');
+    assert(fx.memory.geometries<=baseline+1,'Geometry leak: '+JSON.stringify({baseline,after:fx.memory}));
+    const madara=fx.slots.find(u=>u.id==='madara');
+    assert(Math.abs(madara.position[0]-madara.home[0])<.001&&Math.abs(madara.position[2]-madara.home[2])<.001,'Madara must return home');
+    await cast();await page.evaluate(()=>arena3d.bind());await page.waitForTimeout(500);
+    assert.equal(await page.evaluate(()=>arena3d.effects().length),0,'Rebinding must dispose effects');
+    assert.equal(errors.length,0,'Susanoo page errors: '+errors.join('; '));
+    console.log('PASS: automatic Susanoo, mobile WebKit formation/strike screenshots, 9 casts, geometry cleanup and rebind.');
     await ctx.close();
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
