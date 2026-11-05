@@ -20,9 +20,19 @@ const server=http.createServer((req,res)=>{
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
     const page=await ctx.newPage(),errors=[];
-    page.on('pageerror',error=>errors.push(error.message));
+    page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
+    page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
     await page.goto('http://127.0.0.1:'+port+'/test-3d/',{waitUntil:'load',timeout:60000});
-    await page.waitForFunction(()=>typeof arena3d!=='undefined'&&arena3d&&arena3d.inspect().slots.length===10,{timeout:60000});
+    await page.waitForTimeout(6500);
+    const diag=await page.evaluate(()=>{
+      let inspection=null,inspectionError=null;
+      try{inspection=typeof arena3d!=='undefined'&&arena3d?arena3d.inspect():null}catch(e){inspectionError=e.message}
+      return {three:typeof THREE,arena:typeof arena3d,unavailable:typeof arenaUnavailable!=='undefined'?arenaUnavailable:null,slots:inspection?.slots?.length,environment:inspection?.environment?.name,inspectionError,canvas:!!document.querySelector('#battle3d canvas'),team:typeof allies!=='undefined'?allies.length:null,foes:typeof foes!=='undefined'?foes.length:null};
+    });
+    console.log('WEBKIT DIAG',JSON.stringify(diag),'PAGE ERRORS',JSON.stringify(errors));
+    fs.mkdirSync('artifacts',{recursive:true});
+    await page.locator('.arena').screenshot({path:'artifacts/konoha-iphone-debug.png'});
+    await page.waitForFunction(()=>typeof arena3d!=='undefined'&&arena3d&&arena3d.inspect().slots.length===10,null,{timeout:20000});
     await page.waitForTimeout(1600);
     const state=await page.evaluate(()=>{
       const x=arena3d.inspect(),canvas=document.querySelector('#battle3d canvas');
