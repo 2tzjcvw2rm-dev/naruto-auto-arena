@@ -5,7 +5,7 @@ const context={console,TextDecoder,TextEncoder,ArrayBuffer,Uint8Array,Float32Arr
 context.window=context;context.self=context;context.document={hidden:false,querySelector:()=>null,createElement:()=>({getContext:()=>({createRadialGradient:()=>({addColorStop(){}}),fillRect(){}})})};
 vm.createContext(context);const run=s=>vm.runInContext(s,context);const load=p=>run(fs.readFileSync(p,'utf8'));
 load('test-3d/vendor/three.min.js');load('test-3d/vendor/GLTFLoader.js');
-const html=fs.readFileSync('test-3d/index.html','utf8');
+const html=fs.readFileSync(process.env.NARUTO_TEST_PAGE||'test-3d/index.html','utf8');
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
 load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));

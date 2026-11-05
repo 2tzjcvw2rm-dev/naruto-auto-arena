@@ -416,7 +416,9 @@ button:active{transform:translateY(2px)}
 @media(max-width:370px){#profileContent .profile-stage-v3 .gear-float{width:65px;min-height:67px;padding:3px 1px}#profileContent .profile-stage-v3 .gear-float small{font-size:9px}#profileContent .profile-stage-v3{height:clamp(338px,53vh,420px)}}
 #hero3d[data-hero="madara"]{background:radial-gradient(circle at 50% 26%,#9b3b6040,transparent 35%),radial-gradient(ellipse at 50% 85%,#53375888,transparent 65%),linear-gradient(180deg,#171b29 0%,#2c1e34 68%,#1b1e2b 100%)!important}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
-</style></head>
+</style><link rel="stylesheet" href="./test-3d/battle-scene.css?v=20261105-side2">
+<script src="./test-3d/battle-scene.js?v=20261105-side2" defer></script>
+</head>
 <body>
 <header>
 <h1>🍥 Naruto Auto Arena</h1>
@@ -727,81 +729,6 @@ function makeHeroMotion(id,figure){
     }
   };
 }
-function initArena3d(){
-  if(arena3d)return;
-  if(!window.THREE){arenaUnavailable=true;bindBattleImages();return}
-  const host=el('battle3d');
-  let renderer;
-  try{renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'})}
-  catch(error){arenaUnavailable=true;bindBattleImages();return}
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
-  renderer.outputEncoding=THREE.sRGBEncoding;
-  renderer.setClearColor(0,0);renderer.autoClear=false;
-  host.appendChild(renderer.domElement);host.parentElement.classList.add('three-active');
-  const scene=new THREE.Scene();
-  scene.add(new THREE.HemisphereLight(0xfff7ed,0xc6d3ea,1.1));
-  const light=new THREE.DirectionalLight(0xffffff,.8);light.position.set(-2,4,5);scene.add(light);
-  const camera=new THREE.OrthographicCamera(-1,1,.57,-.57,.01,20);camera.position.z=4;
-  let slots=[],width=0,height=0,last=0,bindSerial=0;
-  arena3d={trigger(side,index,technique){
-    const active=slots.find(x=>x.side===side&&x.index===index);
-    if(active){active.attackAt=performance.now();active.technique=technique}
-  },bind(){
-    const currentBind=++bindSerial;
-    for(const slot of slots)slot.motion?.dispose?.();
-    slots=[];
-    for(const [side,units] of [['allyTeam',allies],['foeTeam',foes]]){
-      units.forEach((u,i)=>{
-        if(!upgradedFighters.has(u.id))return;
-        const unit=el(side+i),sprite=unit.querySelector('svg');
-        const combat=['itachi','kakashi','hinata'].includes(u.id);
-        fetchHeroModel(combat?CombatProfile.modelKey(u.id,remoteHeroModels):u.id,model=>{
-          if(currentBind!==bindSerial||!unit.isConnected)return;
-          if(!model){showBattleImage(unit,u.id,side);return}
-          const fighter=normalizedFighter(model);if(!fighter){showBattleImage(unit,u.id,side);return}
-          const actor=new THREE.Group();actor.add(fighter);
-          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
-          slots.push({unit,sprite,fighter:actor,side,index:i,motion,attackAt:0,technique:0});unit.classList.add('has-model');
-        });
-      });
-    }
-  }};
-  function draw(time){
-    requestAnimationFrame(draw);
-    if(document.hidden||document.querySelector('.modal.open')||time-last<45)return;
-    const dt=last?Math.min(.08,(time-last)/1000):.045;
-    last=time;
-    const rect=host.getBoundingClientRect();
-    if(!rect.width||!rect.height)return;
-    if(width!==rect.width||height!==rect.height){
-      width=rect.width;height=rect.height;renderer.setSize(width,height);
-    }
-    renderer.setScissorTest(false);renderer.setViewport(0,0,width,height);renderer.clear();
-    for(const slot of slots){
-      const {unit,sprite,fighter,side,motion}=slot;
-      if(unit.classList.contains('down'))continue;
-      const r=sprite.getBoundingClientRect();if(!r.width||!r.height)continue;
-      const half=.57*r.width/r.height;camera.left=-half;camera.right=half;camera.updateProjectionMatrix();
-      const x=r.left-rect.left,y=rect.bottom-r.bottom;
-      renderer.setViewport(x,y,r.width,r.height);
-      renderer.setScissor(x,y,r.width,r.height);renderer.setScissorTest(true);renderer.clearDepth();
-      const elapsed=slot.attackAt?time-slot.attackAt:-1;
-      const attackProgress=elapsed>=0&&elapsed<1400?elapsed/1400:-1;
-      const attacking=attackProgress>=0;
-      if(motion)motion(dt,time,attacking,attackProgress,slot.technique);
-      const strike=attacking?Math.pow(Math.sin(Math.PI*attackProgress),2):0;
-      const direction=side==='allyTeam'?1:-1;
-      fighter.rotation.y=direction*(.29+.06*Math.sin(time/850)-.16*strike);
-      fighter.rotation.z=-direction*.13*strike;
-      fighter.rotation.x=-.12*strike;
-      fighter.position.x=direction*.14*strike;
-      fighter.position.y=.012*Math.sin(time/440)+.11*strike;
-      fighter.position.z=.07*strike;
-      scene.add(fighter);renderer.render(scene,camera);scene.remove(fighter);
-    }
-  }
-  arena3d.bind();requestAnimationFrame(draw);
-}
 function openModelPreview(){el('modelModal').classList.add('open');el('modelFrameHolder').innerHTML='<iframe class="model-frame" title="3D Naruto by ronildo.facanha" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen src="https://sketchfab.com/models/db14fc3de5b34b738e49ec3cdb83770a/embed?autostart=1&ui_infos=0"></iframe>'}
 function closeModelPreview(){el('modelModal').classList.remove('open');el('modelFrameHolder').innerHTML=''}
 
@@ -1067,10 +994,11 @@ function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTa
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
-if(arena3d&&arena3d.trigger)arena3d.trigger(side,sourceIndex,action);
+if(arena3d&&arena3d.trigger)arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex);
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
-const sx=from.left+from.width/2-box.left,sy=from.top+from.height*.43-box.top;
-const tx=to.left+to.width/2-box.left,ty=to.top+to.height*.4-box.top;
+const sourcePoint=arena3d?.point?.(side,sourceIndex),targetPoint=arena3d?.point?.(targetSide,targetIndex);
+const sx=sourcePoint?.x??(from.left+from.width/2-box.left),sy=sourcePoint?.y??(from.top+from.height*.43-box.top);
+const tx=targetPoint?.x??(to.left+to.width/2-box.left),ty=targetPoint?.y??(to.top+to.height*.4-box.top);
 const cls=kind==='melee'?'jutsu-melee':kind==='heal'||kind==='support'?'jutsu-heal':action===2?'jutsu-ultimate':'jutsu-cast';
 source.style.setProperty('--strike',side==='allyTeam'?'22px':'-22px');
 source.style.setProperty('--chakra',color);
@@ -1541,7 +1469,7 @@ paused=!paused;if(paused){clearTimeout(actionTimer);clearTimeout(timer);roundInP
 log(paused?'⏸ Бой на паузе':'⚔️ Бой продолжается');
 }
 if(testBuild)el('pairDemo').hidden=false;
-document.addEventListener('DOMContentLoaded',initArena3d);
+document.addEventListener('DOMContentLoaded',()=>initArena3d());
 document.addEventListener('DOMContentLoaded',()=>{
   const hero=new URLSearchParams(location.search).get('pose');
   if(hero && upgradedFighters.has(hero) && (CombatProfile.has(hero)||hero==='sasuke'||hero==='obito')) openCharacter(hero);
