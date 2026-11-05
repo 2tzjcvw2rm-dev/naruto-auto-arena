@@ -54,6 +54,7 @@ for(const rows of [['front','middle','middle','back','back'],['front','front','m
 context.dimensions={width:w,height:h};context.rows=rows;
 run(`viewport=dimensions;allies.forEach((u,i)=>s.formation[u.id]=rows[i]);if(!arena3d)initArena3d();else arena3d.bind();nextFrame(${time+=45});`);
 const state=run('arena3d.inspect()');assert.equal(state.slots.length,10);
+if(w===390&&h===440&&rows[0]==='front')console.log('RIG AUDIT',JSON.stringify(state.slots.map(a=>({id:a.id,bones:a.rig?.bones||0,rigged:!!a.rig?.rigged,joints:a.rig?.joints?.slice(0,8)}))));
 assert.equal(state.environment.name,'konoha-training-overlook');assert.equal(state.environment.houses,36);assert.equal(state.environment.clouds,5);assert.equal(state.environment.leaves,24);assert.equal(state.environment.courtY,0);assert.equal(state.visualGroundY,h>=w?-2.65:-1.1);
 for(const slot of state.slots){assert(slot.position.every(Number.isFinite));assert(Math.abs(slot.box.min[1]-state.visualGroundY)<.001,slot.id+' feet '+JSON.stringify(slot.box));assert(slot.foot.y>=h*.42&&slot.foot.y<=h*.94,slot.id+' feet off viewport '+w+'x'+h+': '+JSON.stringify(slot.foot));for(const p of slot.box.corners)assert(p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h,slot.id+' outside '+w+'x'+h+': '+JSON.stringify(p));assert(Math.abs(slot.yaw-(slot.side==='allyTeam'?Math.PI/2:-Math.PI/2))<.001)}
 for(const side of ['allyTeam','foeTeam'])for(let index=0;index<5;index++)for(let technique=0;technique<3;technique++){
