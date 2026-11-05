@@ -192,8 +192,9 @@ function initArena3d(){
     const wallDt=last?Math.min(1,(time-last)/1000):.04;
     const dt=Math.min(.08,wallDt);last=time;
     const suspended=paused||!!document.querySelector('#profileModal.open,#teamModal.open,#bagModal.open');
-    if(!suspended){clock+=dt*1000;effectClock+=wallDt*1000;}
-    environment.update(suspended?0:dt,clock/1000);
+    const tempo=window.BattleTempo?.speed||1;
+    if(!suspended){clock+=dt*tempo*1000;effectClock+=wallDt*tempo*1000;}
+    environment.update(suspended?0:dt*tempo,clock/1000);
     const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;
     if(width!==rect.width||height!==rect.height){width=rect.width;height=rect.height;renderer.setSize(width,height);fit()}
     // Preserve the exact x/z lanes, yaw, scale and camera. Only visually
@@ -224,8 +225,8 @@ function initArena3d(){
         const recoil=new THREE.Vector3().subVectors(home,slot.hitFrom);recoil.y=0;recoil.normalize();
         actor.position.addScaledVector(recoil,.2*Math.sin(Math.PI*hitAge/380));
       }
-      const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*14);
-      if(motion)motion(suspended?0:dt,clock,p>=0,p,slot.technique);
+      const delta=Math.atan2(Math.sin(yaw-actor.rotation.y),Math.cos(yaw-actor.rotation.y));actor.rotation.y+=delta*Math.min(1,dt*tempo*14);
+      if(motion)motion(suspended?0:dt*tempo,clock,p>=0,p,slot.technique);
       if(susanoo&&p>=0){
         // The supplied Madara GLB has no skeleton. Keep its mesh intact;
         // ground a controlled full-body brace while the spectral arm articulates.
