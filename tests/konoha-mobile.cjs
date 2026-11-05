@@ -22,9 +22,10 @@ const server=http.createServer((req,res)=>{
     const page=await ctx.newPage(),errors=[];
     page.on('pageerror',error=>{errors.push(error.message);console.error('PAGE ERROR',error.message)});
     page.on('console',msg=>{if(msg.type()==='error')console.error('BROWSER CONSOLE:',msg.text())});
-    await page.goto('http://127.0.0.1:'+port+'/test-3d/',{waitUntil:'load',timeout:60000});
+    await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load',timeout:60000});
     // Use the game's own 5v5 demo to dismiss the welcome overlay and start combat.
-    await page.locator('#pairDemo').click();
+    await page.evaluate(()=>{s.team=['naruto','sasuke','sakura','kakashi','hinata'];s.formationSlots=[...s.team];ensureFormation();});
+    await page.locator('#startButton').click();
     await page.waitForTimeout(6500);
     const diag=await page.evaluate(()=>{
       let inspection=null,inspectionError=null;
