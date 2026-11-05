@@ -1,0 +1,10 @@
+/* All overrides are confined to the battlefield. */
+.arena.side-battle #allyTeam,.arena.side-battle #foeTeam{z-index:10!important}
+.arena.side-battle #allyTeam .mini-unit.has-model,.arena.side-battle #foeTeam .mini-unit.has-model{bottom:auto!important;height:auto!important;width:52px!important;max-width:52px!important;transform:translate(-50%,-100%)!important;animation:none!important;transition:none!important;filter:none!important;gap:0;pointer-events:none}
+.arena.side-battle .mini-unit.has-model svg,.arena.side-battle .mini-unit.has-model .unit-power{display:none!important}
+.arena.side-battle .mini-unit.has-model .unit-name{font-size:8px!important;background:#172c3caa;max-width:100%;padding:1px 2px}
+.arena.side-battle .mini-unit.has-model .unit-hp{height:4px!important;margin:2px auto 0!important;border:1px solid #193f2c}
+.arena.side-battle .mini-unit.has-model .rage-bar{height:3px!important;margin:1px auto 0!important;border:0!important}
+.arena.side-battle .mini-unit.down{opacity:0!important}
+.arena.side-battle #battle3d canvas{display:block;width:100%;height:100%}
+.arena.side-battle:after{z-index:9;background:radial-gradient(ellipse at center,transparent 65%,#25364422)}
