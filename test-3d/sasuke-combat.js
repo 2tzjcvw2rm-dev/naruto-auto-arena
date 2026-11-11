@@ -183,7 +183,7 @@ function create(scene,slot,target,technique){
     const a=V(Math.sin(t*8-ms*.005)*.24,Math.cos(t*6+ms*.004)*.28,-.26-i*.28);
     const prev=i===0?V(0,0,-.23):V(Math.sin((i)*8/14-ms*.005)*.24,Math.cos((i)*6/14+ms*.004)*.28,-.26-(i-1)*.28);
     b.segment.position.copy(a);b.body.scale.setScalar(r);
-    const localTo=b.segment.worldToLocal(b.segment.localToWorld(prev.clone()));
+    const localTo=prev.clone().sub(a);
     const delta=localTo.clone().sub(V(0,0,0));
     // Tube occupies the distance to the preceding body segment in segment-local space.
     connectCylinder(b.tube,V(0,0,0),delta,.10*r);
