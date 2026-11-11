@@ -1,5 +1,6 @@
 /* Skeletal Susanoo: world-space geometry, bounded lifetime, no model mutation. */
 function createItachiSusanoo(THREE,scene,slot,target){
+  const victims=slot.targets||[target];
   const root=new THREE.Group();root.name='itachi-red-susanoo';scene.add(root);
   const resources=new Set(),materials=[];
   const material=(color,opacity)=>{const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending});m.userData.alpha=opacity;materials.push(m);resources.add(m);return m};
@@ -63,6 +64,17 @@ function createItachiSusanoo(THREE,scene,slot,target){
   const wave=new THREE.Group();scene.add(wave);
   const ring=mesh(new THREE.TorusGeometry(1,.04,6,40),core,wave);ring.rotation.x=-Math.PI/2;
   const burst=mesh(new THREE.SphereGeometry(1,12,8),veil,wave);burst.scale.set(1,.45,1);
+  const dark=material(0x08050c,.98);dark.blending=THREE.NormalBlending;
+  const edge=material(0x951d52,.7);edge.blending=THREE.NormalBlending;
+  const flameGeo=new THREE.SphereGeometry(1,7,5);
+  const burns=victims.map(victim=>{
+    const group=new THREE.Group();scene.add(group);const tongues=[];
+    for(let i=0;i<11;i++){
+      const fringe=mesh(flameGeo,edge,group),tongue=mesh(flameGeo,dark,group);
+      tongues.push({fringe,tongue});
+    }
+    return {victim,group,tongues};
+  });
   let disposed=false,phase='charge',elapsedMs=0;
   const smooth=(x,a,b)=>THREE.MathUtils.smoothstep(x,a,b),aim=new THREE.Vector3(),end=new THREE.Vector3(),elbow=new THREE.Vector3();
   return {
@@ -91,10 +103,26 @@ function createItachiSusanoo(THREE,scene,slot,target){
       boltGeo.attributes.position.needsUpdate=true;boltMat.opacity=fade*(.3+.25*Math.sin(ms*.09));
       const impact=smooth(p,.71,.94);wave.visible=false;wave.position.copy(arms[1].fist.position);root.localToWorld(wave.position);
       wave.position.lerp(new THREE.Vector3(target?target.actor.position.x:root.position.x,ground+.12,target?target.actor.position.z:root.position.z),smooth(p,.71,.79));wave.scale.setScalar(.12+impact*1.4);
+      for(const burn of burns){
+        const {group,victim,tongues}=burn;
+        const flight=smooth(p,.62,.79),heat=smooth(p,.60,.68)*(1-smooth(p,.91,1));
+        group.visible=p>=.60&&p<1;
+        group.position.copy(arms[1].fist.position);root.localToWorld(group.position);
+        group.position.lerp(new THREE.Vector3(victim.actor.position.x,ground+.45,victim.actor.position.z),flight);
+        for(let i=0;i<tongues.length;i++){
+          const {tongue,fringe}=tongues[i],a=i*2.39996,r=.18+(i%3)*.13;
+          const height=(.36+(i%4)*.17)*(1+.19*Math.sin(ms*.022+i));
+          tongue.position.set(Math.cos(a)*r,Math.abs(Math.sin(ms*.015+i))*.18,Math.sin(a)*r);
+          tongue.scale.set(.10*heat,height*heat,.10*heat);
+          tongue.rotation.set(.2*Math.sin(ms*.012+i),0,.26*Math.cos(ms*.018+i));
+          fringe.position.copy(tongue.position);fringe.quaternion.copy(tongue.quaternion);
+          fringe.scale.copy(tongue.scale).multiplyScalar(1.22);
+        }
+      }
       return true;
     },
-    inspect(){return {kind:"itachi-susanoo",technique:2,phase,elapsedMs,disposed,objects:root.children.length,height:3.65}},
-    dispose(){if(disposed)return;disposed=true;scene.remove(root,wave);for(const r of resources)r.dispose();resources.clear()}
+    inspect(){return {kind:"itachi-susanoo-amaterasu",technique:2,phase,elapsedMs,disposed,objects:root.children.length,height:3.65}},
+    dispose(){if(disposed)return;disposed=true;scene.remove(root,wave);for(const burn of burns)scene.remove(burn.group);for(const r of resources)r.dispose();resources.clear()}
   };
 }
 

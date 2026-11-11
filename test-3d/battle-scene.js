@@ -159,6 +159,7 @@ function initArena3d(){
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
       active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
+      active.targets=active.id==='itachi'&&technique===2?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')):[target];
       const susanoo=active.id==='madara'&&technique===2;
       const duration=susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
       if(technique===2)window.BattleCinematics?.start({
