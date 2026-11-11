@@ -151,14 +151,14 @@ function initArena3d(){
   }
   function slotPoint(slot,y){return screenPoint(new THREE.Vector3(slot.actor.position.x,y+visualGroundY,slot.actor.position.z))}
   arena3d={
-    trigger(side,index,technique,targetSide,targetIndex){
+    trigger(side,index,technique,targetSide,targetIndex,onImpact){
       const active=slots.find(x=>x.side===side&&x.index===index);
       if(!active)return false;
       const target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
       if(!target)return false; // Keep original 2D fallback during GLB loading.
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
-      active.technique=technique;active.target=target;
+      active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=868;
       const susanoo=active.id==='madara'&&technique===2;
       const duration=susanoo?2300:1400;
       if(technique===2)window.BattleCinematics?.start({
@@ -168,7 +168,7 @@ function initArena3d(){
       active.effect=susanoo?createMadaraSusanoo(THREE,scene,active,target):
         (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null);
       if(target.side!==side){
-        target.hitAt=effectClock+(susanoo?1817:760);
+        target.hitAt=effectClock+(active.id==='itachi'?868:susanoo?1817:760);
         target.hitFrom=active.home.clone();
         // Battle HP updates immediately. Preserve a knocked-out model until
         // the impact reaches it, then honor the normal 'down' state.
@@ -222,7 +222,7 @@ function initArena3d(){
       const {unit,actor,shadow,side,home,motion}=slot;
       actor.visible=!unit.classList.contains('down')||effectClock<(slot.downGraceUntil||0);
       shadow.visible=actor.visible;
-      if(!actor.visible){slot.effect?.dispose();slot.effect=null;continue}
+      if(!actor.visible){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
       const duration=susanoo?2300:1400;
       const elapsed=slot.attackAt===null?-1:effectClock-slot.effectAt;
@@ -230,7 +230,7 @@ function initArena3d(){
       const direction=side==='allyTeam'?1:-1,target=slot.target;
       const enemyTarget=target&&target.side!==side;
       const kind=(jutsuVisuals[slot.id]||jutsuVisuals.naruto)[slot.technique][0];
-      const melee=enemyTarget&&(slot.technique===0||kind==='melee');
+      const melee=enemyTarget&&slot.id!=='itachi'&&(slot.technique===0||kind==='melee');
       // Distinct readable phases: anticipate, approach, plant, strike, retreat.
       const ease=(t,a,b)=>THREE.MathUtils.smoothstep(t,a,b);
       const advance=p<0?0:ease(p,.10,.31)*(1-ease(p,.60,.93));
@@ -267,6 +267,7 @@ function initArena3d(){
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
+      if(slot.onImpact&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }

@@ -62,8 +62,8 @@ window.BattlePose={
           fore=name.endsWith('-forearm'),thigh=name.endsWith('-thigh'),
           calf=name.endsWith('-calf'),foot=name.endsWith('-foot');
         const sign=right?1:-1;
-        if(id==='itachi'&&!idle&&(technique===1||technique===2)){
-          const seal=technique===1?ease(p,.06,.22)*(1-ease(p,.39,.58)):0;
+        if(id==='itachi'&&!idle&&(technique===0||technique===1||technique===2)){
+          const seal=technique!==2?ease(p,.06,.22)*(1-ease(p,.39,.58)):0;
           const sweep=technique===2?ease(p,.09,.25)*(1-ease(p,.51,.78)):0;
           if(name==='head'){bone.rotation.x+=.21*seal-.045*sweep;continue;}
           if(arm){bone.rotation.x-=.70*seal+(right?.91:.23)*sweep;

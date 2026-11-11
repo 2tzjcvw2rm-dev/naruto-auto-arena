@@ -434,7 +434,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./battle-cinematics.css?v=20261105-cinematic1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./battle-pose.js?v=20261106-itachi1" defer></script><script src="./battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./battle-visual-upgrade.js?v=20261106-itachi1" defer></script><script src="./battle-ultimate-fx.js?v=20261105-unique1" defer></script><script src="./battle-scene.js?v=20261105-ultimate-motion3" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
+<script src="./battle-pose.js?v=20261111-itachi2" defer></script><script src="./battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi2" defer></script><script src="./battle-ultimate-fx.js?v=20261105-unique1" defer></script><script src="./battle-scene.js?v=20261111-itachi2" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
 </head>
 <body>
 <header>
@@ -974,7 +974,7 @@ const skills={
 naruto:['Удар','Теневые клоны','Расенган'],sasuke:['Удар','Огненный шар','Чидори'],sakura:['Удар','Усиление команды','Великое исцеление'],
 kakashi:['Кунай','Копирующая техника','Райкири'],hinata:['Мягкий кулак','Восемь триграмм','Защитная ладонь'],
 shikamaru:['Удар','Теневая ловушка','Теневое связывание'],gaara:['Песчаный удар','Песчаный щит','Песчаная буря'],
-itachi:['Кунай','Огненная техника','Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
+itachi:['Katon — Огненный шар','Огненная техника','Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
 madara:['Удар Учиха','Огненный шар','Сусаноо'],
@@ -989,7 +989,7 @@ kakashi:[['melee','#d2d9de','🗡️'],['clones','#a9d4e5','🥷'],['lightning',
 hinata:[['melee','#b4a7ff','👊'],['orb','#aa8cff','☯️'],['heal','#8de8ff','🛡️']],
 shikamaru:[['melee','#b5d4a6','🗡️'],['shadow','#55576f','🌑'],['shadow','#8d83c2','🕸️']],
 gaara:[['sand','#d7ae6e','🏜️'],['support','#e5bf79','🛡️'],['sand','#f0b85d','🌪️']],
-itachi:[['melee','#dd7272','🗡️'],['fire','#f65d22','🔥'],['fire','#30263e','🖤']],
+itachi:[['fire','#f65d22',''],['fire','#f65d22','🔥'],['fire','#30263e','🖤']],
 pain:[['melee','#b6a1df','👊'],['orb','#9b78e6','🌀'],['orb','#d2a5ff','💥']],
 konan:[['melee','#eadbff','🗡️'],['paper','#f4efff','📄'],['paper','#cfaaff','🕊️']],
 kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
@@ -1059,11 +1059,12 @@ function showChidoriStrike(layer,sx,sy,tx,ty){
   flash.style.left=tx+'px';flash.style.top=ty+'px';layer.appendChild(flash);
   setTimeout(()=>flash.remove(),700/BattleTempo.speed);
 }
-function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget){
+function playJutsu(unit,side,sourceIndex,targetSide,targetIndex,action,supportTarget,onImpact){
 const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0],color=visual[1],icon=visual[2];
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
-if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex))return;
+if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex,onImpact))return;
+if(onImpact)BattleTempo.after('itachi-impact',868, onImpact);
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
 const sourcePoint=arena3d?.point?.(side,sourceIndex),targetPoint=arena3d?.point?.(targetSide,targetIndex);
 const sx=sourcePoint?.x??(from.left+from.width/2-box.left),sy=sourcePoint?.y??(from.top+from.height*.43-box.top);
@@ -1115,6 +1116,15 @@ crit=Math.random()*100<Math.min(80,(own===allies?s.critChance:5)+(unit.bonusCrit
 const multiplier=action===2?3.1:action===1?1.55:1;
 const base=unit.atk+(own===allies?(unit.id==='naruto'?s.damage:s.damage*.25):0);
 dmg=Math.max(1,Math.round(base*multiplier*(unit.buff>0?1.25:1)*(crit?(own===allies?(s.critDamage+(unit.bonusCritDamage||0))/100:1.5):1)));
+if(unit.id==='itachi'){
+ const side=own===allies?'allyTeam':'foeTeam';
+ const impact=()=>{if(unit.curHp<=0||!own.includes(unit)||!opponents.includes(target))return;
+ target.curHp=Math.max(0,target.curHp-dmg);
+ if(own===allies)showDamage(dmg,crit);
+ log(unit.name+' · '+skill+' → '+target.name+': −'+dmg+(crit?' КРИТ':''));renderTeams();};
+ playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
+ if(unit.buff>0)unit.buff--;return;
+}
 target.curHp=Math.max(0,target.curHp-dmg);
 if(unit.buff>0)unit.buff--;
 const side=own===allies?'allyTeam':'foeTeam';

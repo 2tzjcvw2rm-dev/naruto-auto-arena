@@ -57,13 +57,15 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
       destination.set(target.actor.position.x,ground+1.12,target.actor.position.z);
       const toward=destination.clone().sub(origin);toward.y=0;
       if(toward.lengthSq()>.0001)origin.addScaledVector(toward.normalize(),.37);
-      const hit=smooth(p,.52,.68)*(1-smooth(p,.82,1));
+      const head=slot.fighter.getObjectByName('Head');
+      if(head){head.getWorldPosition(origin);origin.addScaledVector(toward,.13);}
+      const hit=smooth(p,.62,.72)*(1-smooth(p,.82,1));
       ring.visible=hit>.015;ring.position.set(destination.x,ground+.12,destination.z);
       ring.scale.setScalar(.03+hit*(technique===1?1.2:1.5));
       blast.visible=hit>.015;blast.position.copy(destination);
       blast.scale.setScalar(.02+hit*(technique===1?2.2:1.6));
       if(technique===1){
-        const power=smooth(p,.06,.25)*(1-smooth(p,.62,.79));
+        const power=smooth(p,.23,.33)*(1-smooth(p,.61,.62));
         const pos=origin.clone().lerp(destination,smooth(p,.33,.62));
         const swell=(.26+.28*power)*(1+.09*Math.sin(ms*.035));
         orb.position.copy(pos);core.position.copy(pos);
@@ -111,8 +113,8 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
   };
 }
 window.createArenaTechniqueFX=function(THREE,scene,slot,target,technique,kind,color){
-  if(slot.id==='itachi'&&(technique===1||technique===2))
-    return createItachiBattleFX(THREE,scene,slot,target,technique);
+  if(slot.id==='itachi')
+    return createItachiBattleFX(THREE,scene,slot,target,technique===0?1:technique);
   const root=new THREE.Group();root.name='jutsu-'+slot.id+'-'+technique;scene.add(root);
   const resources=new Set(),mats=[];
   const mat=(c,alpha=1)=>{
