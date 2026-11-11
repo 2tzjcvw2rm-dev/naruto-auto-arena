@@ -126,7 +126,17 @@ function makeSasukeProfileMotion(figure,battle=false) {
       const strike=attacking?Math.sin(Math.PI*progress):0;
       arms[1].elbow.rotateX(-.34*strike);
       arms[0].elbow.rotateX(-.26*strike);
-      charge.group.visible=technique===2&&progress>.1&&progress<.88;
+      // Only Chidori (second attack) charges the right palm in battle.
+      // Keep Sasuke's existing always-on profile pose unchanged.
+      charge.group.visible=attacking&&technique===1&&progress>.08&&progress<.78;
+      if(attacking&&technique===0){
+        const seals=smooth(.06,.24,progress)*(1-smooth(.36,.58,progress));
+        chest.rotation.x+=.09*seals+.17*smooth(.34,.49,progress)*(1-smooth(.60,.83,progress));
+      }else if(attacking&&technique===1){
+        chest.rotation.x+=.23*smooth(.22,.46,progress)*(1-smooth(.74,1,progress));
+      }else if(attacking&&technique===2){
+        chest.rotation.x-=.18*smooth(.15,.38,progress)*(1-smooth(.73,.96,progress));
+      }
     }
     if(charge.group.visible)charge.update(t);
   };
