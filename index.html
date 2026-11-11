@@ -418,7 +418,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./test-3d/battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./test-3d/battle-cinematics.css?v=20261105-cinematic1">
 <script src="./test-3d/battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./test-3d/battle-pose.js?v=20261111-itachi2" defer></script><script src="./test-3d/battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./test-3d/battle-visual-upgrade.js?v=20261111-itachi2" defer></script><script src="./test-3d/battle-ultimate-fx.js?v=20261105-unique1" defer></script><script src="./test-3d/itachi-susanoo.js?v=20261111-2" defer></script><script src="./test-3d/battle-scene.js?v=20261111-itachi2" defer></script><script src="./test-3d/battle-speed.js?v=20261105-tempo1" defer></script><script src="./test-3d/battle-backdrop.js?v=20261105-calm1" defer></script><script src="./test-3d/madara-profile.js?v=20261105-ribs1" defer></script>
+<script src="./test-3d/battle-pose.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./test-3d/battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-scene.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-speed.js?v=20261105-tempo1" defer></script><script src="./test-3d/battle-backdrop.js?v=20261105-calm1" defer></script><script src="./test-3d/madara-profile.js?v=20261105-ribs1" defer></script>
 </head>
 <body>
 <header>
@@ -811,6 +811,7 @@ ensureFormation();save();initTeams();renderTeamCards();
 ensureFormation();
 let allies=[],foes=[];
 function initTeams(){
+BattleTempo.cancel('itachi-impact');
 renderedLayout='';
 allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25,rage:0,buff:0}});
 foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08)),rage:0,buff:0}));
@@ -1018,6 +1019,7 @@ const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetInde
 if(!source||!target||!layer||!arena)return;
 if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex,onImpact))return;
 if(onImpact)BattleTempo.after('itachi-impact',action===2?1817:868,onImpact);
+if(unit.id==='itachi')return;
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
 const sourcePoint=arena3d?.point?.(side,sourceIndex),targetPoint=arena3d?.point?.(targetSide,targetIndex);
 const sx=sourcePoint?.x??(from.left+from.width/2-box.left),sy=sourcePoint?.y??(from.top+from.height*.43-box.top);
@@ -1072,7 +1074,7 @@ dmg=Math.max(1,Math.round(base*multiplier*(unit.buff>0?1.25:1)*(crit?(own===alli
 if(unit.id==='itachi'){
  const side=own===allies?'allyTeam':'foeTeam';
  const victims=action===2?opponents.filter(x=>x.curHp>0):[target];
- const impact=()=>{if(unit.curHp<=0||!own.includes(unit)||!opponents.includes(target))return;
+ const impact=()=>{if(unit.curHp<=0||(own!==allies&&own!==foes)||!own.includes(unit)||!opponents.includes(target))return;
  for(const victim of victims)victim.curHp=Math.max(0,victim.curHp-dmg);
  if(own===allies)showDamage(dmg,crit);
  log(unit.name+' · '+skill+' → '+(action===2?'вся команда':target.name)+': −'+dmg+(crit?' КРИТ':''));renderTeams();};
@@ -1096,6 +1098,7 @@ battleRoundNumber=0;initTeams();if(el('roundIndicator'))el('roundIndicator').tex
 let roundInProgress=false,actionTimer=null;
 function battleRound(){
 if(roundInProgress)return;
+if(arena3d?.isItachiBusy?.()){BattleTempo.after('round',100,battleRound);return;}
 if(!allies.some(u=>u.curHp>0)){finishBattle(false);return}
 if(!foes.some(u=>u.curHp>0)){finishBattle(true);return}
 roundInProgress=true;
@@ -1105,6 +1108,7 @@ const order=[...allies.map(u=>({u,own:allies,enemy:foes})),...foes.map(u=>({u,ow
 let i=0;
 function step(){
 if(!started||paused){roundInProgress=false;return}
+if(arena3d?.isItachiBusy?.()){actionTimer=BattleTempo.after('action',100,step);return;}
 if(i<order.length&&allies.some(u=>u.curHp>0)&&foes.some(u=>u.curHp>0)){
 const a=order[i++];battleAction(a.u,a.own,a.enemy);render();
 actionTimer=BattleTempo.after('action',2450,()=>{renderTeams();step()});return;

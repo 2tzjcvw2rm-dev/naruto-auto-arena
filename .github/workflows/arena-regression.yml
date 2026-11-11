@@ -49,3 +49,5 @@ jobs:
           node tests/madara-profile.cjs
           node tests/battle-tempo.cjs
           node tests/ultimate-cycle.cjs
+          node tests/itachi-susanoo.cjs
+          node tests/itachi-combat.cjs

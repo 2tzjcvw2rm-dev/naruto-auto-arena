@@ -74,6 +74,29 @@ const server=http.createServer((req,res)=>{
     await page.evaluate(()=>{BattleTempo.cancel('round');BattleTempo.cancel('action');clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;document.querySelectorAll('.jutsu-fx').forEach(node=>node.remove());});
     await page.clock.pauseAt(new Date(Date.now()+1000));
     async function advance(ms){for(let left=ms;left>0;left-=100)await page.clock.fastForward(Math.min(100,left));}
+    // Itachi: two natural cycles through the production 5v5 action handler.
+    for(const speed of [1,2,3]){
+      await page.evaluate(speed=>{BattleTempo.setSpeed(speed);foes.find(u=>u.id==='itachi').rage=0;},speed);
+      for(let turn=0;turn<6;turn++){
+        const action=turn%3;
+        const before=await page.evaluate(()=>{
+          allies.forEach(u=>u.curHp=u.maxHp=100000);
+          const itachi=foes.find(u=>u.id==='itachi');itachi.curHp=itachi.maxHp;
+          renderTeams();battleAction(itachi,foes,allies);
+          return allies.map(u=>u.curHp);
+        });
+        assert(before.every(h=>h===100000),'Itachi damage must wait for impact');
+        await advance((action===2?1500:600)/speed);
+        assert((await page.evaluate(()=>allies.map(u=>u.curHp))).every(h=>h===100000),'No early Itachi damage');
+        if(speed===1&&turn<3)await page.locator('.arena').screenshot({path:'artifacts/itachi-technique-'+action+'.png'});
+        await advance(450/speed);
+        const hits=await page.evaluate(()=>allies.filter(u=>u.curHp<100000).length);
+        assert.equal(hits,action===2?5:1,'Itachi impact target count');
+        await advance(1100/speed);
+        assert.equal(await page.evaluate(()=>arena3d.effects().length),0,'No lingering Itachi effects');
+      }
+    }
+    await page.evaluate(()=>BattleTempo.setSpeed(1));
     async function cast(){
       await page.evaluate(()=>{
         paused=false;

@@ -45,6 +45,7 @@ allies=['naruto','sasuke','sakura','kakashi','hinata'].map(id=>({id}));foes=['it
 load('test-3d/battle-environment.js');
 load('test-3d/battle-pose.js');
 load('test-3d/battle-cinematics.js');
+load('test-3d/itachi-susanoo.js');
 load('test-3d/battle-visual-upgrade.js');
 load('test-3d/battle-ultimate-fx.js');
 load('test-3d/battle-scene.js');

@@ -64,11 +64,12 @@ window.BattlePose={
         const sign=right?1:-1;
         if(id==='itachi'&&!idle&&(technique===0||technique===1||technique===2)){
           const seal=technique===0?ease(p,.06,.22)*(1-ease(p,.39,.58)):0;
-          const sweep=technique===1?ease(p,.09,.25)*(1-ease(p,.51,.78)):0;
-          if(name==='head'){bone.rotation.x+=.21*seal-.045*sweep;continue;}
-          if(arm){bone.rotation.x-=.70*seal+(right?.91:.23)*sweep;
-            bone.rotation.z+=sign*(.43*seal+.18*sweep);continue;}
-          if(fore){bone.rotation.x-=sign*.72*seal+(right?.40:.08)*sweep;
+          const sweep=technique===1?ease(p,.09,.25)*(1-ease(p,.65,.94)):0;
+          const summon=technique===2?ease(p,.06,.27)*(1-ease(p,.83,1)):0;
+          if(name==='head'){bone.rotation.x+=.21*seal-.045*sweep-.07*summon;continue;}
+          if(arm){bone.rotation.x-=.70*seal+(right?.91:.23)*sweep+.16*summon;
+            bone.rotation.z+=sign*(.43*seal+.18*sweep+.12*summon);continue;}
+          if(fore){bone.rotation.x-=sign*.72*seal+(right?.40:.08)*sweep+sign*.18*summon;
             bone.rotation.z+=sign*.33*seal;continue;}
           if(name.endsWith('-hand')){bone.rotation.z-=sign*.21*seal;continue;}
         }
@@ -86,6 +87,7 @@ window.BattlePose={
           bone.rotation.x-=sign*power*curl;
           bone.rotation.z+=sign*.12*brace;
         }
+        if(id==='itachi'&&(thigh||calf||foot))continue;
         if(thigh){
           bone.rotation.x+=(right?1:-1)*(.32*step+.08*Math.sin(now*.0015))*power;
           if(technique===2)bone.rotation.x+=.06*wave;

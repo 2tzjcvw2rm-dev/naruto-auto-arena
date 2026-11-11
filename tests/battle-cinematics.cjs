@@ -26,7 +26,7 @@ assert.equal(pose.inspect().rigged,true);
 const samples=[];
 for(const action of [0,1,2]){pose.update(.49,action,1000);samples.push(bones[0].rotation.x)}
 assert.equal(new Set(samples.map(n=>n.toFixed(4))).size,3,'three techniques use different hand poses');
-pose.update(.24,0,1000);assert.notEqual(bones[4].rotation.x,0,'legs move on approach');
+pose.update(.24,0,1000);assert.equal(bones[4].rotation.x,0,'Itachi stays planted for ranged casting');
 pose.dispose();assert(bones.every(x=>x.rotation.x===0&&x.rotation.z===0),'rest skeleton restored');
 const staticPose=c.BattlePose.mount({traverse:f=>f({name:'Body',isBone:false})},'madara');
 assert.equal(staticPose.inspect().rigged,false);staticPose.update(.48,2,500);staticPose.dispose();

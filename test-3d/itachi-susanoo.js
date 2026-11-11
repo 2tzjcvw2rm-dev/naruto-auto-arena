@@ -83,6 +83,8 @@ function createItachiSusanoo(THREE,scene,slot,target){
       elapsedMs=ms;const p=ms/2300;if(p>=1){this.dispose();return false}
       phase=p<.16?'charge':p<.48?'forming':p<.62?'windup':p<.76?'strike':'dissolve';
       root.position.set(slot.actor.position.x,ground,slot.actor.position.z);root.quaternion.copy(slot.actor.quaternion);root.updateMatrixWorld(true);
+      const head=slot.fighter?.getObjectByName('Head');
+      if(head){const eyeAnchor=head.localToWorld(new THREE.Vector3(0,.035,.077));root.worldToLocal(eyeAnchor);eyes.position.copy(eyeAnchor).sub(new THREE.Vector3(0,1.48,.18));}
       const fade=smooth(p,0,.12)*(1-smooth(p,.79,1)),pulse=1+.035*Math.sin(ms*.016);
       for(const m of materials)m.opacity=m.userData.alpha*fade*(m===bone?pulse:1);
       for(const item of parts){const amount=smooth(p,item.start,item.start+.12);item.object.visible=amount>0;item.object.scale.setScalar(Math.max(.001,amount))}
@@ -121,7 +123,7 @@ function createItachiSusanoo(THREE,scene,slot,target){
       }
       return true;
     },
-    inspect(){return {kind:"itachi-susanoo-amaterasu",technique:2,phase,elapsedMs,disposed,objects:root.children.length,height:3.65}},
+    inspect(){return {kind:"itachi-susanoo-amaterasu",ultimate:"itachi",technique:2,phase,elapsedMs,disposed,objects:root.children.length,height:3.65}},
     dispose(){if(disposed)return;disposed=true;scene.remove(root,wave);for(const burn of burns)scene.remove(burn.group);for(const r of resources)r.dispose();resources.clear()}
   };
 }

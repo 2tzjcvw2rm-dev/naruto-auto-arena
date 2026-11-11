@@ -61,7 +61,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
       const toward=destination.clone().sub(origin);toward.y=0;
       if(toward.lengthSq()>.0001)origin.addScaledVector(toward.normalize(),.37);
       const head=slot.fighter.getObjectByName('Head');
-      if(head){head.getWorldPosition(origin);origin.addScaledVector(toward,.13);}
+      if(head){origin.set(0,.028,.081);head.localToWorld(origin);}
       const hit=smooth(p,.62,.72)*(1-smooth(p,.82,1));
       ring.visible=hit>.015;ring.position.set(destination.x,ground+.12,destination.z);
       ring.scale.setScalar(.03+hit*(technique===1?1.2:1.5));
@@ -112,7 +112,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
       return true;
     },
     inspect(){return {kind:technique===1?'itachi-fireball':'itachi-crows',
-      technique,phase,elapsedMs,disposed,objects:root.children.length};},
+      technique:technique===1?0:1,phase,elapsedMs,disposed,objects:root.children.length};},
     dispose(){if(disposed)return;disposed=true;scene.remove(root);
       for(const resource of resources)resource.dispose();resources.clear();}
   };

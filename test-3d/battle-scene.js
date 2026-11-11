@@ -156,6 +156,7 @@ function initArena3d(){
       if(!active)return false;
       const target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
       if(!target)return false; // Keep original 2D fallback during GLB loading.
+      if(active.id==='itachi'&&active.effect)return true;
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
       active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
@@ -177,6 +178,7 @@ function initArena3d(){
       }
       return true;
     },
+    isItachiBusy(){return slots.some(a=>a.id==='itachi'&&a.effect)},
     effects(){return slots.filter(a=>a.effect).map(a=>a.effect.inspect())},
     point(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);return slot?slotPoint(slot,1):null},
     bind(){
@@ -223,6 +225,7 @@ function initArena3d(){
       const {unit,actor,shadow,side,home,motion}=slot;
       actor.visible=!unit.classList.contains('down')||effectClock<(slot.downGraceUntil||0);
       shadow.visible=actor.visible;
+      if(slot.id==='itachi'&&unit.classList.contains('down')){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;slot.attackAt=null;}
       if(!actor.visible){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
       const duration=susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
