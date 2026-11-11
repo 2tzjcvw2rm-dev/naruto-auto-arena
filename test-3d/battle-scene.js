@@ -196,7 +196,7 @@ function initArena3d(){
           const bodyMeshes=[];model.traverse(o=>{if(o.isMesh)bodyMeshes.push(o)});
           const actor=new THREE.Group();actor.add(fighter);actor.scale.setScalar(1.65);actor.position.copy(home);actor.rotation.y=side==='allyTeam'?Math.PI/2:-Math.PI/2;scene.add(actor);
           const shadow=new THREE.Mesh(shadowGeometry,shadowMaterial);shadow.rotation.x=-Math.PI/2;shadow.position.copy(home);shadow.position.y=.012;scene.add(shadow);
-          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
+          const motion=combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='naruto'?NarutoCombat.mount(fighter):u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
           const pose=window.BattlePose?.mount(fighter,u.id)||null;
           const posedMeshes=bodyMeshes.map(mesh=>mesh.parent?mesh:model.getObjectByName(mesh.name)).filter(Boolean);
           slots.push({id:u.id,unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,pose,attackAt:null,technique:0,target:null,phase:'idle',downGraceUntil:0});unit.classList.add('has-model');
