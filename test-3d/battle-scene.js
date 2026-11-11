@@ -247,7 +247,7 @@ function initArena3d(){
       if(enemyTarget&&p>=0){
         const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.max(.01,Math.hypot(dx,dz));
         yaw=Math.atan2(dx,dz);
-        const travel=susanoo||slot.id==='naruto'&&slot.technique===2||slot.id==='sasuke'&&slot.technique!==1?0:melee?Math.max(0,distance-(slot.id==='naruto'||slot.id==='sasuke'?.70:1.2)):.16;
+        const travel=susanoo||slot.id==='naruto'&&slot.technique===2||slot.id==='sasuke'&&slot.technique!==1?0:melee?Math.max(0,distance-((slot.id==='naruto'||slot.id==='sasuke')?0.70:1.2)):.16;
         actor.position.x+=dx/distance*travel*advance;
         actor.position.z+=dz/distance*travel*advance;
       }
