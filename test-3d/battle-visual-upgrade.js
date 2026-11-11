@@ -8,7 +8,7 @@
    keeps the GLB unmodified and owns/disposes its effect geometries. */
 function createItachiBattleFX(THREE,scene,slot,target,technique){
   const root=new THREE.Group();root.name=technique===1?'itachi-fireball':'itachi-crows';scene.add(root);
-  const resources=new Set(),flames=[],birds=[];
+  const resources=new Set(),flames=[],birds=[],feathers=[];
   function mat(color,opacity=1,additive=true){
     const m=new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,
       blending:additive?THREE.AdditiveBlending:THREE.NormalBlending,side:THREE.DoubleSide});
@@ -35,13 +35,16 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
     for(let i=0;i<12;i++){
       const bird=new THREE.Group();root.add(bird);
       const body=add(new THREE.SphereGeometry(.12,8,6),black,bird);body.scale.set(.7,.55,1.55);
+      const head=add(new THREE.SphereGeometry(.075,7,5),black,bird);head.position.set(0,.055,.15);
+      const beak=add(new THREE.ConeGeometry(.033,.12,5),black,bird);beak.rotation.x=Math.PI/2;beak.position.set(0,.045,.24);
+      const tail=add(new THREE.ConeGeometry(.08,.23,5),black,bird);tail.rotation.x=-Math.PI/2;tail.position.z=-.23;
       const left=new THREE.Group(),right=new THREE.Group();
       left.position.x=-.055;right.position.x=.055;right.scale.x=-1;
       bird.add(left,right);
       add(wing,shade,left);add(wing,shade,right);
       birds.push({bird,left,right});
     }
-    for(let i=0;i<12;i++)flames.push(add(new THREE.ConeGeometry(.1,.43,6),i%3===0?purple:black));
+    for(let i=0;i<20;i++){const feather=add(new THREE.SphereGeometry(1,5,4),i%5?black:shade);feather.scale.set(.025,.12,.009);feathers.push(feather);}
   }
   const ring=add(new THREE.TorusGeometry(1,.055,6,38),technique===1?hot:purple);
   ring.rotation.x=-Math.PI/2;
@@ -80,7 +83,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
           f.visible=power>.02;
         }
       }else{
-        const flight=smooth(p,.21,.72),fade=smooth(p,.1,.25)*(1-smooth(p,.84,1));
+        const flight=smooth(p,.21,.62),fade=smooth(p,.1,.25)*(1-smooth(p,.84,1));
         const face=Math.atan2(destination.x-origin.x,destination.z-origin.z);
         for(let i=0;i<birds.length;i++){
           const o=birds[i],a=i*2.39996+ms*.007;
@@ -89,19 +92,21 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
           o.bird.position.y+=Math.sin(a*1.3)*(.14+(i%4)*.075);
           o.bird.position.z+=Math.sin(a)*(.2+.36*(1-flight));
           o.bird.rotation.set(Math.sin(a)*.19,face+Math.sin(a)*.24,Math.cos(a)*.18);
+          o.bird.position.addScaledVector(new THREE.Vector3(Math.cos(a),.3,Math.sin(a)),smooth(p,.78,1)*1.6);
           o.bird.scale.setScalar((.85+(i%4)*.11)*fade);
           o.bird.visible=fade>.02;
           const flap=Math.sin(ms*.038+i*.82)*.76;
           o.left.rotation.z=flap;o.right.rotation.z=flap;
         }
-        for(let i=0;i<flames.length;i++){
-          const f=flames[i],a=i*2.39996;
+        for(let i=0;i<feathers.length;i++){
+          const f=feathers[i],a=i*2.39996+ms*.003;
           f.position.set(destination.x+Math.cos(a)*(.16+(i%4)*.1),
             ground+.27+Math.abs(Math.sin(ms*.013+i))*.16,
             destination.z+Math.sin(a)*(.16+(i%4)*.1));
           f.rotation.z=.26*Math.sin(ms*.012+i);
-          f.scale.setScalar(.01+hit*(.95+.2*Math.sin(i+ms*.012)));
-          f.visible=hit>.015;
+          f.position.lerp(origin,1-flight);f.position.y+=.5+Math.sin(a)*.55;
+          f.rotation.set(a,a*.4,a*.7);f.scale.set(.025*fade,.12*fade,.009*fade);
+          f.visible=fade>.015;
         }
       }
       return true;
@@ -114,7 +119,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
 }
 window.createArenaTechniqueFX=function(THREE,scene,slot,target,technique,kind,color){
   if(slot.id==='itachi')
-    return createItachiBattleFX(THREE,scene,slot,target,technique===0?1:technique);
+    return createItachiBattleFX(THREE,scene,slot,target,technique===0?1:2);
   const root=new THREE.Group();root.name='jutsu-'+slot.id+'-'+technique;scene.add(root);
   const resources=new Set(),mats=[];
   const mat=(c,alpha=1)=>{
