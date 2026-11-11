@@ -7,7 +7,7 @@ for(const page of ['index.html','test-3d/index.html']){
  run(fs.readFileSync('test-3d/vendor/three.min.js','utf8'));
  run(fs.readFileSync('test-3d/sasuke-combat.js','utf8'));
  const html=fs.readFileSync(page,'utf8');
- assert(html.includes('sasuke-combat.js?v=20261111-sasuke1'),page+': missing module');
+ assert(html.includes('sasuke-combat.js?v=20261111-fireball2'),page+': missing module');
  run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
  run(html.slice(html.indexOf('function battleAction('),html.indexOf('function finishBattle(')));
  run([
@@ -31,6 +31,14 @@ for(const page of ['index.html','test-3d/index.html']){
    assert.deepEqual(Array.from(run('foes.map(x=>x.curHp)')),before,'HP must wait for visual impact');
    assert.equal(run('fx.inspect().technique'),action);
    assert.equal(run('fx.inspect().victims'),action===1?1:5);
+   if(action===0){
+    assert.equal(run('fx.inspect().fireball.shape'),'solid-procedural-sphere');
+    assert.equal(run('fx.inspect().fireball.tongues'),0);
+    assert.equal(run("scene.getObjectByName('sasuke-fireball-body').children.filter(x=>x.geometry && x.geometry.type==='ConeGeometry').length"),0,'No spiky flame cones');
+    assert.equal(run("scene.getObjectByName('sasuke-fireball-body').children.filter(x=>x.material && x.material.isShaderMaterial).length"),1,'Organic smooth fireball shader');
+    c.ms=315;run('fx.update(ms,-2.65)');
+    assert(Math.abs(run("scene.getObjectByName('sasuke-fireball-body').position.y")-(-2.65+1.45))<.12,'Fireball must emerge at face height');
+   }
    c.ms=impacts[action]-1;run('fx.update(ms,-2.65)');
    assert.deepEqual(Array.from(run('foes.map(x=>x.curHp)')),before,'No early damage');
    for(let wall=impacts[action]/speed;wall<durations[action]/speed;wall+=17){
