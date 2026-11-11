@@ -2,7 +2,10 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 process.chdir(path.resolve(__dirname,'..'));
 for(const file of ['index.html','test-3d/index.html']){
- const html=fs.readFileSync(file,'utf8'),c={console};c.window=c;vm.createContext(c);
+ const html=fs.readFileSync(file,'utf8'),c={console};
+ // Inline startup precedes deferred battle-speed.js.
+ const startup={window:{},s:{team:[],wave:1},enemies:[],renderTeams(){}};vm.createContext(startup);
+ vm.runInContext(html.slice(html.indexOf('function initTeams(){'),html.indexOf("let renderedLayout=''"))+';initTeams();',startup);c.window=c;vm.createContext(c);
  const run=s=>vm.runInContext(s,c),load=p=>run(fs.readFileSync(p,'utf8'));
  load('test-3d/vendor/three.min.js');load('test-3d/combat-profile.js');
  run(`{const holder=new THREE.Group(),fighter=new THREE.Group();holder.add(fighter);const idle=CombatProfile.mount('itachi',fighter,{battle:true});for(let ms=0;ms<10000;ms+=100)idle(.1,ms);let meshes=0;holder.traverse(o=>{if(o.isMesh||o.isPoints)meshes++});if(meshes)throw Error('Idle emitted attack effects');idle.dispose();}`);load('test-3d/itachi-susanoo.js');load('test-3d/battle-visual-upgrade.js');load('test-3d/battle-ultimate-fx.js');

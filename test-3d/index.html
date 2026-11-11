@@ -858,7 +858,7 @@ ensureFormation();save();initTeams();renderTeamCards();
 ensureFormation();
 let allies=[],foes=[];
 function initTeams(){
-BattleTempo.cancel('itachi-impact');
+window.BattleTempo?.cancel('itachi-impact');
 renderedLayout='';
 allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25,rage:0,buff:0}});
 foes=enemies.map(e=>({...e,curHp:Math.round(e.hp*(1+s.wave*.08)),maxHp:Math.round(e.hp*(1+s.wave*.08)),rage:0,buff:0}));
