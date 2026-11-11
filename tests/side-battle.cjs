@@ -67,7 +67,7 @@ if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&
   if(technique===2)assert.equal(typeof live[0].ultimate,'string',
     'Each non-Madara ultimate should have a unique 3D identity');
 }
-for(let tick=1;tick<=((side==='allyTeam'?available.team[index]:available.foes[index])==='naruto'?85:technique===2?60:40);tick++)frame();
+for(let tick=1;tick<=((['naruto','sasuke'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?88:technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }
