@@ -49,19 +49,68 @@ function bake(source){
   }
   geo.morphAttributes.position.push(new T.Float32BufferAttribute(out,3));
  }
- geo.morphTargetsRelative=false;geo.computeBoundingBox();geo.computeBoundingSphere();cache.set(source,geo);return geo;
+ geo.morphTargetsRelative=false;geo.computeBoundingBox();geo.computeBoundingSphere();cache.set(source,geo);cache.set(geo,geo);return geo;
 }
 function mount(figure){
- const meshes=[];figure.traverse(m=>{if(!m.isMesh||!m.geometry.attributes.position)return;
+ const meshes=[],materials=[];figure.traverse(m=>{if(!m.isMesh||!m.geometry.attributes.position)return;
+  const material=source=>{const result=source.clone();result.morphTargets=true;result.needsUpdate=true;materials.push(result);return result;};
+  m.material=Array.isArray(m.material)?m.material.map(material):material(m.material);
   m.geometry=bake(m.geometry);m.updateMorphTargets();m.frustumCulled=false;meshes.push(m);});
  const scale=figure.scale.y;
  function blend(a,b,t){for(const m of meshes){m.morphTargetInfluences.fill(0);m.morphTargetInfluences[names.indexOf(a)]=1-t;m.morphTargetInfluences[names.indexOf(b)]+=t;}}
  const motion=function(dt,now,active,p=-1,technique=0){
   blend('guard','guard',0);
+  if(p>=0&&technique===0){
+   if(p<.22)blend('guard','seal',smooth(p,0,.10)*(1-smooth(p,.16,.22)));
+   else if(p<.43||p>.77){const w=(.5+.5*Math.sin(now*.032));blend('runA','runB',w);}
+   else blend('guard','punch',smooth(p,.63,.70)*(1-smooth(p,.71,.77)));
+  }
   figure.scale.y=scale*(1+.004*Math.sin(now*.002));figure.rotation.x=.012*Math.sin(now*.0014);figure.rotation.y=.018*Math.sin(now*.0011);
  };
- motion.blend=blend;motion.dispose=()=>{};motion.inspect=()=>({id:'naruto',articulated:true,poses:names});
+ motion.blend=blend;motion.dispose=()=>materials.forEach(m=>m.dispose());motion.inspect=()=>({id:'naruto',articulated:true,poses:names});
  return motion;
 }
-window.NarutoCombat={mount,names};
+const durations=[2400,1400,1400];
+function createClones(scene,slot,target){
+ const root=new T.Group();root.name='naruto-kage-bunshin';scene.add(root);
+ const clones=[];for(let i=0;i<2;i++){
+  const actor=new T.Group(),figure=slot.fighter.clone(true);actor.add(figure);actor.scale.copy(slot.actor.scale);root.add(actor);
+  clones.push({actor,figure,motion:mount(figure),side:i?1:-1});
+ }
+ const geo=new T.IcosahedronGeometry(1,1),mat=new T.MeshBasicMaterial({color:0xf5faff,transparent:true,opacity:.65,depthWrite:false});
+ const smoke=Array.from({length:24},()=>{const m=new T.Mesh(geo,mat);root.add(m);return m;});
+ const hitMat=new T.MeshBasicMaterial({color:0xfff0b5,transparent:true,opacity:1,depthWrite:false,blending:T.AdditiveBlending});
+ const ringGeo=new T.TorusGeometry(1,.035,5,24),ring=new T.Mesh(ringGeo,hitMat);root.add(ring);
+ let disposed=false,next=0,phase='Prepare',elapsedMs=0;
+ const hits=[.48,.59,.70],direction=new T.Vector3().subVectors(target.home,slot.home).setY(0).normalize();
+ function update(ms,ground){
+  if(disposed)return false;elapsedMs=ms;const p=ms/2400;
+  // Consume every crossed event even when a slow frame skips several hits.
+  while(next<hits.length&&p>=hits[next]){target.hitAt=slot.effectAt+hits[next]*2400;target.hitFrom=slot.home.clone();slot.onImpact?.(1/3);next++;}
+  if(p>=1){slot.onImpact=null;dispose();return false;}
+  phase=p<.22?'Prepare':p<.43?'Attack':p<.74?'Hit':'Return';
+  for(let i=0;i<2;i++){
+   const c=clones[i],hit=hits[i],advance=smooth(p,.22+i*.025,.43+i*.025);
+   c.actor.visible=p>=.16&&p<.79;c.actor.quaternion.copy(slot.actor.quaternion);
+   const start=slot.home.clone().add(new T.Vector3(0,0,c.side*.65));
+   const end=target.home.clone().addScaledVector(direction,-.62).add(new T.Vector3(0,0,c.side*.38));
+   c.actor.position.copy(start).lerp(end,advance);c.actor.position.y=slot.actor.position.y;
+   c.motion(0,ms+i*95,false);
+   if(p<.43+i*.025)c.motion.blend('runA','runB',.5+.5*Math.sin(ms*.032+i*2));
+   else c.motion.blend('guard',i?'kick':'punch',smooth(p,hit-.055,hit)*(1-smooth(p,hit+.015,hit+.085)));
+   c.figure.rotation.x=p<.43?.15:0;c.figure.rotation.y=(i?-.22:.22)*Math.sin(Math.PI*smooth(p,hit-.055,hit+.08));
+  }
+  const spawn=p<.4,age=spawn?(p-.13)/.16:(p-.76)/.17;
+  mat.opacity=.7*(1-Math.max(0,age));
+  smoke.forEach((m,i)=>{m.visible=age>=0&&age<=1;const c=clones[i%2],angle=i*2.399;
+   m.position.copy(c.actor.position);m.position.y=ground+.5+(i%4)*.22+age*.45;
+   m.position.x+=Math.cos(angle)*(.12+age*.65);m.position.z+=Math.sin(angle)*(.12+age*.65);m.scale.setScalar(.15+age*.23);});
+  const last=next?hits[next-1]:-1,ageHit=(p-last)/.085;ring.visible=next>0&&ageHit>=0&&ageHit<1;
+  ring.position.copy(target.home);ring.position.y=ground+1;ring.rotation.y=Math.atan2(direction.x,direction.z);ring.scale.setScalar(.08+ageHit*.5);hitMat.opacity=1-ageHit;
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;scene.remove(root);geo.dispose();mat.dispose();ringGeo.dispose();hitMat.dispose();clones.forEach(c=>c.motion.dispose());}
+ return {update,dispose,inspect:()=>({id:'naruto',kind:'clones',technique:0,phase,elapsedMs,clones:2,disposed})};
+}
+window.NarutoCombat={mount,names,durations,create(scene,slot,target,technique){return technique===0?createClones(scene,slot,target):null}};
 })();
