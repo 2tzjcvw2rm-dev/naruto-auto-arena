@@ -71,7 +71,15 @@ function mount(figure){
    else if(p<.76)blend('hold','punch',smooth(p,.53,.62)*(1-smooth(p,.67,.76)));
    else blend('hold','guard',smooth(p,.76,1));
   }
+  if(p>=0&&technique===2){
+   if(p<.18)blend('guard','seal',smooth(p,.01,.08)*(1-smooth(p,.13,.18)));
+   else if(p<.45)blend('guard','hold',smooth(p,.18,.25));
+   else if(p<.60)blend('hold','throw',smooth(p,.45,.57));
+   else if(p<.70)blend('throw','punch',smooth(p,.60,.65));
+   else blend('punch','guard',smooth(p,.70,.94));
+  }
   figure.scale.y=scale*(1+.004*Math.sin(now*.002));figure.rotation.x=.012*Math.sin(now*.0014);figure.rotation.y=.018*Math.sin(now*.0011);
+  if(p>=0&&technique===2){figure.rotation.y+=.50*smooth(p,.43,.56)-.80*smooth(p,.57,.65)+.30*smooth(p,.70,.96);figure.rotation.x+=.10*smooth(p,.58,.65)*(1-smooth(p,.70,.96));}
  };
  motion.hand=out=>{
   out.set(0,0,0);const weights=meshes[0]?.morphTargetInfluences||[1];
@@ -83,7 +91,7 @@ function mount(figure){
  motion.blend=blend;motion.dispose=()=>materials.forEach(m=>m.dispose());motion.inspect=()=>({id:'naruto',articulated:true,poses:names});
  return motion;
 }
-const durations=[2400,2300,1400];
+const durations=[2400,2300,3600];
 function createClones(scene,slot,target){
  const root=new T.Group();root.name='naruto-kage-bunshin';scene.add(root);
  const clones=[];for(let i=0;i<2;i++){
@@ -154,5 +162,57 @@ function createRasengan(scene,slot,target){
  function dispose(){if(disposed)return;disposed=true;scene.remove(root);resources.forEach(r=>r.dispose());resources.clear();}
  return {update,dispose,inspect:()=>({id:'naruto',kind:'rasengan',technique:1,phase,elapsedMs,disposed})};
 }
-window.NarutoCombat={mount,names,durations,create(scene,slot,target,technique){return technique===0?createClones(scene,slot,target):technique===1?createRasengan(scene,slot,target):null}};
+function createRasenshuriken(scene,slot,target){
+ const root=new T.Group();root.name='naruto-futon-rasenshuriken';scene.add(root);const resources=new Set();
+ function material(color,opacity,additive=true){const m=new T.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false,side:T.DoubleSide,blending:additive?T.AdditiveBlending:T.NormalBlending});resources.add(m);return m;}
+ function mesh(geo,mat,parent=root){resources.add(geo);const m=new T.Mesh(geo,mat);parent.add(m);return m;}
+ const blue=material(0x39c6ff,.65),white=material(0xe9ffff,.9),mist=material(0x65d8ff,.13),smokeMat=material(0xf3f9ff,.7,false);
+ const orb=new T.Group(),disk=new T.Group();root.add(orb);orb.add(disk);disk.rotation.x=.65;
+ mesh(new T.SphereGeometry(.18,18,12),blue,orb);mesh(new T.SphereGeometry(.11,12,8),white,orb);mesh(new T.SphereGeometry(.29,16,10),mist,orb);
+ const rings=[];for(let i=0;i<6;i++){const r=mesh(new T.TorusGeometry(.17+i*.023,.009,5,32),i%2?white:blue,orb);rings.push(r);}
+ // Four tapered triangular prisms, not a billboard or a flat image.
+ const points=[[-.13,.15,-.035],[.13,.15,-.035],[0,.91,0],[-.13,.15,.035],[.13,.15,.035]];
+ const indices=[0,1,2,3,2,4,0,3,4,0,4,1,0,2,3,1,4,2];
+ const bladeGeo=new T.BufferGeometry();bladeGeo.setAttribute('position',new T.Float32BufferAttribute(indices.flatMap(i=>points[i]),3));bladeGeo.computeVertexNormals();
+ const blades=[];for(let i=0;i<4;i++){const pivot=new T.Group();pivot.rotation.z=i*Math.PI/2;disk.add(pivot);mesh(bladeGeo,white,pivot);blades.push(pivot);}
+ const light=new T.PointLight(0x67dfff,1,3,2);orb.add(light);
+ const clones=[];for(let i=0;i<2;i++){const actor=new T.Group(),figure=slot.fighter.clone(true);actor.scale.copy(slot.actor.scale);actor.add(figure);root.add(actor);clones.push({actor,figure,motion:mount(figure),side:i?1:-1});}
+ const smokeGeo=new T.IcosahedronGeometry(1,1),smoke=Array.from({length:20},()=>mesh(smokeGeo,smokeMat));
+ const trailGeo=new T.SphereGeometry(.09,6,5),trail=Array.from({length:10},()=>mesh(trailGeo,blue));
+ const burst=new T.Group();root.add(burst);mesh(new T.SphereGeometry(1,20,14),mist,burst);
+ const winds=[];for(let i=0;i<12;i++){const r=mesh(new T.TorusGeometry(.48+i*.044,.010,5,40),i%4?blue:white,burst);winds.push(r);}
+ const flash=mesh(new T.SphereGeometry(.75,12,8),white,burst);
+ const particleGeo=new T.BufferGeometry(),positions=new Float32Array(64*3);particleGeo.setAttribute('position',new T.BufferAttribute(positions,3));resources.add(particleGeo);
+ const particleMat=new T.PointsMaterial({color:0xdfffff,size:.045,transparent:true,opacity:.8,depthWrite:false,blending:T.AdditiveBlending});resources.add(particleMat);const particles=new T.Points(particleGeo,particleMat);burst.add(particles);
+ let disposed=false,hit=false,phase='Prepare',elapsedMs=0,released=false;const release=V(0,0,0),destination=V(0,0,0),hand=V(0,0,0);
+ function update(ms,ground){
+  if(disposed)return false;elapsedMs=ms;const p=ms/3600;
+  if(!hit&&p>=.74){hit=true;target.hitAt=slot.effectAt+2664;target.hitFrom=slot.home.clone();slot.onImpact?.();slot.onImpact=null;}
+  if(p>=1){dispose();return false;}
+  phase=p<.18?'Prepare':p<.60?'Cast':p<.74?'Attack':p<.90?'Hit':'Return';
+  slot.motion.hand(hand);destination.copy(target.home);destination.y=ground+1.05;
+  if(p<.60||!released){release.copy(hand);released=p>=.60;}
+  orb.visible=p>=.16&&p<.75;orb.position.copy(p<.60?hand:release.clone().lerp(destination,smooth(p,.60,.74)));
+  const growth=smooth(p,.16,.42);orb.scale.setScalar(.08+growth*1.05);disk.rotation.z=ms*.022;
+  blades.forEach(b=>b.scale.setScalar(Math.max(.001,smooth(p,.28,.46))));
+  rings.forEach((r,i)=>{r.rotation.set(ms*.012+i*.8,ms*.017+i*.9,-ms*.020+i*.6);});light.intensity=.8+.2*Math.sin(ms*.035);
+  for(let i=0;i<2;i++){
+   const c=clones[i];c.actor.visible=p>=.12&&p<.49;c.actor.position.copy(slot.home);c.actor.position.z+=c.side*.60;c.actor.position.x+=(slot.side==='allyTeam'?1:-1)*.25;c.actor.position.y=slot.actor.position.y;
+   c.actor.rotation.y=Math.atan2(hand.x-c.actor.position.x,hand.z-c.actor.position.z);c.motion(0,ms+i*130,false);c.motion.blend('hold','punch',.25+.2*Math.sin(ms*.012+i*Math.PI));
+   c.figure.rotation.x=.10;c.figure.rotation.y=.09*Math.sin(ms*.009+i);
+  }
+  const age=p<.3?(p-.10)/.13:(p-.47)/.13;smokeMat.opacity=.65*(1-Math.max(0,age));
+  smoke.forEach((m,i)=>{m.visible=age>=0&&age<=1;m.position.copy(clones[i%2].actor.position);m.position.y=ground+.5+(i%4)*.2+age*.4;m.position.x+=Math.cos(i*2.4)*(.1+age*.6);m.position.z+=Math.sin(i*2.4)*(.1+age*.6);m.scale.setScalar(.14+age*.20);});
+  trail.forEach((m,i)=>{const q=(p-.60)/.14-i*.028;m.visible=p>=.60&&p<.79&&q>=0&&q<=1;m.position.copy(release).lerp(destination,Math.max(0,Math.min(1,q)));m.scale.setScalar(1-i*.06);});
+  burst.visible=p>=.74;burst.position.copy(destination);const ageHit=smooth(p,.74,.94),fade=1-smooth(p,.88,1);burst.scale.setScalar(.10+ageHit*1.50);
+  winds.forEach((r,i)=>{r.rotation.set(ms*.019+i*.71,-ms*.023+i*.83,ms*.027+i*.31);});
+  for(let i=0;i<64;i++){const angle=i*2.399+ms*.018,r=.5+(i%7)*.08;positions[i*3]=Math.cos(angle)*r;positions[i*3+1]=Math.sin(angle*1.7)*r;positions[i*3+2]=Math.sin(angle)*r;}particleGeo.attributes.position.needsUpdate=true;
+  flash.visible=p>.90&&p<.95;flash.scale.setScalar(.1+smooth(p,.90,.95));
+  blue.opacity=.65*fade;white.opacity=.9*fade;mist.opacity=.13*fade;particleMat.opacity=.8*fade;
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;scene.remove(root);clones.forEach(c=>c.motion.dispose());resources.forEach(r=>r.dispose());resources.clear();}
+ return {update,dispose,inspect:()=>({id:'naruto',kind:'wind',ultimate:'rasenshuriken',technique:2,phase,elapsedMs,clones:2,blades:4,disposed})};
+}
+window.NarutoCombat={mount,names,durations,create(scene,slot,target,technique){return technique===0?createClones(scene,slot,target):technique===1?createRasengan(scene,slot,target):createRasenshuriken(scene,slot,target)}};
 })();

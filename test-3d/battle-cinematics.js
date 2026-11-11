@@ -49,8 +49,8 @@ window.BattleCinematics={
     const entrance=smooth(p,0,.16),departure=1-smooth(p,.78,1);
     const vis=entrance*departure;
     active.phase=p<.18?'intro':p<.48?'focus':p<.74?'impact':'outro';
-    veil.style.opacity=String(.68*vis);
-    flash.style.opacity=String((smooth(p,.49,.56)-smooth(p,.61,.75))*.36);
+    veil.style.opacity=String((active.id==='naruto'?.22:.68)*vis);
+    flash.style.opacity=String(active.id==='naruto'?(smooth(p,.90,.92)-smooth(p,.94,.98))*.22:(smooth(p,.49,.56)-smooth(p,.61,.75))*.36);
     flash.style.transform='scale('+(0.85+smooth(p,.48,.72)*.35)+')';
     root.style.opacity=String(departure);
     heading.parentNode.style.transform='translate3d('+

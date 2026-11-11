@@ -170,11 +170,11 @@ function initArena3d(){
       active.effect=(active.id==='naruto'?NarutoCombat.create(scene,active,target,technique):null)|| (susanoo?createMadaraSusanoo(THREE,scene,active,target):
         (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null));
       if(target.side!==side){
-        target.hitAt=effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
+        target.hitAt=active.id==='naruto'?Infinity:effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
         target.hitFrom=active.home.clone();
         // Battle HP updates immediately. Preserve a knocked-out model until
         // the impact reaches it, then honor the normal 'down' state.
-        target.downGraceUntil=Math.max(target.downGraceUntil||0,effectClock+(susanoo?2120:1090));
+        target.downGraceUntil=Math.max(target.downGraceUntil||0,effectClock+(active.id==='naruto'?duration:susanoo?2120:1090));
       }
       return true;
     },
@@ -245,7 +245,7 @@ function initArena3d(){
       if(enemyTarget&&p>=0){
         const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.max(.01,Math.hypot(dx,dz));
         yaw=Math.atan2(dx,dz);
-        const travel=susanoo?0:melee?Math.max(0,distance-(slot.id==='naruto'?.70:1.2)):.16;
+        const travel=susanoo||slot.id==='naruto'&&slot.technique===2?0:melee?Math.max(0,distance-(slot.id==='naruto'?.70:1.2)):.16;
         actor.position.x+=dx/distance*travel*advance;
         actor.position.z+=dz/distance*travel*advance;
       }
@@ -271,7 +271,7 @@ function initArena3d(){
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
-      if(slot.onImpact&&!(slot.id==='naruto'&&slot.technique<2)&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
+      if(slot.onImpact&&slot.id!=='naruto'&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }
