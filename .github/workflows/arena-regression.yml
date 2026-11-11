@@ -12,6 +12,8 @@ on:
     paths:
       - 'test-3d/**'
       - 'tests/side-battle.cjs'
+      - 'tests/sasuke-combat.cjs'
+      - 'tests/naruto-combat.cjs'
       - 'tests/battle-cinematics.cjs'
       - 'tests/madara-profile.cjs'
       - 'tests/battle-tempo.cjs'
@@ -29,6 +31,11 @@ jobs:
         run: |
           node --check test-3d/battle-environment.js
           node --check test-3d/battle-scene.js
+          node --check test-3d/sasuke-combat.js
+          node --check test-3d/sasuke-profile.js
+          node --check test-3d/naruto-combat.js
+          node --check tests/sasuke-combat.cjs
+          node --check tests/naruto-combat.cjs
           node --check test-3d/battle-pose.js
           node --check test-3d/battle-cinematics.js
           node --check test-3d/battle-visual-upgrade.js
@@ -51,3 +58,5 @@ jobs:
           node tests/ultimate-cycle.cjs
           node tests/itachi-susanoo.cjs
           node tests/itachi-combat.cjs
+          node tests/naruto-combat.cjs
+          node tests/sasuke-combat.cjs
