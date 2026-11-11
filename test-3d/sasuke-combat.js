@@ -38,18 +38,72 @@ function create(scene,slot,target,technique){
    for(const v of victims)destination.add(v.home);
    return destination.multiplyScalar(1/victims.length);
  }
- const group=new T.Group();root.add(group);
- const fireParts=[],fireTrail=[],shock=[];
+ const group=new T.Group();group.name='sasuke-fireball-body';root.add(group);
+ // A coherent spherical flame, not 22 disjointed cones. Two warm cores and
+ // a softly displaced procedural shell preserve the silhouette from any angle.
+ const fireTrail=[],shock=[],fireParts=[];
+ let fireShell=null,fireCore=null,fireMid=null,fireBlast=null,fireShockRing=null,fireBlastCore=null;
+ let shellClock=null;
  if(technique===0){
-  const flame=mesh(new T.SphereGeometry(.67,18,12),orange,group);
-  const hot=mesh(new T.SphereGeometry(.48,14,10),gold,group);
-  const glow=mesh(new T.SphereGeometry(.91,12,10),embers,group);
-  for(let i=0;i<22;i++){
-   const tongue=mesh(new T.ConeGeometry(.10+(i%3)*.03,.58+(i%5)*.12,5),i%4===0?gold:orange,group);
-   fireParts.push(tongue);
+  fireCore=mesh(new T.SphereGeometry(.34,18,14),gold,group);
+  fireMid=mesh(new T.SphereGeometry(.57,24,18),orange,group);
+  const shellUniforms={uTime:{value:0},uOpacity:{value:1}};
+  shellClock=shellUniforms;
+  const shellMaterial=new T.ShaderMaterial({
+   uniforms:shellUniforms,transparent:true,depthWrite:false,side:T.FrontSide,
+   vertexShader:[
+    'uniform float uTime;',
+    'varying vec3 vLocal; varying vec3 vNormalV; varying vec3 vEye;',
+    'void main(){',
+    '  vLocal=position;',
+    '  float r=sin(position.y*10.0+uTime*3.5+sin(position.x*9.0))*0.025',
+    '          +sin(position.z*14.0-uTime*4.1)*0.019;',
+    '  vec3 displaced=position+normal*r;',
+    '  vec4 eye=modelViewMatrix*vec4(displaced,1.0);',
+    '  vNormalV=normalize(normalMatrix*normal);',
+    '  vEye=normalize(-eye.xyz);',
+    '  gl_Position=projectionMatrix*eye;',
+    '}'
+   ].join('\n'),
+   fragmentShader:[
+    'precision mediump float;',
+    'uniform float uTime; uniform float uOpacity;',
+    'varying vec3 vLocal; varying vec3 vNormalV; varying vec3 vEye;',
+    'void main(){',
+    '  float ripple=sin(vLocal.x*13.0+uTime*3.1+sin(vLocal.y*10.0))',
+    '          *cos(vLocal.y*11.0-uTime*3.7+vLocal.z*7.0);',
+    '  float edge=1.0-max(0.0,dot(normalize(vNormalV),normalize(vEye)));',
+    '  float heat=clamp(0.78-edge*0.46+ripple*0.16,0.0,1.0);',
+    '  vec3 crimson=vec3(0.66,0.065,0.014);',
+    '  vec3 orangeFire=vec3(1.0,0.30,0.022);',
+    '  vec3 warmGold=vec3(1.0,0.69,0.18);',
+    '  vec3 color=mix(crimson,orangeFire,smoothstep(0.06,0.69,heat));',
+    '  color=mix(color,warmGold,smoothstep(0.55,1.0,heat)*0.5);',
+    '  float opacity=clamp((0.72-edge*0.28+ripple*0.09)*uOpacity,0.0,0.92);',
+    '  gl_FragColor=vec4(color,opacity);',
+    '}'
+   ].join('\n')
+  });
+  resources.add(shellMaterial);
+  fireShell=mesh(new T.SphereGeometry(.75,28,20),shellMaterial,group);
+  // A faint surrounding heat halo keeps the projectile large, but not spiky.
+  const haze=mesh(new T.SphereGeometry(.86,18,12),embers,group);
+  haze.material.depthTest=true;
+  // Six overlapping soft tongues trail backwards; they never protrude as sharp spikes.
+  const tailMaterial=material(0xff8a1c,.23);
+  for(let i=0;i<6;i++){
+   const tail=mesh(new T.SphereGeometry(.26,10,8),tailMaterial);
+   tail.name='sasuke-fire-wake';
+   fireTrail.push(tail);
   }
-  for(let i=0;i<18;i++)fireTrail.push(mesh(new T.IcosahedronGeometry(.09,0),i%4===0?gold:orange));
-  shock.push(flame,hot,glow);
+  fireBlast=new T.Group();fireBlast.name='sasuke-fireball-impact';root.add(fireBlast);
+  const bloom=material(0xff6813,.22),impactGold=material(0xffe1a0,.56);
+  const blastGlow=mesh(new T.SphereGeometry(1,16,12),bloom,fireBlast);
+  fireBlastCore=mesh(new T.SphereGeometry(1,14,10),impactGold,fireBlast);
+  fireBlastCore.name='sasuke-fireball-burst';
+  fireShockRing=mesh(new T.TorusGeometry(1,.07,6,36),orange,fireBlast);
+  fireShockRing.rotation.x=-Math.PI/2;
+  shock.push(blastGlow,fireBlastCore);
  }
  const orb=new T.Group();root.add(orb);
  let lightning=null;
@@ -124,28 +178,51 @@ function create(scene,slot,target,technique){
   const end=destination.clone().setY(ground+1.12);
   const wind=smooth(p,.08,.25)*(1-smooth(p,.64,.79));
   if(technique===0){
-   const mouth=origin.copy(slot.actor.position).add(V(0,.62,0)).addScaledVector(toward,.29);
-   mouth.y=ground+1.39;
-   const progress=smooth(p,.27,.61),size=(.32+.68*smooth(p,.22,.37))*(1+.07*Math.sin(ms*.016));
-   group.visible=p>=.12&&p<.78;
-   group.position.copy(mouth).lerp(end,progress);group.scale.setScalar(size);
-   group.rotation.y=ms*.002;group.rotation.x=.12*Math.sin(ms*.008);
-   for(let i=0;i<fireParts.length;i++){
-    const f=fireParts[i],a=i*2.39996+ms*.0035,r=.49+(i%5)*.09;
-    f.position.set(Math.cos(a)*r,Math.sin(a*1.37)*r,Math.sin(a)*r);
-    f.rotation.set(Math.sin(a)*.6,a,Math.cos(a)*.7);
-    f.scale.setScalar(.70+(i%4)*.13+.14*Math.sin(ms*.019+i));
+   // Sasuke's face is about 1.45 units above the visual ground in the
+   // existing normalized 1.65-unit rig. The projectile starts JUST in front
+   // of the face rather than spawning at his feet or from his chest.
+   const mouth=origin.copy(slot.actor.position);
+   mouth.y=ground+1.45;
+   mouth.addScaledVector(toward,.34);
+   const progress=smooth(p,.27,.61);
+   const growth=smooth(p,.12,.30);
+   const size=(.28+.90*growth)*(1+.018*Math.sin(ms*.012));
+   // The projectile touches the enemy team at the SAME moment as the AoE damage.
+   group.visible=p>=.09&&p<impactTime/duration;
+   group.position.copy(mouth).lerp(end,progress);
+   group.scale.setScalar(size);
+   group.rotation.y=ms*.00065;group.rotation.x=.025*Math.sin(ms*.005);
+   if(shellClock){
+    shellClock.uTime.value=ms*.001;
+    shellClock.uOpacity.value=clamp(smooth(p,.08,.16)*(1-smooth(p,.585,.62)));
    }
+   fireCore.scale.setScalar(1+.035*Math.sin(ms*.010));
+   fireMid.rotation.y=-ms*.0008;
+   const wakeProgress=Math.max(0,progress);
    for(let i=0;i<fireTrail.length;i++){
-    const v=fireTrail[i],t=clamp(progress-i*.045);
-    v.visible=p>.27&&p<.80&&t>0;
-    v.position.copy(mouth).lerp(end,t);
-    v.position.y+=Math.sin(i*5.1+ms*.005)*.19;
-    v.position.z+=Math.cos(i*3.4)*.18;
-    v.scale.setScalar(.6+(i%4)*.22);
+    const wake=fireTrail[i],falloff=(i+1)/fireTrail.length;
+    wake.visible=p>.28&&p<impactTime/duration&&wakeProgress>.06;
+    wake.position.copy(mouth).lerp(group.position,clamp(wakeProgress*(1-falloff*.32)));
+    wake.position.addScaledVector(toward,-.18*falloff);
+    const scale=(.38+(1-falloff)*.62)*(1+.05*Math.sin(ms*.013+i));
+    wake.scale.set(scale,scale*.75,scale*1.14);
    }
-   light.intensity=.7+.30*Math.sin(ms*.018);
-  }else if(technique===1){
+   const blastAge=clamp((p-impactTime/duration)/.24);
+   fireBlast.visible=p>=impactTime/duration&&p<.88;
+   if(fireBlast.visible){
+    fireBlast.position.copy(end);
+    fireBlast.scale.setScalar(.10+1.60*smooth(blastAge,0,1));
+    fireBlastCore.scale.setScalar(.32+(.24*Math.sin(blastAge*Math.PI)));
+    fireShockRing.scale.setScalar(.30+1.6*smooth(blastAge,.03,.90));
+    fireBlast.rotation.y=ms*.0005;
+    const fade=1-smooth(p,.72,.88);
+    fireBlastCore.material.opacity=.56*fade;
+    shock[0].material.opacity=.22*fade;
+    fireShockRing.visible=fade>.01;
+   }
+   light.intensity=(p<impactTime/duration?.68:1.5)*(1+.08*Math.sin(ms*.016))*(1-smooth(p,.78,.91));
+   light.distance=technique===0?5.5:light.distance;
+    }else if(technique===1){
    const hand=slot.actor.localToWorld(V(-.38,.25,.27)); // rigged right palm, world-oriented
    hand.y=ground+1.04;
    orb.visible=p>.08&&p<.72;
@@ -221,7 +298,8 @@ function create(scene,slot,target,technique){
  return {update,dispose,inspect:()=>({id:'sasuke',technique,
   kind:['fireball','chidori','kirin'][technique],
   ultimate:technique===2?'lightning-dragon':null,
-  victims:victims.length,phase,elapsedMs,hit,disposed})};
+  victims:victims.length,phase,elapsedMs,hit,disposed,
+  fireball:technique===0?{shape:'solid-procedural-sphere',tongues:0,wake:6,mouthHeight:1.45}:null})};
 }
 window.SasukeCombat={durations,impactTimes,create};
 })();
