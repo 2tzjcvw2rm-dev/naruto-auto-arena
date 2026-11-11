@@ -62,6 +62,36 @@ window.BattlePose={
           fore=name.endsWith('-forearm'),thigh=name.endsWith('-thigh'),
           calf=name.endsWith('-calf'),foot=name.endsWith('-foot');
         const sign=right?1:-1;
+        if(id==='sasuke'&&!idle){
+          const seal=technique===0?ease(p,.07,.25)*(1-ease(p,.38,.58)):0;
+          const breatheFire=technique===0?ease(p,.35,.47)*(1-ease(p,.65,.85)):0;
+          const gather=technique===1?ease(p,.07,.26)*(1-ease(p,.48,.66)):0;
+          const thrust=technique===1?ease(p,.42,.60)*(1-ease(p,.70,.91)):0;
+          const summon=technique===2?ease(p,.08,.31)*(1-ease(p,.74,.98)):0;
+          const release=technique===2?ease(p,.48,.62)*(1-ease(p,.73,.91)):0;
+          if(name==='head'){
+            bone.rotation.x+=.16*breatheFire-.18*summon+.10*release;continue;
+          }
+          if(arm){
+            const rightAmount=right?1:.64;
+            bone.rotation.x-=rightAmount*(.64*seal+.17*breatheFire+.30*gather+.93*thrust+.78*summon);
+            bone.rotation.z+=sign*(.43*seal+.15*breatheFire+.23*gather+.14*thrust+.32*summon);
+            continue;
+          }
+          if(fore){
+            bone.rotation.x-=sign*(.65*seal+.27*gather+.21*thrust+.38*summon);
+            bone.rotation.z+=sign*(.20*seal+.17*release);continue;
+          }
+          if(name.endsWith('-hand')){
+            bone.rotation.z-=sign*(.25*seal+.12*thrust+.18*release);continue;
+          }
+          if(thigh||calf||foot){
+            const running=ease(p,.23,.38)*(1-ease(p,.51,.72));
+            if(thigh)bone.rotation.x+=(right?1:-1)*.46*running;
+            if(calf)bone.rotation.x+=(right?-1:1)*.20*running;
+            continue;
+          }
+        }
         if(id==='itachi'&&!idle&&(technique===0||technique===1||technique===2)){
           const seal=technique===0?ease(p,.06,.22)*(1-ease(p,.39,.58)):0;
           const sweep=technique===1?ease(p,.09,.25)*(1-ease(p,.65,.94)):0;
