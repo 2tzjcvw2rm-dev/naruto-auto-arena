@@ -158,9 +158,9 @@ function initArena3d(){
       if(!target)return false; // Keep original 2D fallback during GLB loading.
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
-      active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=868;
+      active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
       const susanoo=active.id==='madara'&&technique===2;
-      const duration=susanoo?2300:1400;
+      const duration=susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
       if(technique===2)window.BattleCinematics?.start({
         id:active.id,side,label:(skills[active.id]||[])[2],now:effectClock,duration
       });
@@ -168,7 +168,7 @@ function initArena3d(){
       active.effect=susanoo?createMadaraSusanoo(THREE,scene,active,target):
         (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null);
       if(target.side!==side){
-        target.hitAt=effectClock+(active.id==='itachi'?868:susanoo?1817:760);
+        target.hitAt=effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
         target.hitFrom=active.home.clone();
         // Battle HP updates immediately. Preserve a knocked-out model until
         // the impact reaches it, then honor the normal 'down' state.
@@ -224,7 +224,7 @@ function initArena3d(){
       shadow.visible=actor.visible;
       if(!actor.visible){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
-      const duration=susanoo?2300:1400;
+      const duration=susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
       const elapsed=slot.attackAt===null?-1:effectClock-slot.effectAt;
       const p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
       const direction=side==='allyTeam'?1:-1,target=slot.target;

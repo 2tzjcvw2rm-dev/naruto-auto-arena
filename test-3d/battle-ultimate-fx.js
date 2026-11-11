@@ -4,7 +4,7 @@
 const original=window.createArenaTechniqueFX;if(!original)return;
 window.createArenaTechniqueFX=function(THREE,scene,slot,target,tech,kind,color){
   const base=original(THREE,scene,slot,target,tech,kind,color);
-  if(tech!==2)return base;
+  if(tech!==2||slot.id==='itachi')return base;
   const id=slot.id,root=new THREE.Group(),resources=new Set(),items=[];
   root.name='unique-ultimate-'+id;scene.add(root);
   const shade=(c,opacity=.8)=>{

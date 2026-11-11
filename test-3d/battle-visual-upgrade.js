@@ -118,6 +118,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
   };
 }
 window.createArenaTechniqueFX=function(THREE,scene,slot,target,technique,kind,color){
+  if(slot.id==='itachi'&&technique===2)return createItachiSusanoo(THREE,scene,slot,target);
   if(slot.id==='itachi')
     return createItachiBattleFX(THREE,scene,slot,target,technique===0?1:2);
   const root=new THREE.Group();root.name='jutsu-'+slot.id+'-'+technique;scene.add(root);
