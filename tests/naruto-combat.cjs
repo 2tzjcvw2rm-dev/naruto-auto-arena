@@ -11,7 +11,7 @@ for(const file of ['index.html','test-3d/index.html']){
  function el(){return {classList:{add(){},toggle(){}},textContent:''}};function renderTeams(){};function log(){};function showDamage(){};
  let allies=[{id:'naruto',name:'Наруто',curHp:1000,atk:17,rage:0}],foes=[{id:'target',name:'Target',curHp:10000}];
  const scene=new THREE.Scene(),figure=new THREE.Group();figure.add(new THREE.Mesh(new THREE.BoxBufferGeometry(.6,1.8,.2),new THREE.MeshBasicMaterial()));
- const motion=NarutoCombat.mount(figure),slot={id:'naruto',actor:new THREE.Group(),fighter:figure,home:new THREE.Vector3(-2,0,0),effectAt:0};slot.actor.add(figure);
+ const motion=NarutoCombat.mount(figure),slot={id:'naruto',actor:new THREE.Group(),fighter:figure,home:new THREE.Vector3(-2,0,0),effectAt:0};slot.actor.add(figure);slot.motion=motion;
  const target={actor:new THREE.Group(),home:new THREE.Vector3(2,0,0)};let fx;
  function playJutsu(u,side,i,ts,ti,action,support,impact){slot.onImpact=impact;fx=NarutoCombat.create(scene,slot,target,action);}
  `);
@@ -23,6 +23,9 @@ for(const file of ['index.html','test-3d/index.html']){
  }
  run('allies[0].rage=0;battleAction(allies[0],allies,foes)');const hp=run('foes[0].curHp');run('fx.update(2500,0)');assert.equal(hp-run('foes[0].curHp'),17,'Skipped frames consume exactly three hits');
  run('allies[0].rage=0;battleAction(allies[0],allies,foes);allies[0].curHp=0');const dead=run('foes[0].curHp');run('fx.update(2500,0)');assert.equal(run('foes[0].curHp'),dead);
+ run('allies[0].curHp=1000;allies[0].rage=50;battleAction(allies[0],allies,foes)');const rasHP=run('foes[0].curHp');
+ run('fx.update(1400,0)');assert.equal(run('foes[0].curHp'),rasHP);run('fx.update(1430,0)');assert.equal(rasHP-run('foes[0].curHp'),26);run('fx.update(2400,0)');assert.equal(run('scene.children.length'),0);
+ assert.equal(run('figure.children[0].material.morphTargets'),true,'GPU deformation must be enabled');
  run('motion(0,100,false,-1,0)');assert.equal(run('figure.children[0].morphTargetInfluences[0]'),1);
  run('motion(0,800,true,.32,0)');assert(run('figure.children[0].morphTargetInfluences[2]+figure.children[0].morphTargetInfluences[3]')>.99);
 }

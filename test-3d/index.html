@@ -434,7 +434,7 @@ button:active{transform:translateY(2px)}
 #hero3d[data-hero="obito"]{background:radial-gradient(circle at 50% 43%,#6a55a030,transparent 20%),repeating-radial-gradient(ellipse at 50% 45%,transparent 0 23px,#7154a016 25px 28px,transparent 32px 46px),linear-gradient(180deg,#11121e 0%,#21162e 55%,#0d0d1b 100%)!important}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./battle-cinematics.css?v=20261105-cinematic1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
-<script src="./naruto-combat.js?v=20261111-clones" defer></script><script src="./battle-pose.js?v=20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=20261111-naruto-clones" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
+<script src="./naruto-combat.js?v=20261111-rasengan" defer></script><script src="./battle-pose.js?v=20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261105-cinematic1" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=20261111-naruto-rasengan" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
 </head>
 <body>
 <header>
@@ -972,7 +972,7 @@ ensureFormation();save();initTeams();renderTeamCards();
 function animateUnit(side,index,cls){let n=el(side+index);if(!n)return;n.classList.remove(cls);void n.offsetWidth;n.classList.add(cls);setTimeout(()=>n.classList.remove(cls),330/BattleTempo.speed)}
 let battleRoundNumber=0;
 const skills={
-naruto:['Теневые клоны','Теневые клоны','Расенган'],sasuke:['Удар','Огненный шар','Чидори'],sakura:['Удар','Усиление команды','Великое исцеление'],
+naruto:['Теневые клоны','Расенган','Расенган'],sasuke:['Удар','Огненный шар','Чидори'],sakura:['Удар','Усиление команды','Великое исцеление'],
 kakashi:['Кунай','Копирующая техника','Райкири'],hinata:['Мягкий кулак','Восемь триграмм','Защитная ладонь'],
 shikamaru:['Удар','Теневая ловушка','Теневое связывание'],gaara:['Песчаный удар','Песчаный щит','Песчаная буря'],
 itachi:['Katon — Огненный шар','Karasu Bunshin — Стая воронов','Сусаноо — Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
@@ -1118,7 +1118,7 @@ crit=Math.random()*100<Math.min(80,(own===allies?s.critChance:5)+(unit.bonusCrit
 const multiplier=action===2?3.1:action===1?1.55:1;
 const base=unit.atk+(own===allies?(unit.id==='naruto'?s.damage:s.damage*.25):0);
 dmg=Math.max(1,Math.round(base*multiplier*(unit.buff>0?1.25:1)*(crit?(own===allies?(s.critDamage+(unit.bonusCritDamage||0))/100:1.5):1)));
-if(unit.id==='naruto'&&action===0){
+if(unit.id==='naruto'&&action<2){
  const side=own===allies?'allyTeam':'foeTeam';let fraction=0,applied=0;
  const impact=(part=1)=>{if(unit.curHp<=0||(own!==allies&&own!==foes)||!own.includes(unit)||!opponents.includes(target))return;
  fraction=Math.min(1,fraction+part);const total=Math.round(dmg*fraction),hit=total-applied;applied=total;

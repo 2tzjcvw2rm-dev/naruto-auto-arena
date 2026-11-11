@@ -234,10 +234,10 @@ function initArena3d(){
       const direction=side==='allyTeam'?1:-1,target=slot.target;
       const enemyTarget=target&&target.side!==side;
       const kind=(jutsuVisuals[slot.id]||jutsuVisuals.naruto)[slot.technique][0];
-      const melee=enemyTarget&&slot.id!=='itachi'&&(slot.technique===0||kind==='melee');
+      const melee=enemyTarget&&slot.id!=='itachi'&&(slot.technique===0||kind==='melee'||slot.id==='naruto'&&slot.technique===1);
       // Distinct readable phases: anticipate, approach, plant, strike, retreat.
       const ease=(t,a,b)=>THREE.MathUtils.smoothstep(t,a,b);
-      const advance=p<0?0:slot.id==='naruto'&&slot.technique===0?ease(p,.22,.43)*(1-ease(p,.77,.98)):ease(p,.10,.31)*(1-ease(p,.60,.93));
+      const advance=p<0?0:slot.id==='naruto'&&slot.technique<2?ease(p,slot.technique===1?.28:.22,slot.technique===1?.55:.43)*(1-ease(p,.77,.98)):ease(p,.10,.31)*(1-ease(p,.60,.93));
       const impact=p<0?0:ease(p,.42,.52)*(1-ease(p,.59,.73));
       slot.phase=p<0?'idle':p<.10?'anticipate':p<.31?'approach':p<.43?'windup':p<.62?'strike':p<.93?'retreat':'recover';
       actor.position.copy(home);
@@ -245,7 +245,7 @@ function initArena3d(){
       if(enemyTarget&&p>=0){
         const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.max(.01,Math.hypot(dx,dz));
         yaw=Math.atan2(dx,dz);
-        const travel=susanoo?0:melee?Math.max(0,distance-1.2):.16;
+        const travel=susanoo?0:melee?Math.max(0,distance-(slot.id==='naruto'?.70:1.2)):.16;
         actor.position.x+=dx/distance*travel*advance;
         actor.position.z+=dz/distance*travel*advance;
       }
@@ -271,7 +271,7 @@ function initArena3d(){
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
-      if(slot.onImpact&&!(slot.id==='naruto'&&slot.technique===0)&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
+      if(slot.onImpact&&!(slot.id==='naruto'&&slot.technique<2)&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }
