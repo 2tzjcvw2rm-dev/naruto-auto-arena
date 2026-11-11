@@ -96,7 +96,7 @@ function createItachiBattleFX(THREE,scene,slot,target,technique){
           o.bird.scale.setScalar((.85+(i%4)*.11)*fade);
           o.bird.visible=fade>.02;
           const flap=Math.sin(ms*.038+i*.82)*.76;
-          o.left.rotation.z=flap;o.right.rotation.z=flap;
+          o.left.rotation.z=flap;o.right.rotation.z=-flap;
         }
         for(let i=0;i<feathers.length;i++){
           const f=feathers[i],a=i*2.39996+ms*.003;
