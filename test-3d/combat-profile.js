@@ -303,7 +303,7 @@ const CombatProfile = (() => {
       head.add(root);
       root.position.set(0,.028,.081);
     }else if(id==='kakashi'){
-      braceWrist(fighter);
+      if(!view.battle)braceWrist(fighter);
       fighter.getObjectByName('RightHand').add(root);
       root.position.set(.035,.052,.054);
     }else if(id==='hinata'){
@@ -317,7 +317,7 @@ const CombatProfile = (() => {
     const spine = fighter.getObjectByName('Spine1') || fighter.getObjectByName('Spine');
     const rest = spine?.quaternion.clone();
     const breath = new THREE.Quaternion(), axis = new THREE.Vector3(1,0,0);
-    const updates=id==='itachi'&&view.battle?[]:roots.map(anchor=>techniques[id](anchor,view));
+    const updates=(id==='itachi'||id==='kakashi')&&view.battle?[]:roots.map(anchor=>techniques[id](anchor,view));
     function frame(dt, ms) {
       const t = ms*.001;
       if (spine) spine.quaternion.copy(rest).multiply(breath.setFromAxisAngle(axis,.014*Math.sin(t*1.8)));

@@ -17,7 +17,7 @@ assert.equal(new Set(available.foes).size,5);
 assert(html.includes("const previousTeam="),'Unavailable old team slots must be migrated');
 
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
-load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
+load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
 run(`let arena3d=null,arenaUnavailable=false,paused=false;
@@ -67,7 +67,7 @@ if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&
   if(technique===2)assert.equal(typeof live[0].ultimate,'string',
     'Each non-Madara ultimate should have a unique 3D identity');
 }
-for(let tick=1;tick<=((['naruto','sasuke'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?88:technique===2?60:40);tick++)frame();
+for(let tick=1;tick<=((['naruto','sasuke','kakashi'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?88:technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }

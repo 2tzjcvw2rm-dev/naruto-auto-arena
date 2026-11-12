@@ -62,6 +62,20 @@ window.BattlePose={
           fore=name.endsWith('-forearm'),thigh=name.endsWith('-thigh'),
           calf=name.endsWith('-calf'),foot=name.endsWith('-foot');
         const sign=right?1:-1;
+        if(id==='kakashi'){
+          const seal=idle?0:ease(p,.02,.15)*(1-ease(p,.22,.32));
+          const run=idle||technique!==0?0:ease(p,.27,.36)*(1-ease(p,.77,.96));
+          const charge=idle?0:ease(p,.19,.30)*(1-ease(p,.78,.98));
+          const cycle=Math.sin(now*.035)*run;
+          if(name==='head'){bone.rotation.x+=.10*seal+.16*run;continue;}
+          if(arm){bone.rotation.x-=.38+.50*seal+(right?.55:.15)*charge;
+            bone.rotation.z+=sign*(.16+.48*seal);continue;}
+          if(fore){bone.rotation.x-=sign*(.45+.65*seal+.25*charge);continue;}
+          if(name.endsWith('-hand')){bone.rotation.z+=sign*.20*seal;continue;}
+          if(thigh){bone.rotation.x+=sign*(.08+.65*cycle);continue;}
+          if(calf){bone.rotation.x-=.12+.48*Math.max(0,sign*cycle);continue;}
+          if(foot){bone.rotation.x+=sign*.17*cycle;continue;}
+        }
         if(id==='sasuke'&&!idle){
           const seal=technique===0?ease(p,.07,.25)*(1-ease(p,.38,.58)):0;
           const breatheFire=technique===0?ease(p,.35,.47)*(1-ease(p,.65,.85)):0;

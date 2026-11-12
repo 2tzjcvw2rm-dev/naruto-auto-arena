@@ -60,3 +60,4 @@ jobs:
           node tests/itachi-combat.cjs
           node tests/naruto-combat.cjs
           node tests/sasuke-combat.cjs
+          node tests/kakashi-combat.cjs
