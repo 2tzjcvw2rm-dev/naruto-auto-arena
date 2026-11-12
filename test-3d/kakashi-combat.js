@@ -5,6 +5,7 @@ const T=window.THREE,V=(x=0,y=0,z=0)=>new T.Vector3(x,y,z),ease=T.MathUtils.smoo
 const durations=[2800,3000,3200],impactTimes=[1750,2040,2300];
 function create(scene,slot,target,technique){
  if(technique===1)return waterDragon(scene,slot,target);
+ if(technique===2)return kamui(scene,slot,target);
  const root=new T.Group();root.name='kakashi-double-chidori';scene.add(root);
  const resources=new Set(),victims=(slot.targets||[target]).filter(Boolean);
  let disposed=false,hit=false,elapsedMs=0;
@@ -137,5 +138,54 @@ function waterDragon(scene,slot,target){
  return {update,dispose,inspect:()=>({id:'kakashi',technique:1,kind:'water-dragon',victims:1,bodyRings:count,elapsedMs,hit,disposed})};
 }
 
-window.KakashiCombat={durations,impactTimes,create};
+function portal(scene,target,returning=false){
+ const root=new T.Group();root.name=returning?'kamui-return':'kamui-distortion';scene.add(root);
+ const resources=new Set(),materials=[],spirals=[];
+ const dark=new T.MeshBasicMaterial({color:0x080314,transparent:true,opacity:.9,side:T.DoubleSide,depthWrite:false});resources.add(dark);
+ const diskGeo=new T.CircleGeometry(.58,48);resources.add(diskGeo);const disk=new T.Mesh(diskGeo,dark);root.add(disk);
+ for(let i=0;i<5;i++){
+  const g=new T.BufferGeometry(),p=new Float32Array(80*3);g.setAttribute('position',new T.BufferAttribute(p,3));resources.add(g);
+  const m=new T.LineBasicMaterial({color:i%2?0x6a3aa7:0xb997ff,transparent:true,opacity:.85,depthWrite:false,blending:T.AdditiveBlending});resources.add(m);materials.push(m);
+  const line=new T.Line(g,m);line.frustumCulled=false;root.add(line);spirals.push({g,p,line});
+ }
+ let disposed=false;
+ function update(ms,ground){
+  if(disposed)return false;const p=ms/(returning?1200:3200);
+  if(p>=1){dispose();return false;}
+  const size=returning?(1-ease(p,.4,1)):(ease(p,.18,.48)*(1-ease(p,.78,1)));
+  root.position.copy(target.home).setY(ground+.9);root.rotation.x=-.25;root.scale.setScalar(.03+1.55*size);root.rotation.z=ms*.004;
+  for(let i=0;i<spirals.length;i++){
+   const s=spirals[i];for(let j=0;j<80;j++){const t=j/79,a=t*Math.PI*4+i*Math.PI*.4-ms*.003,r=.04+t*.83;
+    s.p[j*3]=Math.cos(a)*r;s.p[j*3+1]=Math.sin(a)*r;s.p[j*3+2]=-.18*(1-t)+.025*Math.sin(a*3);}
+   s.g.attributes.position.needsUpdate=true;
+  }
+  dark.opacity=.9*size;materials.forEach(m=>m.opacity=.85*size);
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;scene.remove(root);resources.forEach(r=>r.dispose());}
+ return {update,dispose};
+}
+function kamui(scene,slot,target){
+ const vortex=portal(scene,target),root=new T.Group();root.name='kakashi-mangekyo';scene.add(root);
+ const resources=new Set(),red=new T.MeshBasicMaterial({color:0xff263b,transparent:true,opacity:.95,depthWrite:false,side:T.DoubleSide}),black=new T.MeshBasicMaterial({color:0x180517,side:T.DoubleSide});resources.add(red);resources.add(black);
+ const geo=new T.CircleGeometry(.09,32);resources.add(geo);const eye=new T.Mesh(geo,red);root.add(eye);
+ const pupilGeo=new T.CircleGeometry(.028,16);resources.add(pupilGeo);const pupil=new T.Mesh(pupilGeo,black);pupil.position.z=.002;root.add(pupil);
+ for(let i=0;i<3;i++){const g=new T.TorusGeometry(.038,.008,5,16,Math.PI*1.4);resources.add(g);const tomoe=new T.Mesh(g,black);const a=i*Math.PI*2/3;tomoe.position.set(Math.cos(a)*.035,Math.sin(a)*.035,.003);tomoe.rotation.z=a;root.add(tomoe);}
+ let hit=false,disposed=false,elapsedMs=0;
+ function update(ms,ground){
+  if(disposed)return false;elapsedMs=ms;const p=ms/durations[2];
+  if(ms>=impactTimes[2]&&!hit){hit=true;const f=slot.onImpact;slot.onImpact=null;f?.();}
+  if(p>=1){dispose();return false;}
+  const head=slot.actor.getObjectByName('Head');slot.actor.updateMatrixWorld(true);
+  if(head){head.getWorldPosition(root.position);root.position.z+=.08;}else root.position.copy(slot.actor.position).add(V(0,1.45,.1));
+  root.visible=p>.05&&p<.45;root.rotation.z=ms*.002;
+  target.kamuiWarp=1-ease(p,.40,.72)*.995;
+  vortex.update(ms,ground);
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;target.kamuiWarp=1;vortex.dispose();scene.remove(root);resources.forEach(r=>r.dispose());}
+ return {update,dispose,inspect:()=>({id:'kakashi',technique:2,kind:'kamui',ultimate:'space-time-banishment',victims:1,elapsedMs,hit,disposed})};
+}
+
+window.KakashiCombat={durations,impactTimes,create,portal};
 })();

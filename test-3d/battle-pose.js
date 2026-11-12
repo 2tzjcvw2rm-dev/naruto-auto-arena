@@ -37,7 +37,7 @@ window.BattlePose={
     const joints=new Map(),all=[];
     fighter.traverse(node=>{
       if(!node.isBone)return;
-      const key=group(node.name);
+      const key=id==='kakashi'&&/^spine1$/i.test(node.name)?'spine':group(node.name);
       if(key&&!joints.has(key))joints.set(key,node);
     });
     for(const [name,bone] of joints)all.push({name,bone,rest:bone.rotation.clone()});
@@ -68,7 +68,8 @@ window.BattlePose={
           const run=idle||technique!==0?0:ease(p,.27,.36)*(1-ease(p,.77,.96));
           const charge=idle?0:ease(p,.19,.30)*(1-ease(p,.78,.98));
           const cycle=Math.sin(now*.035)*run;
-          if(name==='head'){bone.rotation.x+=.10*seal+.16*run;continue;}
+          if(name==='spine'){bone.rotation.x+=breathe+.12*seal+.10*run;continue;}
+          if(name==='head'){bone.rotation.x+=.10*seal+.16*run-(technique===2&&!idle?.22*charge:0);continue;}
           if(arm){bone.rotation.x-=.38+.50*seal+(right?.55:.15)*charge;
             bone.rotation.z+=sign*(.16+.48*seal+.12*seals);continue;}
           if(fore){bone.rotation.x-=sign*(.45+.65*seal+.25*charge);continue;}
