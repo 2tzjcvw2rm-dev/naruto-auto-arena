@@ -34,6 +34,7 @@ const specs={
 };
 window.BattlePose={
   mount(fighter,id){
+    if(id==='madara'&&window.MadaraCombat)return MadaraCombat.pose(fighter);
     const joints=new Map(),all=[];
     fighter.traverse(node=>{
       if(!node.isBone)return;

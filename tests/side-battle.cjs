@@ -17,7 +17,7 @@ assert.equal(new Set(available.foes).size,5);
 assert(html.includes("const previousTeam="),'Unavailable old team slots must be migrated');
 
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
-load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
+load('test-3d/madara-combat.js');load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
 run(`let arena3d=null,arenaUnavailable=false,paused=false;
@@ -35,8 +35,8 @@ const sourceModels={};function fetchHeroModel(key,cb){cb(sourceModels[key].clone
 // Decode original mesh/skeleton/animation data, omitting textures for a GPU-free check.
 async function parse(name){const b=fs.readFileSync('test-3d/models/'+name+'.glb'),n=b.readUInt32LE(12),json=JSON.parse(b.subarray(20,20+n).toString()),start=20+n,bin=b.subarray(start+8,start+8+b.readUInt32LE(start));delete json.images;delete json.textures;delete json.samplers;delete json.materials;for(const m of json.meshes||[])for(const p of m.primitives)delete p.material;const j=Buffer.from(JSON.stringify(json)),pad=(4-j.length%4)%4,jp=Buffer.concat([j,Buffer.alloc(pad,32)]),out=Buffer.alloc(12+8+jp.length+8+bin.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(jp.length,12);out.writeUInt32LE(0x4e4f534a,16);jp.copy(out,20);let off=20+jp.length;out.writeUInt32LE(bin.length,off);out.writeUInt32LE(0x004e4942,off+4);bin.copy(out,off+8);return new Promise((resolve,reject)=>new context.THREE.GLTFLoader().parse(out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength),'',resolve,reject));}
 (async()=>{
-const names=['naruto','sasuke','sakura-team7','kakashi-combat','hinata-combat','itachi-combat','pain-combat','kisame','deidara','konan','madara','obito','gaara','shikamaru'];
-for(const name of names){const g=await parse(name);context.loadedModel=g.scene;run(`sourceModels[${JSON.stringify(name==='sakura-team7'?'sakura':name)}]=loadedModel;`)}
+const names=['naruto','sasuke','sakura-team7','kakashi-combat','hinata-combat','itachi-combat','pain-combat','kisame','deidara','konan','madara-combat','obito','gaara','shikamaru'];
+for(const name of names){const g=await parse(name);context.loadedModel=g.scene;run(`sourceModels[${JSON.stringify(name==='sakura-team7'?'sakura':name==='madara-combat'?'madara':name)}]=loadedModel;`)}
 // Use the same skeleton-safe clone as the game.
 run(html.slice(html.indexOf('function instantiateHero('),html.indexOf('function fetchHeroModel(')));
 run(`fetchHeroModel=(key,cb)=>cb(instantiateHero(sourceModels[key]));
@@ -67,7 +67,7 @@ if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&
   if(technique===2)assert.equal(typeof live[0].ultimate,'string',
     'Each non-Madara ultimate should have a unique 3D identity');
 }
-for(let tick=1;tick<=((['naruto','sasuke','kakashi'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?88:technique===2?60:40);tick++)frame();
+for(let tick=1;tick<=((['naruto','sasuke','kakashi','madara'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?100:technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }

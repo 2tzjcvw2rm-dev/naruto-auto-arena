@@ -435,7 +435,7 @@ button:active{transform:translateY(2px)}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./battle-cinematics.css?v=20261105-cinematic1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
 <script src="./naruto-combat.js?v=20261111-ultimate" defer></script>
-<script src="./kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./battle-pose.js?v=20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261111-naruto" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=20261112-kakashi3-20261111-naruto-ultimate" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
+<script src="./madara-combat.js?v=20261112-dance1" defer></script><script src="./kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./battle-pose.js?v=madara-dance1-20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261111-naruto" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=madara-dance1-20261112-kakashi3-20261111-naruto-ultimate" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261105-ribs1" defer></script>
 <style>.in-kamui>svg,.in-kamui>.battle-model-image,.in-kamui>.unit-hp,.in-kamui>.rage-bar,.in-kamui>.unit-name,.in-kamui>.unit-power{visibility:hidden!important}.kamui-status{display:block;color:#e7d4ff;background:#281742e8;border:1px solid #a68bea;border-radius:7px;padding:4px 6px;font-size:10px;white-space:nowrap;position:absolute;left:50%;transform:translateX(-50%);top:20px}</style></head>
 <body>
 <header>
@@ -981,7 +981,7 @@ shikamaru:['Удар','Теневая ловушка','Теневое связы
 itachi:['Katon — Огненный шар','Karasu Bunshin — Стая воронов','Сусаноо — Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
-madara:['Удар Учиха','Огненный шар','Сусаноо'],
+madara:['Танец Бога Войны','Огненный шар','Сусаноо'],
 konan:['Бумажный клинок','Бумажные крылья','Бумажное копьё'],
 obito:['Удар цепью','Камуи','Изанаги']
 };
@@ -999,7 +999,7 @@ konan:[['melee','#eadbff','🗡️'],['paper','#f4efff','📄'],['paper','#cfaaf
 kisame:[['melee','#79b7dc','🗡️'],['water','#4ac9ff','🌊'],['water','#3b9bdf','🦈']],
 deidara:[['melee','#e7c984','💣'],['bomb','#f5dc86','🐦'],['bomb','#ffaf42','💥']],
 sasori:[['melee','#ba8991','🪡'],['shadow','#c36e9a','☠️'],['bomb','#ed5a76','🎎']],
-madara:[['melee','#e99690','⚔️'],['fire','#ff623b','🔥'],['orb','#9c6eff','👹']],
+madara:[['melee','#8ddfff',''],['fire','#ff623b','🔥'],['orb','#9c6eff','👹']],
 obito:[['melee','#d7b5a1','⛓️'],['shadow','#8261ca','🌀'],['orb','#cba2ff','👁️']]
 };
 let rasengan3d=null;
@@ -1068,7 +1068,8 @@ const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0]
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
 if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex,onImpact))return;
-if(onImpact&&unit.id==='kakashi')BattleTempo.after('kakashi-impact',KakashiCombat.impactTimes[action],onImpact);
+if(onImpact&&unit.id==='madara'&&action===0){[1008,1332,1692,2700].forEach((ms,i)=>BattleTempo.after('madara-hit-'+i,ms,()=>onImpact(i)));}
+else if(onImpact&&unit.id==='kakashi')BattleTempo.after('kakashi-impact',KakashiCombat.impactTimes[action],onImpact);
 else if(onImpact)BattleTempo.after(unit.id==='sasuke'?'sasuke-impact':'itachi-impact',unit.id==='sasuke'?[1281,1495,2516][action]:(action===2?1817:868),onImpact);
 if(unit.id==='itachi')return;
 const from=source.getBoundingClientRect(),to=target.getBoundingClientRect(),box=arena.getBoundingClientRect();
@@ -1128,6 +1129,20 @@ if(unit.id==='naruto'){
  fraction=Math.min(1,fraction+part);const total=Math.round(dmg*fraction),hit=total-applied;applied=total;
  target.curHp=Math.max(0,target.curHp-hit);if(own===allies&&hit)showDamage(hit,crit);
  log(unit.name+' · '+skill+' → '+target.name+': −'+hit+(crit?' КРИТ':''));renderTeams();};
+ playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
+ if(unit.buff>0)unit.buff--;return;
+}
+if(unit.id==='madara'&&action===0){
+ const side=own===allies?'allyTeam':'foeTeam';
+ const neighbors=alive.filter(v=>v!==target).sort((a,b)=>Math.abs(opponents.indexOf(a)-opponents.indexOf(target))-Math.abs(opponents.indexOf(b)-opponents.indexOf(target))).slice(0,2);
+ const applied=new Set();
+ const impact=(hit=3)=>{if(applied.has(hit)||unit.curHp<=0||unit.kamuiUntilRound||(own!==allies&&own!==foes)||!own.includes(unit))return;applied.add(hit);
+ const victims=hit===3?[target,...neighbors]:[target];
+ for(const victim of victims){if(!opponents.includes(victim)||victim.curHp<=0||victim.kamuiUntilRound)continue;
+ const amount=Math.max(1,Math.round(dmg*(victim===target?(hit===3?.40:.20):.35)));
+ victim.curHp=Math.max(0,victim.curHp-amount);if(own===allies)showDamage(amount,crit);
+ log(unit.name+' · '+skill+' → '+victim.name+': −'+amount+(crit?' КРИТ':''));}
+ renderTeams();};
  playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
  if(unit.buff>0)unit.buff--;return;
 }
@@ -1298,7 +1313,7 @@ function showGearHint(msg){let e=el('profileHint');if(e)e.textContent=msg}
 
 // User-supplied Team 7 Sakura keeps her existing hand-sign pose, without re-posing.
 const customModelVersions={kakashi:'upright3',pain:'ff1',itachi:'original2',hinata:'upright3',konan:'pre-akatsuki-1',madara:'user-original-1',obito:'user-original-1'};
-const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-team7.glb?v=20261104team7':'./models/'+hero.id+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
+const remoteHeroModels=Object.fromEntries([...roster,...enemies].map(hero=>[hero.id,hero.id==='sakura'?'./models/sakura-team7.glb?v=20261104team7':'./models/'+(hero.id==='madara'?'madara-combat':hero.id)+'.glb'+(customModelVersions[hero.id]?'?v='+customModelVersions[hero.id]:'')]));
 const upgradedFighters=new Set(Object.keys(remoteHeroModels));
 const modelCache={};
 const pendingModels={};
