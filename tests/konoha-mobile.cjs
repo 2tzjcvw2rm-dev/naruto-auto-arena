@@ -74,6 +74,19 @@ const server=http.createServer((req,res)=>{
     await page.evaluate(()=>{BattleTempo.cancel('round');BattleTempo.cancel('action');clearTimeout(timer);clearTimeout(actionTimer);roundInProgress=false;paused=false;document.querySelectorAll('.jutsu-fx').forEach(node=>node.remove());});
     await page.clock.pauseAt(new Date(Date.now()+1000));
     async function advance(ms){for(let left=ms;left>0;left-=100)await page.clock.fastForward(Math.min(100,left));}
+    // Kakashi: real rig, independent clone, exact delayed AoE and all speed modes.
+    for(const speed of [1,2,3]){
+      await page.evaluate(speed=>{BattleTempo.setSpeed(speed);allies.forEach(u=>{u.curHp=u.maxHp=10000;});foes.forEach(u=>{u.curHp=u.maxHp=10000;});const k=allies.find(u=>u.id==='kakashi');k.rage=0;renderTeams();battleAction(k,allies,foes);},speed);
+      await advance(1350/speed);
+      const fx=await page.evaluate(()=>arena3d.effects().find(x=>x.id==='kakashi'));
+      assert(fx&&fx.clone&&fx.rig.rigged&&fx.victims===5,'Real rigged Kakashi clone must connect all five targets');
+      if(speed===1)await page.locator('.arena').screenshot({path:'artifacts/kakashi-double-chidori-webkit.png'});
+      assert(await page.evaluate(()=>foes.every(u=>u.curHp===10000)),'Kakashi hit too early');
+      await advance(1800/speed);
+      assert(await page.evaluate(()=>foes.every(u=>u.curHp<10000)),'Kakashi must hit five enemies');
+      assert.equal(await page.evaluate(()=>arena3d.effects().length),0,'Kakashi effect leaked');
+    }
+    console.log('PASS Kakashi: mobile WebKit independent rigged clone, all-target damage, x1/x2/x3, cleanup');
     // Itachi: two natural cycles through the production 5v5 action handler.
     for(const speed of [1,2,3]){
       await page.evaluate(speed=>{BattleTempo.setSpeed(speed);foes.find(u=>u.id==='itachi').rage=0;},speed);
