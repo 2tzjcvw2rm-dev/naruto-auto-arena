@@ -4,6 +4,7 @@
 const T=window.THREE,V=(x=0,y=0,z=0)=>new T.Vector3(x,y,z),ease=T.MathUtils.smoothstep;
 const durations=[2800,3000,3200],impactTimes=[1750,2040,2300];
 function create(scene,slot,target,technique){
+ if(technique===1)return waterDragon(scene,slot,target);
  const root=new T.Group();root.name='kakashi-double-chidori';scene.add(root);
  const resources=new Set(),victims=(slot.targets||[target]).filter(Boolean);
  let disposed=false,hit=false,elapsedMs=0;
@@ -69,5 +70,72 @@ function create(scene,slot,target,technique){
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;slot.fighter.rotation.x=0;slot.actor.scale.copy(initialScale);slot.actor.position.x=slot.home.x;slot.actor.position.z=slot.home.z;clonePose.dispose();clone.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.dispose();});scene.remove(root);resources.forEach(r=>r.dispose());}
  return {update,dispose,inspect:()=>({id:'kakashi',technique,kind:'double-chidori',elapsedMs,hit,disposed,victims:victims.length,clone:clone.visible,rig:clonePose.inspect()})};
 }
+function waterDragon(scene,slot,target){
+ const root=new T.Group();root.name='kakashi-water-dragon';scene.add(root);
+ const resources=new Set();let hit=false,disposed=false,elapsedMs=0;
+ const mat=(color,opacity)=>{const m=new T.MeshPhongMaterial({color,emissive:color,emissiveIntensity:.22,shininess:100,transparent:true,opacity,depthWrite:false,side:T.DoubleSide});resources.add(m);return m;};
+ const water=mat(0x32b9ed,.64),foam=mat(0xcafaff,.80),dark=mat(0x083c63,.88);
+ const mesh=(g,m,parent=root)=>{resources.add(g);const o=new T.Mesh(g,m);parent.add(o);return o;};
+ const head=new T.Group();root.add(head);
+ const skull=mesh(new T.SphereGeometry(.32,16,12),water,head);skull.scale.set(1,.85,1.4);
+ const upper=mesh(new T.SphereGeometry(.25,14,10),water,head);upper.position.set(0,.08,.35);upper.scale.set(.90,.55,1.60);
+ const jawPivot=new T.Group();head.add(jawPivot);jawPivot.position.set(0,-.12,.07);
+ const jaw=mesh(new T.SphereGeometry(.24,14,10),water,jawPivot);jaw.position.z=.27;jaw.scale.set(.88,.32,1.65);
+ const mouth=mesh(new T.SphereGeometry(.20,12,8),dark,head);mouth.position.set(0,-.06,.31);mouth.scale.set(.8,.45,1.6);
+ for(const sign of [-1,1]){
+  const eye=mesh(new T.SphereGeometry(.06,8,6),foam,head);eye.position.set(sign*.26,.15,.25);
+  const horn=mesh(new T.ConeGeometry(.075,.5,7),foam,head);horn.position.set(sign*.21,.39,-.12);horn.rotation.set(-.45,0,sign*.4);
+  for(let j=0;j<4;j++){const tooth=mesh(new T.ConeGeometry(.025,.12,5),foam,head);tooth.position.set(sign*.16,-.035,.2+j*.12);tooth.rotation.x=Math.PI;}
+ }
+ // Connected rings form one continuous deforming tube, tapering toward the tail.
+ const count=40,sides=10,positions=new Float32Array((count+1)*(sides+1)*3),indices=[];
+ for(let i=0;i<count;i++)for(let j=0;j<sides;j++){const a=i*(sides+1)+j,b=a+sides+1;indices.push(a,b,a+1,b,b+1,a+1);}
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(positions,3));geo.setIndex(indices);const body=mesh(geo,water);body.frustumCulled=false;
+ const rings=Array.from({length:3},(_,i)=>{const r=mesh(new T.TorusGeometry(.6+i*.22,.032,6,48),i===1?foam:water);r.rotation.x=-Math.PI/2;return r;});
+ const drops=Array.from({length:42},(_,i)=>mesh(new T.SphereGeometry(.035+(i%3)*.013,6,5),i%3?water:foam));
+ const dir=slot.side==='allyTeam'?1:-1,origin=slot.home.clone(),end=target.home.clone();
+ const points=Array.from({length:count+1},()=>V()),tangent=V(),normal=V(),binormal=V(),up=V(0,1,0),front=V(0,0,1);
+ function update(ms,ground){
+  if(disposed)return false;elapsedMs=ms;const p=ms/durations[1];
+  if(ms>=impactTimes[1]&&!hit){hit=true;target.hitAt=slot.effectAt+impactTimes[1];target.hitFrom=slot.home.clone();const f=slot.onImpact;slot.onImpact=null;f?.();}
+  if(p>=1){dispose();return false;}
+  const rise=ease(p,.12,.34),flight=ease(p,.35,.68),fade=1-ease(p,.68,.89);
+  for(let i=0;i<=count;i++){
+   const t=i/count,lag=t*.24,progress=ease(p-lag,.35,.68);
+   const v=points[i];v.copy(origin).lerp(end,progress);v.y=ground+.25+(1-t)*2.7*rise;
+   v.y=T.MathUtils.lerp(v.y,ground+1.0,progress);
+   v.x-=dir*t*1.6*rise;
+   v.z+=Math.sin(t*9-ms*.006)*.38*rise*Math.sin(t*Math.PI);
+   v.y+=Math.sin(t*10-ms*.004)*.23*rise*Math.sin(t*Math.PI);
+  }
+  head.visible=body.visible=p>.12&&p<.89;head.position.copy(points[0]);
+  tangent.copy(points[0]).sub(points[1]).normalize();head.quaternion.setFromUnitVectors(front,tangent);head.scale.setScalar((.2+rise*.95)*fade);
+  jawPivot.rotation.x=.18+.20*Math.sin(ms*.006)**2;
+  for(let i=0;i<=count;i++){
+   const t=i/count,v=points[i];tangent.copy(points[Math.max(0,i-1)]).sub(points[Math.min(count,i+1)]).normalize();
+   normal.crossVectors(tangent,up);if(normal.lengthSq()<.0001)normal.set(1,0,0);normal.normalize();binormal.crossVectors(tangent,normal).normalize();
+   const radius=(.025+.27*(1-t))*rise*fade;
+   for(let j=0;j<=sides;j++){const a=j/sides*Math.PI*2,r=radius*(1+.06*Math.sin(ms*.012+i*.7+j)),k=(i*(sides+1)+j)*3;
+    positions[k]=v.x+(normal.x*Math.cos(a)+binormal.x*Math.sin(a))*r;
+    positions[k+1]=v.y+(normal.y*Math.cos(a)+binormal.y*Math.sin(a))*r;
+    positions[k+2]=v.z+(normal.z*Math.cos(a)+binormal.z*Math.sin(a))*r;
+   }
+  }
+  geo.attributes.position.needsUpdate=true;geo.computeVertexNormals();
+  for(let i=0;i<rings.length;i++){const r=rings[i];r.visible=p>.08;r.position.copy(p<.68?origin:end).setY(ground+.03+i*.015);r.rotation.z=ms*.002*(i%2?1:-1);r.scale.setScalar(p<.68?(.1+rise)*(1-ease(p,.4,.67)):(.2+(p-.68)*5));}
+  for(let i=0;i<drops.length;i++){
+   const drop=drops[i],a=i*2.399,age=p<.68?(p-.12)*1.3:(p-.68)*3.1;
+   drop.visible=age>0&&age<1;drop.position.copy(p<.68?origin:end);
+   drop.position.x+=Math.cos(a)*age*(p<.68?1.1:2);drop.position.z+=Math.sin(a)*age*(p<.68?1.1:2);
+   drop.position.y=ground+.1+Math.sin(age*Math.PI)*(p<.68?1.3:2.2)+(i%4)*.07;
+   drop.scale.set(.7,1.9*(1-age)+.2,.7);
+  }
+  water.opacity=.64*(1-ease(p,.82,1));foam.opacity=.8*(1-ease(p,.82,1));
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;scene.remove(root);resources.forEach(r=>r.dispose());}
+ return {update,dispose,inspect:()=>({id:'kakashi',technique:1,kind:'water-dragon',victims:1,bodyRings:count,elapsedMs,hit,disposed})};
+}
+
 window.KakashiCombat={durations,impactTimes,create};
 })();

@@ -63,15 +63,16 @@ window.BattlePose={
           calf=name.endsWith('-calf'),foot=name.endsWith('-foot');
         const sign=right?1:-1;
         if(id==='kakashi'){
-          const seal=idle?0:ease(p,.02,.15)*(1-ease(p,.22,.32));
+          const seal=idle?0:ease(p,.02,.15)*(1-ease(p,technique===1?.34:.22,technique===1?.44:.32));
+          const seals=technique===1&&!idle?Math.sin(now*.028)*seal:0;
           const run=idle||technique!==0?0:ease(p,.27,.36)*(1-ease(p,.77,.96));
           const charge=idle?0:ease(p,.19,.30)*(1-ease(p,.78,.98));
           const cycle=Math.sin(now*.035)*run;
           if(name==='head'){bone.rotation.x+=.10*seal+.16*run;continue;}
           if(arm){bone.rotation.x-=.38+.50*seal+(right?.55:.15)*charge;
-            bone.rotation.z+=sign*(.16+.48*seal);continue;}
+            bone.rotation.z+=sign*(.16+.48*seal+.12*seals);continue;}
           if(fore){bone.rotation.x-=sign*(.45+.65*seal+.25*charge);continue;}
-          if(name.endsWith('-hand')){bone.rotation.z+=sign*.20*seal;continue;}
+          if(name.endsWith('-hand')){bone.rotation.z+=sign*(.20*seal+.26*seals);continue;}
           if(thigh){bone.rotation.x+=sign*(.08+.65*cycle);continue;}
           if(calf){bone.rotation.x-=.12+.48*Math.max(0,sign*cycle);continue;}
           if(foot){bone.rotation.x+=sign*.17*cycle;continue;}

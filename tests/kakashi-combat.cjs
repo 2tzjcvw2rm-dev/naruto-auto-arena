@@ -9,7 +9,7 @@ for(const page of ['index.html','test-3d/index.html']){
  run(fs.readFileSync('test-3d/kakashi-combat.js','utf8'));
  run('function instantiateHero(o){return o.clone(true)}');
  const html=fs.readFileSync(page,'utf8');
- assert(html.includes('kakashi-combat.js?v=20261112-double1'),page+': missing module');
+ assert(html.includes('kakashi-combat.js?v=20261112-water1'),page+': missing module');
  run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
  run(html.slice(html.indexOf('function battleAction('),html.indexOf('function finishBattle(')));
  run([
@@ -32,5 +32,10 @@ for(const page of ['index.html','test-3d/index.html']){
   for(let ms=1750;ms<2801;ms+=17*speed){c.ms=ms;run('fx.update(ms,-2.65);scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.matrixWorld.elements.every(Number.isFinite))throw Error("Nonfinite transform")})');}
   run('fx.update(2801,-2.65)');assert.equal(run('foes.filter(v=>v.curHp===99989).length'),5);assert.equal(run('scene.children.length'),0);
  }
+ run('allies[0].rage=50;foes.forEach(v=>v.curHp=100000);battleAction(allies[0],allies,foes)');
+ assert.equal(run('fx.inspect().kind'),'water-dragon');
+ run('fx.update(2039,-2.65)');assert.equal(run('foes[0].curHp'),100000);
+ for(let ms=2040;ms<=3001;ms+=17){c.ms=ms;run('fx.update(ms,-2.65);scene.updateMatrixWorld(true);scene.traverse(o=>{if(!o.matrixWorld.elements.every(Number.isFinite))throw Error("Nonfinite dragon")})');}
+ run('fx.update(3001,-2.65)');assert.equal(run('foes.filter(v=>v.curHp===99958).length'),1);assert.equal(run('scene.children.length'),0);
 }
 console.log('PASS Kakashi double Chidori: two pages, 5 targets, 55% damage, impact timing, x1/x2/x3, cleanup');
