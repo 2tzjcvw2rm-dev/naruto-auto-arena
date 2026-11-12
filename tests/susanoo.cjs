@@ -12,7 +12,7 @@ for(let cast=0;cast<100;cast++){
   scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material)});
   for(const resource of [...geometries,...materials])resource.addEventListener('dispose',()=>disposed++);
   const before=disposed;
-  for(const t of [0,400,800,1200,1600,1800,2200]){
+  for(const t of [0,400,800,1200,1600,2200,3000,3318,3900,4199]){
     assert(fx.update(t,-2.65));scene.updateMatrixWorld(true);
     scene.traverse(o=>{assert(o.matrixWorld.elements.every(Number.isFinite),'Nonfinite geometry transform');});
     const skeleton=scene.getObjectByName('madara-perfect-susanoo');assert(skeleton);assert.equal(skeleton.position.x,actor.position.x);assert.equal(skeleton.position.y,-2.65);assert(skeleton.quaternion.angleTo(actor.quaternion)<1e-6);
