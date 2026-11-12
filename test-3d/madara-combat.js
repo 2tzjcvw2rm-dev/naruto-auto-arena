@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const T=window.THREE,E=T.MathUtils.smoothstep,L=T.MathUtils.lerp;
-const durations=[3600,1400,2300],impactTimes=[2700,868,1817];
+const durations=[3600,3400,2300],impactTimes=[2700,2312,1817];
 function pose(fighter){
  const bones=[];fighter.traverse(b=>{if(b.isBone)bones.push({b,rest:b.rotation.clone()});});
  let phase='idle';
@@ -13,17 +13,18 @@ function pose(fighter){
   const punch1=combo?pulse(.22,.28,.34):0,punch2=combo?pulse(.31,.37,.43):0;
   const kick=combo?pulse(.40,.47,.55):0,fan=combo?pulse(.64,.75,.84):0;
   const gait=Math.sin(time*.035)*running;
+  const seal=active&&technique===1?pulse(.02,.16,.32):0;
   phase=!active?'idle':p<.22?'run':p<.43?'punch':p<.55?'kick':p<.67?'switch-target':p<.82?'gunbai':'return';
   for(const {b,rest} of bones){
    b.rotation.copy(rest);const s=b.name.startsWith('Right')?-1:1;
    if(b.name==='Spine'){b.rotation.x=.13*running+.08*Math.sin(time*.002);b.rotation.y=.5*(punch1-punch2)+.75*kick-.65*fan;}
    if(b.name==='Head'){b.rotation.y=-.18*(punch1-punch2);b.rotation.x=.08*running;}
    if(/Arm$/.test(b.name)&&!/Fore/.test(b.name)){
-    b.rotation.z=s*(.13+.30*running);b.rotation.x=-.20+s*.65*gait;
+    b.rotation.z=s*(.13+.30*running);b.rotation.x=-.20+s*.65*gait-1.1*seal;b.rotation.z-=s*.45*seal;
     b.rotation.x-=1.15*(s<0?punch1:punch2);b.rotation.y+=s*.55*(s<0?punch1:punch2);
     if(s<0){b.rotation.x-=1.5*fan;b.rotation.z-=.6*fan;}
    }
-   if(/ForeArm/.test(b.name)){b.rotation.x=-.35-.6*running+.32*(s<0?punch1:punch2)-.45*fan;}
+   if(/ForeArm/.test(b.name)){b.rotation.x=-.35-.6*running+.32*(s<0?punch1:punch2)-.45*fan-1.0*seal;}
    if(/UpLeg/.test(b.name)){b.rotation.x=s*.60*gait-(s<0?1.2*kick:0);b.rotation.z+=s*.04;}
    if(/^(Right|Left)Leg$/.test(b.name))b.rotation.x=.18+.60*Math.max(0,-s*gait)-(s<0?.15*kick:0);
    if(/Foot/.test(b.name))b.rotation.x=-.12*Math.max(0,s*gait);
@@ -32,6 +33,7 @@ function pose(fighter){
  return {update,dispose(){bones.forEach(({b,rest})=>b.rotation.copy(rest));},inspect:()=>({id:'madara',rigged:bones.length===15,bones:bones.length,phase,joints:bones.map(x=>x.b.name)})};
 }
 function create(scene,slot,target,technique){
+ if(technique===1)return clones(scene,slot,target);
  if(technique!==0)return null;
  const root=new T.Group();root.name='madara-war-dance';scene.add(root);
  const resources=new Set(),dir=slot.side==='allyTeam'?1:-1;
@@ -70,6 +72,42 @@ function create(scene,slot,target,technique){
  }
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;slot.actor.position.x=slot.home.x;slot.actor.position.z=slot.home.z;slot.actor.rotation.y=dir*Math.PI/2;scene.remove(root);resources.forEach(r=>r.dispose());}
  return {update,dispose,inspect:()=>({id:'madara',technique,kind:'war-dance',elapsedMs,disposed,hits:done.size,victims:victims.length})};
+}
+function clones(scene,slot,target){
+ const root=new T.Group();root.name='madara-susanoo-clones';scene.add(root);
+ const victims=(slot.targets||[target]).filter(Boolean),dir=slot.side==='allyTeam'?1:-1;
+ const copies=Array.from({length:3},(_,i)=>{
+  const actor=instantiateHero(slot.actor);actor.name='madara-clone-'+i;root.add(actor);
+  const rig=pose(actor),avatar=MadaraSusanoo.build();root.add(avatar.root);
+  const victim=victims[i%victims.length];const end=victim.home.clone().add(new T.Vector3(-dir*(i===1?.2:.9),0,(i-1)*.62));
+  return {actor,rig,avatar,end,victim};
+ });
+ const material=new T.MeshBasicMaterial({color:0x8ee6ff,transparent:true,opacity:.75,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
+ const geometry=new T.TorusGeometry(.55,.024,5,32,Math.PI*1.5);
+ const cuts=victims.map(v=>{const o=new T.Mesh(geometry,material);root.add(o);return {o,v};});
+ const cloudGeometry=new T.SphereGeometry(.11,6,5),cloudMaterial=new T.MeshBasicMaterial({color:0xa4ddff,transparent:true,opacity:.35,depthWrite:false});
+ const smoke=Array.from({length:18},()=>{const o=new T.Mesh(cloudGeometry,cloudMaterial);root.add(o);return o;});
+ let disposed=false,hit=false,elapsedMs=0;
+ function update(ms,ground){
+  if(disposed)return false;elapsedMs=ms;const p=ms/durations[1];
+  if(ms>=impactTimes[1]&&!hit){hit=true;for(const v of victims){v.hitAt=slot.effectAt+impactTimes[1];v.hitFrom=slot.home.clone();}slot.onImpact?.();slot.onImpact=null;}
+  if(p>=1){dispose();return false;}
+  const fade=1-E(p,.79,.96);
+  for(let i=0;i<copies.length;i++){
+   const c=copies[i];c.actor.visible=p>.13&&p<.94;c.actor.position.copy(slot.actor.position).lerp(c.end,E(p,.23,.52));c.actor.position.y=slot.actor.position.y;
+   c.actor.rotation.y=Math.atan2(c.victim.home.x-c.actor.position.x,c.victim.home.z-c.actor.position.z);
+   const cp=p<.52?.03+E(p,.23,.52)*.18:p<.74?.64+E(p,.52,.74)*.13:.84;
+   c.rig.update(cp,0,ms+i*75);c.actor.scale.copy(slot.actor.scale).multiplyScalar(fade);
+   c.avatar.root.visible=c.actor.visible;c.avatar.root.position.copy(c.actor.position).setY(ground);c.avatar.root.rotation.y=c.actor.rotation.y;
+   c.avatar.root.scale.setScalar(1.18);c.avatar.update(p,ms,fade*.80);
+  }
+  for(const {o,v} of cuts){const age=(p-.68)/.24;o.visible=age>=0&&age<1;o.position.copy(v.home).setY(ground+.9);o.rotation.set(.2,dir*.35,-.65);o.scale.setScalar(.3+Math.max(0,age)*2);}
+  material.opacity=.75*(1-E(p,.70,.94));
+  smoke.forEach((o,i)=>{const out=p>.78,age=out?(p-.78)/.19:(p-.10)/.20,c=copies[i%3];o.visible=age>0&&age<1;o.position.copy(out?c.actor.position:slot.actor.position);o.position.x+=Math.cos(i*2.4)*age*.65;o.position.z+=Math.sin(i*2.4)*age*.65;o.position.y=ground+.25+(i%6)*.18+age*.35;o.scale.setScalar(Math.sin(Math.max(0,age)*Math.PI)*1.5);});
+  return true;
+ }
+ function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;for(const c of copies){c.rig.dispose();c.avatar.dispose();c.actor.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.dispose();});}scene.remove(root);geometry.dispose();material.dispose();cloudGeometry.dispose();cloudMaterial.dispose();}
+ return {update,dispose,inspect:()=>({id:'madara',technique:1,kind:'susanoo-clones',elapsedMs,hit,disposed,clones:3,rigged:copies.every(c=>c.rig.inspect().rigged),victims:victims.length})};
 }
 window.MadaraCombat={durations,impactTimes,pose,create};
 })();

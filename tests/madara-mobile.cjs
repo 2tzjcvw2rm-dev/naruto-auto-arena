@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
     await page.waitForFunction(()=>arena3d?.inspect().slots.length===10,null,{timeout:30000});
     await page.evaluate(()=>{BattleTempo.cancel('round');BattleTempo.cancel('action');roundInProgress=false;arena3d.bind();});
     fs.mkdirSync('artifacts',{recursive:true});
-    for(const speed of [1,2,3])for(const action of [0]){
+    for(const speed of [1,2,3])for(const action of [0,1]){
       await page.evaluate(({speed,action})=>{
         BattleTempo.cancel('round');BattleTempo.cancel('action');paused=false;
         BattleTempo.setSpeed(speed);[...allies,...foes].forEach(u=>{u.curHp=u.maxHp=10000;u.kamuiUntilRound=0;});
@@ -37,10 +37,10 @@ const server=http.createServer((req,res)=>{
       await page.waitForFunction(()=>arena3d.effects().some(f=>f.id==='madara'&&f.elapsedMs>=1100),null,{timeout:15000});
       await page.evaluate(()=>paused=true);
       const state=await page.evaluate(()=>arena3d.inspect());assert(state.slots.every(s=>s.position.every(Number.isFinite)));assert(state.slots.find(s=>s.id==='madara'&&s.side==='allyTeam').rig.rigged);
-      if(speed===1)await page.locator('.arena').screenshot({path:'artifacts/madara-dance-webkit.png'});
+      if(speed===1)await page.locator('.arena').screenshot({path:'artifacts/madara-'+action+'-webkit.png'});
       await page.evaluate(()=>paused=false);await page.waitForFunction(()=>!arena3d.effects().some(f=>f.id==='madara'),null,{timeout:15000});
       const after=await page.evaluate(()=>({hp:foes.map(u=>u.curHp),slot:arena3d.inspect().slots.find(s=>s.id==='madara'&&s.side==='allyTeam')}));
-      assert.equal(after.hp.filter(h=>h<10000).length,3);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
+      assert.equal(after.hp.filter(h=>h<10000).length,action===0?3:5);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
       console.log('PASS Madara WebKit',speed,action,after.hp);
     }
     assert.deepEqual(errors,[]);await ctx.close();

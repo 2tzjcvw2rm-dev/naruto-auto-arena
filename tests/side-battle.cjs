@@ -17,7 +17,7 @@ assert.equal(new Set(available.foes).size,5);
 assert(html.includes("const previousTeam="),'Unavailable old team slots must be migrated');
 
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
-load('test-3d/madara-combat.js');load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
+load('test-3d/madara-susanoo.js');load('test-3d/madara-combat.js');load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
 run(`let arena3d=null,arenaUnavailable=false,paused=false;
