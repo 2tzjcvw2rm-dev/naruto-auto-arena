@@ -2,6 +2,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.resolve(__dirname,'..'),context={console};context.window=context;vm.createContext(context);
 vm.runInContext(fs.readFileSync(path.join(root,'test-3d/vendor/three.min.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(path.join(root,'test-3d/madara-susanoo.js'),'utf8'),context);
 vm.runInContext(fs.readFileSync(path.join(root,'test-3d/battle-scene.js'),'utf8'),context);
 const T=context.THREE,scene=new T.Scene(),actor=new T.Group(),target={actor:new T.Group()};
 actor.position.set(2.9,0,1.6);actor.rotation.y=-Math.PI/2;target.actor.position.set(-4.45,0,-1.6);
