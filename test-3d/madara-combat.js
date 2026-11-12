@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const T=window.THREE,E=T.MathUtils.smoothstep,L=T.MathUtils.lerp;
-const durations=[3600,3400,2300],impactTimes=[2700,2312,1817];
+const durations=[3600,3400,4200],impactTimes=[2700,2312,3318];
 function pose(fighter){
  const bones=[];fighter.traverse(b=>{if(b.isBone)bones.push({b,rest:b.rotation.clone()});});
  let phase='idle';
@@ -13,7 +13,7 @@ function pose(fighter){
   const punch1=combo?pulse(.22,.28,.34):0,punch2=combo?pulse(.31,.37,.43):0;
   const kick=combo?pulse(.40,.47,.55):0,fan=combo?pulse(.64,.75,.84):0;
   const gait=Math.sin(time*.035)*running;
-  const seal=active&&technique===1?pulse(.02,.16,.32):0;
+  const seal=active&&technique>0?pulse(.02,.16,.38):0;
   phase=!active?'idle':p<.22?'run':p<.43?'punch':p<.55?'kick':p<.67?'switch-target':p<.82?'gunbai':'return';
   for(const {b,rest} of bones){
    b.rotation.copy(rest);const s=b.name.startsWith('Right')?-1:1;

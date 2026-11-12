@@ -31,4 +31,4 @@ for(const p of ['index.html','test-3d/index.html']){
   assert(html.includes('madara-profile.js?v=20261112-armor1'),p+' must load the module');
   assert(html.includes("host.dataset.susanoo='active'"),p+' must mount ribs for Madara');
 }
-console.log('PASS: 20 looping profile Susanoo mounts, ten ribs, articulated armor and swords, mobile-safe effects and resource cleanup.');
+console.log('PASS: 20 looping profile Susanoo mounts, twelve ribs, articulated armor and swords, mobile-safe effects and resource cleanup.');

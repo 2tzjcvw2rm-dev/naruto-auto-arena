@@ -34,13 +34,13 @@ const server=http.createServer((req,res)=>{
         BattleTempo.setSpeed(speed);[...allies,...foes].forEach(u=>{u.curHp=u.maxHp=10000;u.kamuiUntilRound=0;});
         renderTeams();const m=allies.find(u=>u.id==='madara');m.rage=action*50;battleAction(m,allies,foes);
       },{speed,action});
-      await page.waitForFunction(()=>arena3d.effects().some(f=>f.id==='madara'&&f.elapsedMs>=1100),null,{timeout:15000});
+      await page.waitForFunction(()=>arena3d.effects().some(f=>f.id==='madara'&&f.elapsedMs>=MadaraCombat.durations[f.technique]*(f.technique===0?.72:.55)),null,{timeout:15000});
       await page.evaluate(()=>paused=true);
       const state=await page.evaluate(()=>arena3d.inspect());assert(state.slots.every(s=>s.position.every(Number.isFinite)));assert(state.slots.find(s=>s.id==='madara'&&s.side==='allyTeam').rig.rigged);
       if(speed===1)await page.locator('.arena').screenshot({path:'artifacts/madara-'+action+'-webkit.png'});
       await page.evaluate(()=>paused=false);await page.waitForFunction(()=>!arena3d.effects().some(f=>f.id==='madara'),null,{timeout:15000});
       const after=await page.evaluate(()=>({hp:foes.map(u=>u.curHp),slot:arena3d.inspect().slots.find(s=>s.id==='madara'&&s.side==='allyTeam')}));
-      assert.equal(after.hp.filter(h=>h<10000).length,action<2?5:1);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
+      assert.equal(after.hp.filter(h=>h<10000).length,5);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
       console.log('PASS Madara WebKit',speed,action,after.hp);
     }
     await page.evaluate(()=>{selectedProfile='madara';openProfile();});

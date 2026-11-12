@@ -69,10 +69,10 @@ function initArena3d(){
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
       active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
-      active.targets=(active.id==='madara'&&technique===1||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
+      active.targets=(active.id==='madara'||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
       if(active.id==='madara'&&technique===0)active.targets=slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound);
       const susanoo=active.id==='madara'&&technique===2;
-      const duration=active.id==='madara'&&technique<2?MadaraCombat.durations[technique]:active.id==='kakashi'?KakashiCombat.durations[technique]:active.id==='naruto'?NarutoCombat.durations[technique]:active.id==='sasuke'?SasukeCombat.durations[technique]:susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
+      const duration=active.id==='madara'?MadaraCombat.durations[technique]:active.id==='kakashi'?KakashiCombat.durations[technique]:active.id==='naruto'?NarutoCombat.durations[technique]:active.id==='sasuke'?SasukeCombat.durations[technique]:susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
       if(technique===2)window.BattleCinematics?.start({
         id:active.id,side,label:(skills[active.id]||[])[2],now:effectClock,duration
       });
@@ -80,7 +80,7 @@ function initArena3d(){
       active.effect=(active.id==='madara'&&technique<2?MadaraCombat.create(scene,active,target,technique):active.id==='kakashi'?KakashiCombat.create(scene,active,target,technique):active.id==='naruto'?NarutoCombat.create(scene,active,target,technique):active.id==='sasuke'?SasukeCombat.create(scene,active,target,technique):null)|| (susanoo?createMadaraSusanoo(THREE,scene,active,target):
         (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null));
       if(target.side!==side){
-        target.hitAt=(active.id==='madara'&&technique<2||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi')?Infinity:effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
+        target.hitAt=(active.id==='madara'||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi')?Infinity:effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
         target.hitFrom=active.home.clone();
         // Battle HP updates immediately. Preserve a knocked-out model until
         // the impact reaches it, then honor the normal 'down' state.
@@ -143,7 +143,7 @@ function initArena3d(){
       if((slot.id==='itachi'||slot.id==='naruto'||slot.id==='sasuke'||slot.id==='kakashi'||slot.id==='madara')&&unit.classList.contains('down')){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;slot.attackAt=null;}
       if(!actor.visible){const label=screenPoint(new THREE.Vector3(home.x,visualGroundY+1.98,home.z));unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');slot.effect?.dispose();slot.effect=null;slot.onImpact=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
-      const duration=slot.id==='madara'&&slot.technique<2?MadaraCombat.durations[slot.technique]:slot.id==='kakashi'?KakashiCombat.durations[slot.technique]:slot.id==='naruto'?NarutoCombat.durations[slot.technique]:slot.id==='sasuke'?SasukeCombat.durations[slot.technique]:susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
+      const duration=slot.id==='madara'?MadaraCombat.durations[slot.technique]:slot.id==='kakashi'?KakashiCombat.durations[slot.technique]:slot.id==='naruto'?NarutoCombat.durations[slot.technique]:slot.id==='sasuke'?SasukeCombat.durations[slot.technique]:susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
       const elapsed=slot.attackAt===null?-1:effectClock-slot.effectAt;
       const p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
       const direction=side==='allyTeam'?1:-1,target=slot.target;

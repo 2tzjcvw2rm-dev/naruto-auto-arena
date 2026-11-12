@@ -19,7 +19,7 @@ async function parse(name){const b=fs.readFileSync('test-3d/models/'+name+'.glb'
  const scene=new THREE.Scene(),actor=instantiateHero(model),fighter=actor,home=new THREE.Vector3(-2,0,0),pose=MadaraCombat.pose(actor);
  const slot={id:'madara',side:'allyTeam',actor,fighter,home,effectAt:0};
  const targets=foes.map((u,i)=>({home:new THREE.Vector3(2,0,i-2),actor:new THREE.Group(),index:i}));let fx;
- function playJutsu(u,s,si,ts,ti,action,support,impact){slot.onImpact=impact;slot.targets=targets;fx=MadaraCombat.create(scene,slot,targets[ti],action);}
+ function playJutsu(u,s,si,ts,ti,action,support,impact){slot.onImpact=impact;slot.targets=targets;fx=action===2?MadaraSusanoo.cast(scene,slot,targets[ti]):MadaraCombat.create(scene,slot,targets[ti],action);}
  `);
  assert(evalCode('pose.inspect().rigged'));
  for(const speed of [1,2,3]){
@@ -35,10 +35,20 @@ async function parse(name){const b=fs.readFileSync('test-3d/models/'+name+'.glb'
  for(let ms=2312;ms<3401;ms+=17*speed){d.ms=ms;evalCode('fx.update(ms,0)');}
  evalCode('fx.update(3401,0)');assert.equal(evalCode('foes.filter(v=>v.curHp===9891).length'),5);assert.equal(evalCode('scene.children.length'),0);
  }
+ // Ultimate keeps its total damage budget but distributes it across the team,
+ // exactly once, when the advancing wave arrives. Cancellation cannot hit later.
+ for(const speed of [1,2,3]){
+ evalCode('allies[0].rage=100;foes.forEach(v=>v.curHp=10000);battleAction(allies[0],allies,foes);fx.update(3317,0)');
+ assert.equal(evalCode('foes.filter(v=>v.curHp<10000).length'),0);
+ for(let ms=3318;ms<=4201;ms+=17*speed){d.ms=ms;evalCode('fx.update(ms,0)');}
+ evalCode('fx.update(4201,0)');assert.equal(evalCode('foes.filter(v=>v.curHp===9938).length'),5);assert.equal(evalCode('scene.children.length'),0);
+ evalCode('allies[0].rage=100;foes.forEach(v=>v.curHp=10000);battleAction(allies[0],allies,foes);fx.update(1000,0);fx.dispose();fx.update(4000,0)');
+ assert.equal(evalCode('foes.filter(v=>v.curHp<10000).length'),0);assert.equal(evalCode('scene.children.length'),0);
+ }
  // Genuine skin deformation on the original mesh and independent clone joints.
  evalCode('pose.update(-1,0,0);actor.updateMatrixWorld(true);let skin;actor.traverse(o=>{if(o.isSkinnedMesh&&o.name.startsWith("Top"))skin=o});skin.skeleton.update();let rest=[];for(let i=0;i<skin.geometry.attributes.position.count;i++)rest.push(skin.boneTransform(i,new THREE.Vector3().fromBufferAttribute(skin.geometry.attributes.position,i)).clone());pose.update(.28,0,1008);actor.updateMatrixWorld(true);skin.skeleton.update();let moved=0;for(let i=0;i<rest.length;i++)if(skin.boneTransform(i,new THREE.Vector3().fromBufferAttribute(skin.geometry.attributes.position,i)).distanceTo(rest[i])>.01)moved++;');
  assert(evalCode('moved>100'));
  evalCode('const copy=instantiateHero(actor);copy.getObjectByName("RightArm").rotation.x=2;');assert(evalCode('copy.getObjectByName("RightArm")!==actor.getObjectByName("RightArm")'));
  }
- console.log('PASS Madara: real skin deformation, independent joints, four timed impacts, primary/team damage, both pages, x1/x2/x3, return and disposal');
+ console.log('PASS Madara: real skin deformation, independent joints, four timed impacts, primary/team damage, delayed ultimate, interrupted cast, both pages, x1/x2/x3, return and disposal');
 })().catch(e=>{console.error(e);process.exitCode=1});

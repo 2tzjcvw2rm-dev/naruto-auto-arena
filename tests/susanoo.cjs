@@ -15,9 +15,9 @@ for(let cast=0;cast<100;cast++){
   for(const t of [0,400,800,1200,1600,1800,2200]){
     assert(fx.update(t,-2.65));scene.updateMatrixWorld(true);
     scene.traverse(o=>{assert(o.matrixWorld.elements.every(Number.isFinite),'Nonfinite geometry transform');});
-    const skeleton=scene.getObjectByName('madara-skeletal-susanoo');assert(skeleton);assert.equal(skeleton.position.x,actor.position.x);assert.equal(skeleton.position.y,-2.65);assert(skeleton.quaternion.angleTo(actor.quaternion)<1e-6);
+    const skeleton=scene.getObjectByName('madara-perfect-susanoo');assert(skeleton);assert.equal(skeleton.position.x,actor.position.x);assert.equal(skeleton.position.y,-2.65);assert(skeleton.quaternion.angleTo(actor.quaternion)<1e-6);
   }
-  assert.equal(fx.update(2301,-2.65),false);assert.equal(scene.children.length,0);
+  assert.equal(fx.update(4201,-2.65),false);assert.equal(scene.children.length,0);
   assert.equal(disposed-before,geometries.size+materials.size,'Every unique GPU resource must be disposed exactly once');
   fx.dispose();assert.equal(disposed-before,geometries.size+materials.size,'Cleanup must be idempotent');
 }

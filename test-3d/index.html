@@ -435,7 +435,7 @@ button:active{transform:translateY(2px)}
 </style><link rel="stylesheet" href="./battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./battle-cinematics.css?v=20261105-cinematic1">
 <script src="./battle-environment.js?v=20261105-konoha2" defer></script>
 <script src="./naruto-combat.js?v=20261111-ultimate" defer></script>
-<script src="./madara-susanoo.js?v=20261112-skeleton2" defer></script><script src="./madara-combat.js?v=20261112-skeleton2" defer></script><script src="./kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./battle-pose.js?v=madara-clones1-20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261111-naruto" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=tornado2-madara-clones1-20261112-kakashi3-20261111-naruto-ultimate" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261112-armor1" defer></script>
+<script src="./madara-susanoo.js?v=20261112-perfect3" defer></script><script src="./madara-combat.js?v=20261112-perfect3" defer></script><script src="./kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./battle-pose.js?v=madara-clones1-20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./battle-cinematics.js?v=20261111-naruto" defer></script><script src="./battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./battle-scene.js?v=perfect3-madara-clones1-20261112-kakashi3-20261111-naruto-ultimate" defer></script><script src="./battle-speed.js?v=20261105-tempo1" defer></script><script src="./battle-backdrop.js?v=20261105-calm1" defer></script><script src="./madara-profile.js?v=20261112-armor1" defer></script>
 <style>.in-kamui>svg,.in-kamui>.battle-model-image,.in-kamui>.unit-hp,.in-kamui>.rage-bar,.in-kamui>.unit-name,.in-kamui>.unit-power{visibility:hidden!important}.kamui-status{display:block;color:#e7d4ff;background:#281742e8;border:1px solid #a68bea;border-radius:7px;padding:4px 6px;font-size:10px;white-space:nowrap;position:absolute;left:50%;transform:translateX(-50%);top:20px}</style></head>
 <body>
 <header>
@@ -981,7 +981,7 @@ shikamaru:['Удар','Теневая ловушка','Теневое связы
 itachi:['Katon — Огненный шар','Karasu Bunshin — Стая воронов','Сусаноо — Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
-madara:['Гунбай · Торнадо','Скелетный Сусаноо','Сусаноо'],
+madara:['Гунбай · Торнадо','Скелетный Сусаноо','Совершенный Сусаноо'],
 konan:['Бумажный клинок','Бумажные крылья','Бумажное копьё'],
 obito:['Удар цепью','Камуи','Изанаги']
 };
@@ -1069,7 +1069,7 @@ const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetInde
 if(!source||!target||!layer||!arena)return;
 if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex,onImpact))return;
 if(onImpact&&unit.id==='madara'&&action===0){[1008,1332,1692,2700].forEach((ms,i)=>BattleTempo.after('madara-hit-'+i,ms,()=>onImpact(i)));}
-else if(onImpact&&unit.id==='madara'&&action===1)BattleTempo.after('madara-clones-impact',MadaraCombat.impactTimes[1],onImpact);
+else if(onImpact&&unit.id==='madara')BattleTempo.after('madara-susanoo-impact',MadaraCombat.impactTimes[action],onImpact);
 else if(onImpact&&unit.id==='kakashi')BattleTempo.after('kakashi-impact',KakashiCombat.impactTimes[action],onImpact);
 else if(onImpact)BattleTempo.after(unit.id==='sasuke'?'sasuke-impact':'itachi-impact',unit.id==='sasuke'?[1281,1495,2516][action]:(action===2?1817:868),onImpact);
 if(unit.id==='itachi')return;
@@ -1133,10 +1133,10 @@ if(unit.id==='naruto'){
  playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
  if(unit.buff>0)unit.buff--;return;
 }
-if(unit.id==='madara'&&action===1){
+if(unit.id==='madara'&&action>0){
  const victims=alive.slice(),side=own===allies?'allyTeam':'foeTeam';let applied=false;
  const impact=()=>{if(applied||unit.curHp<=0||unit.kamuiUntilRound||(own!==allies&&own!==foes)||!own.includes(unit))return;applied=true;
- const amount=Math.max(1,Math.round(dmg*.70));
+ const amount=Math.max(1,Math.round(action===1?dmg*.70:dmg/victims.length));
  for(const v of victims){if(!opponents.includes(v)||v.curHp<=0||v.kamuiUntilRound)continue;v.curHp=Math.max(0,v.curHp-amount);}
  if(own===allies)showDamage(amount,crit);log(unit.name+' · '+skill+' → вся команда: −'+amount+' каждому'+(crit?' КРИТ':''));renderTeams();};
  playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
