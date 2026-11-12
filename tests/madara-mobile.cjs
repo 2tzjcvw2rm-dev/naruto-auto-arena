@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=>{
       if(speed===1)await page.locator('.arena').screenshot({path:'artifacts/madara-'+action+'-webkit.png'});
       await page.evaluate(()=>paused=false);await page.waitForFunction(()=>!arena3d.effects().some(f=>f.id==='madara'),null,{timeout:15000});
       const after=await page.evaluate(()=>({hp:foes.map(u=>u.curHp),slot:arena3d.inspect().slots.find(s=>s.id==='madara'&&s.side==='allyTeam')}));
-      assert.equal(after.hp.filter(h=>h<10000).length,action===0?3:action===1?5:1);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
+      assert.equal(after.hp.filter(h=>h<10000).length,action<2?5:1);assert(Math.abs(after.slot.position[0]-after.slot.home[0])<.001);assert(Math.abs(after.slot.position[2]-after.slot.home[2])<.001);
       console.log('PASS Madara WebKit',speed,action,after.hp);
     }
     await page.evaluate(()=>{selectedProfile='madara';openProfile();});

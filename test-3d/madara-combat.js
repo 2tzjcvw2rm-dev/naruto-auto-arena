@@ -22,7 +22,7 @@ function pose(fighter){
    if(/Arm$/.test(b.name)&&!/Fore/.test(b.name)){
     b.rotation.z=s*(.13+.30*running);b.rotation.x=-.20+s*.65*gait-1.1*seal;b.rotation.z-=s*.45*seal;
     b.rotation.x-=1.15*(s<0?punch1:punch2);b.rotation.y+=s*.55*(s<0?punch1:punch2);
-    if(s<0){b.rotation.x-=1.5*fan;b.rotation.z-=.6*fan;}
+    b.rotation.x-=1.5*fan;b.rotation.z-=s*.6*fan;b.rotation.y+=.8*fan;
    }
    if(/ForeArm/.test(b.name)){b.rotation.x=-.35-.6*running+.32*(s<0?punch1:punch2)-.45*fan-1.0*seal;}
    if(/UpLeg/.test(b.name)){b.rotation.x=s*.60*gait-(s<0?1.2*kick:0);b.rotation.z+=s*.04;}
@@ -50,7 +50,17 @@ function create(scene,slot,target,technique){
  const sparks=Array.from({length:12},()=>mesh(new T.SphereGeometry(.025,6,4),ivory));
  const hits=[1008,1332,1692,2700],done=new Set();let disposed=false,elapsedMs=0;
  const approach=v=>v.home.clone().add(new T.Vector3(-dir*.70,0,0));
- const a=approach(target),b=approach(second);
+ const a=approach(target),b=new T.Vector3(0,slot.home.y,0);
+ const vortex=new T.Group();root.add(vortex);vortex.name='gunbai-volumetric-tornado';
+ const wind=material(0xb8edff,.32),windCore=material(0xefffff,.6),debrisMat=material(0x766959);
+ const ribbons=[];
+ for(let j=0;j<9;j++){
+  const points=[];for(let k=0;k<=64;k++){const t=k/64,y=t*2.8,r=.24+1.05*t,a=t*Math.PI*5+j*2.399;points.push(new T.Vector3(Math.cos(a)*r,y,Math.sin(a)*r));}
+  const o=mesh(new T.TubeGeometry(new T.CatmullRomCurve3(points),64,j%3===0?.034:.018,4,false),j%3===0?windCore:wind,vortex);ribbons.push(o);
+ }
+ const debris=Array.from({length:24},(_,i)=>mesh(new T.TetrahedronGeometry(.025+(i%4)*.012),debrisMat,vortex));
+ const center=victims.reduce((v,t)=>v.add(t.home),new T.Vector3()).multiplyScalar(1/victims.length);
+ const spread=Math.max(1.3,...victims.map(v=>Math.abs(v.home.z-center.z)+.6));
  function update(ms,ground){
   if(disposed)return false;elapsedMs=ms;const p=ms/durations[0];
   for(let i=0;i<hits.length;i++)if(ms>=hits[i]&&!done.has(i)){
@@ -65,7 +75,11 @@ function create(scene,slot,target,technique){
   slot.actor.updateMatrixWorld(true);const hand=slot.actor.getObjectByName('RightHand');
   fan.visible=p>.59&&p<.85;
   if(hand){hand.getWorldPosition(fan.position);hand.getWorldQuaternion(fan.quaternion);fan.rotateX(-.5);}
-  const age=(ms-hits[3])/600;wave.visible=age>=0&&age<1;wave.position.copy(second.home).setY(ground+.15);wave.scale.setScalar(.3+Math.max(0,age)*4);blue.opacity=.65*(1-Math.max(0,age));
+  const travel=E(p,.69,.75),dissolve=1-E(p,.79,.91);vortex.visible=p>.68&&p<.92;vortex.position.copy(b).lerp(center,travel).setY(ground);vortex.scale.set(.7+travel*.7,.9,spread/1.1);vortex.rotation.y=ms*.009;
+  wind.opacity=.32*dissolve;windCore.opacity=.6*dissolve;
+  ribbons.forEach((o,i)=>{o.rotation.y=-ms*.002*(1+i%3);o.scale.y=1+.06*Math.sin(ms*.006+i);});
+  debris.forEach((o,i)=>{const t=((ms*.0007+i/24)%1),a=i*2.399+ms*.008,r=.24+t; o.position.set(Math.cos(a)*r,t*2.8,Math.sin(a)*r);o.rotation.set(ms*.004+i,ms*.003,0);});
+  const age=(ms-hits[3])/600;wave.visible=age>=0&&age<1;wave.position.copy(center).setY(ground+.15);wave.scale.setScalar(.3+Math.max(0,age)*4);blue.opacity=.65*(1-Math.max(0,age));
   const last=hits.filter(t=>ms>=t).at(-1),sparkAge=last===undefined?-1:(ms-last)/240;
   sparks.forEach((o,i)=>{o.visible=sparkAge>=0&&sparkAge<1;const v=last===2700?second:target;o.position.copy(v.home);o.position.y=ground+1+Math.sin(i*2.4)*sparkAge*.5;o.position.x+=Math.cos(i*2.4)*sparkAge*.5;o.position.z+=Math.sin(i*3.1)*sparkAge*.4;});
   return true;

@@ -19,14 +19,14 @@ async function parse(name){const b=fs.readFileSync('test-3d/models/'+name+'.glb'
  const scene=new THREE.Scene(),actor=instantiateHero(model),fighter=actor,home=new THREE.Vector3(-2,0,0),pose=MadaraCombat.pose(actor);
  const slot={id:'madara',side:'allyTeam',actor,fighter,home,effectAt:0};
  const targets=foes.map((u,i)=>({home:new THREE.Vector3(2,0,i-2),actor:new THREE.Group(),index:i}));let fx;
- function playJutsu(u,s,si,ts,ti,action,support,impact){slot.onImpact=impact;slot.targets=action===1?targets:[targets[ti],...targets.filter(v=>v.index!==ti).sort((a,b)=>Math.abs(a.index-ti)-Math.abs(b.index-ti)).slice(0,2)];fx=MadaraCombat.create(scene,slot,targets[ti],action);}
+ function playJutsu(u,s,si,ts,ti,action,support,impact){slot.onImpact=impact;slot.targets=targets;fx=MadaraCombat.create(scene,slot,targets[ti],action);}
  `);
  assert(evalCode('pose.inspect().rigged'));
  for(const speed of [1,2,3]){
  evalCode('allies[0].rage=0;foes.forEach(v=>v.curHp=10000);battleAction(allies[0],allies,foes);fx.update(1007,0)');
  assert.equal(evalCode('foes.filter(v=>v.curHp<10000).length'),0);
  for(let ms=1008;ms<3600;ms+=17*speed){d.ms=ms;evalCode('pose.update(ms/3600,0,ms);fx.update(ms,0);actor.updateMatrixWorld(true);actor.traverse(o=>{if(!o.matrixWorld.elements.every(Number.isFinite))throw Error("Invalid transform")})');}
- evalCode('fx.update(3601,0)');assert.equal(evalCode('foes.filter(v=>v.curHp===9900).length'),1);assert.equal(evalCode('foes.filter(v=>v.curHp===9965).length'),2);assert.equal(evalCode('scene.children.length'),0);
+ evalCode('fx.update(3601,0)');assert.equal(evalCode('foes.filter(v=>v.curHp===9900).length'),1);assert.equal(evalCode('foes.filter(v=>v.curHp===9965).length'),4);assert.equal(evalCode('scene.children.length'),0);
  assert(evalCode('actor.position.x===home.x&&actor.position.z===home.z'));
  }
  for(const speed of [1,2,3]){
@@ -40,5 +40,5 @@ async function parse(name){const b=fs.readFileSync('test-3d/models/'+name+'.glb'
  assert(evalCode('moved>100'));
  evalCode('const copy=instantiateHero(actor);copy.getObjectByName("RightArm").rotation.x=2;');assert(evalCode('copy.getObjectByName("RightArm")!==actor.getObjectByName("RightArm")'));
  }
- console.log('PASS Madara: real skin deformation, independent joints, four timed impacts, primary/neighbor damage, both pages, x1/x2/x3, return and disposal');
+ console.log('PASS Madara: real skin deformation, independent joints, four timed impacts, primary/team damage, both pages, x1/x2/x3, return and disposal');
 })().catch(e=>{console.error(e);process.exitCode=1});
