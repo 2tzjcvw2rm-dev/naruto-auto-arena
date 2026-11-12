@@ -6,16 +6,17 @@ function build(full=false){
  const root=new T.Group();root.name='madara-chakra-warrior';
  const resources=new Set(),materials=[];
  function material(color,opacity){const m=new T.MeshPhongMaterial({color,emissive:color,emissiveIntensity:.18,shininess:85,transparent:true,opacity,depthWrite:false,side:T.DoubleSide});m.userData.alpha=opacity;materials.push(m);resources.add(m);return m;}
- const bone=material(0x258ee5,.68),core=material(0x8ddfff,.82),armor=material(0x185bcb,.48);
+ const bone=material(0x5265ed,.72),core=material(0xa6eaff,.85),armor=material(0x263bc5,.66);
  function mesh(g,m,parent=root){resources.add(g);const o=new T.Mesh(g,m);parent.add(o);return o;}
  function link(a,b,r,m,parent){const delta=b.clone().sub(a),o=mesh(new T.CylinderGeometry(r,r*.85,delta.length(),8),m,parent);o.position.copy(a).add(b).multiplyScalar(.5);o.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());return o;}
  const torso=new T.Group();root.add(torso);const ribs=new T.Group();torso.add(ribs);
  link(new T.Vector3(0,.35,-.2),new T.Vector3(0,1.65,-.2),.065,bone,ribs);
- for(let i=0;i<5;i++)for(const s of [-1,1]){
-  const y=.55+i*.20,w=.43+i*.035;
+ for(let i=0;i<6;i++)for(const s of [-1,1]){
+  const y=.43+i*.20,w=.48+Math.sin(i/5*Math.PI)*.14;
   const curve=new T.CatmullRomCurve3([new T.Vector3(0,y+.12,-.2),new T.Vector3(s*w,y+.09,-.14),new T.Vector3(s*w,y-.04,.24),new T.Vector3(s*.13,y-.15,.36)]);
-  mesh(new T.TubeGeometry(curve,12,.033,5,false),bone,ribs);
+  mesh(new T.TubeGeometry(curve,16,.045,6,false),bone,ribs);
  }
+ for(let i=0;i<9;i++){const v=mesh(new T.OctahedronGeometry(.10,0),core,ribs);v.position.set(0,.40+i*.15,-.22);v.scale.set(1,.65,1.25);}
  const arms=[];
  for(const s of [-1,1]){
   const shoulder=new T.Group();shoulder.position.set(s*.68,1.5,0);torso.add(shoulder);
@@ -36,6 +37,23 @@ function build(full=false){
  const shell=new T.Group(),head=new T.Group(),legs=new T.Group();torso.add(shell,head);root.add(legs);
  const plates=[];
  function plate(points,depth,m,parent){const shape=new T.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();return mesh(new T.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSize:.018,bevelThickness:.012,bevelSegments:1,steps:1}),m,parent);}
+ head.position.set(0,1.96,.01);
+ if(!full){
+  const skull=mesh(new T.SphereGeometry(.31,12,10),bone,head);skull.scale.set(.91,1.08,.82);skull.position.z=-.06;
+  const cavity=material(0x090b42,.94);
+  for(const sign of [-1,1]){
+   const socket=plate([[-.12,.08],[.09,.10],[.10,-.055],[-.08,-.08]],.025,cavity,head);socket.position.set(sign*.14,.02,.19);socket.rotation.z=sign*.18;
+   const eye=mesh(new T.BoxGeometry(.11,.028,.035),core,head);eye.position.set(sign*.14,.025,.225);eye.rotation.z=sign*.18;
+   const cheek=plate([[0,.08],[sign*.17,.02],[sign*.10,-.17],[0,-.12]],.12,bone,head);cheek.position.set(sign*.15,-.06,.06);
+   const hornCurve=new T.CatmullRomCurve3([new T.Vector3(sign*.23,.14,-.08),new T.Vector3(sign*.35,.32,-.13),new T.Vector3(sign*.29,.52,-.18)]);
+   mesh(new T.TubeGeometry(hornCurve,10,.045,5,false),bone,head);
+  }
+  const jaw=new T.Group();head.add(jaw);jaw.position.set(0,-.21,.04);jaw.name='skeletal-jaw';
+  const jawCurve=new T.CatmullRomCurve3([new T.Vector3(-.24,.06,-.02),new T.Vector3(-.19,-.12,.12),new T.Vector3(0,-.17,.22),new T.Vector3(.19,-.12,.12),new T.Vector3(.24,.06,-.02)]);
+  mesh(new T.TubeGeometry(jawCurve,16,.048,6,false),bone,jaw);
+  for(let i=0;i<8;i++){const tooth=mesh(new T.ConeGeometry(.025,.085,4),core,jaw);tooth.position.set((i-3.5)*.045,-.09,.19-Math.abs(i-3.5)*.016);}
+  const nose=plate([[-.04,0],[.04,0],[0,-.09]],.025,cavity,head);nose.position.set(0,-.035,.22);
+ }
  if(full){
   // Overlapping angular cuirass plates leave the inner ribs readable.
   for(const side of [-1,1]){
@@ -68,7 +86,7 @@ function build(full=false){
  const dustMat=new T.PointsMaterial({color:0x56b9ff,size:full?.055:.03,transparent:true,opacity:.7,depthWrite:false,blending:T.AdditiveBlending});resources.add(dustMat);
  const dust=new T.Points(dustGeo,dustMat);dust.frustumCulled=false;root.add(dust);
  function update(p,ms,alpha=1){
-  shell.visible=head.visible=legs.visible=full;
+  shell.visible=legs.visible=full;head.visible=p>.16;
   shell.scale.setScalar(.01+.99*E(p,.20,.42));head.scale.setScalar(.01+.99*E(p,.24,.43));legs.scale.setScalar(.01+.99*E(p,.18,.37));
   for(const plate of plates)plate.visible=p>.25;
   head.rotation.y=.08*Math.sin(ms*.0018);head.rotation.x=-.06*E(p,.43,.58);
@@ -86,7 +104,7 @@ function build(full=false){
   }
  }
  function dispose(){resources.forEach(r=>r.dispose());}
- return {root,torso,ribs,arms,head,update,dispose,inspect:()=>({arms:2,swords:2,ribs:10,full,armor:full,head:full})};
+ return {root,torso,ribs,arms,head,update,dispose,inspect:()=>({arms:2,swords:2,ribs:12,full,armor:full,head:true})};
 }
 function cast(scene,slot,target){
  const warrior=build(true),root=warrior.root;root.name='madara-skeletal-susanoo';scene.add(root);let disposed=false,elapsedMs=0;

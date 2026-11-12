@@ -11,7 +11,7 @@ for(let n=0;n<20;n++){
   const group=new T.Group();scene.add(group);
   const effect=context.createMadaraProfileSusanoo(T,group);
   const status=effect.inspect();
-  assert.equal(status.ribs,10);assert.equal(status.arms,2);
+  assert.equal(status.ribs,12);assert.equal(status.arms,2);
   const root=scene.getObjectByName('madara-profile-skeletal-susanoo');
   assert(root,'Madara profile must include visible 3D Susanoo ribs');
   for(const time of [0,100,600,1500,3500,9000]){

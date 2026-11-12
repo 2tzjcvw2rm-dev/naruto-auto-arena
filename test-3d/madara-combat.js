@@ -33,7 +33,7 @@ function pose(fighter){
  return {update,dispose(){bones.forEach(({b,rest})=>b.rotation.copy(rest));},inspect:()=>({id:'madara',rigged:bones.length===15,bones:bones.length,phase,joints:bones.map(x=>x.b.name)})};
 }
 function create(scene,slot,target,technique){
- if(technique===1)return clones(scene,slot,target);
+ if(technique===1)return skeletal(scene,slot,target);
  if(technique!==0)return null;
  const root=new T.Group();root.name='madara-war-dance';scene.add(root);
  const resources=new Set(),dir=slot.side==='allyTeam'?1:-1;
@@ -87,41 +87,23 @@ function create(scene,slot,target,technique){
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;slot.actor.position.x=slot.home.x;slot.actor.position.z=slot.home.z;slot.actor.rotation.y=dir*Math.PI/2;scene.remove(root);resources.forEach(r=>r.dispose());}
  return {update,dispose,inspect:()=>({id:'madara',technique,kind:'war-dance',elapsedMs,disposed,hits:done.size,victims:victims.length})};
 }
-function clones(scene,slot,target){
- const root=new T.Group();root.name='madara-susanoo-clones';scene.add(root);
- const victims=(slot.targets||[target]).filter(Boolean),dir=slot.side==='allyTeam'?1:-1;
- const copies=Array.from({length:3},(_,i)=>{
-  const actor=instantiateHero(slot.actor);actor.name='madara-clone-'+i;root.add(actor);
-  const rig=pose(actor),avatar=MadaraSusanoo.build();root.add(avatar.root);
-  const victim=victims[i%victims.length];const end=victim.home.clone().add(new T.Vector3(-dir*(i===1?.2:.9),0,(i-1)*.62));
-  return {actor,rig,avatar,end,victim};
- });
- const material=new T.MeshBasicMaterial({color:0x8ee6ff,transparent:true,opacity:.75,depthWrite:false,side:T.DoubleSide,blending:T.AdditiveBlending});
- const geometry=new T.TorusGeometry(.55,.024,5,32,Math.PI*1.5);
- const cuts=victims.map(v=>{const o=new T.Mesh(geometry,material);root.add(o);return {o,v};});
- const cloudGeometry=new T.SphereGeometry(.11,6,5),cloudMaterial=new T.MeshBasicMaterial({color:0xa4ddff,transparent:true,opacity:.35,depthWrite:false});
- const smoke=Array.from({length:18},()=>{const o=new T.Mesh(cloudGeometry,cloudMaterial);root.add(o);return o;});
- let disposed=false,hit=false,elapsedMs=0;
+function skeletal(scene,slot,target){
+ const avatar=MadaraSusanoo.build(false),root=avatar.root;root.name='madara-skeletal-susanoo';scene.add(root);
+ const victims=(slot.targets||[target]).filter(Boolean);let disposed=false,hit=false,elapsedMs=0;
+ const geometry=new T.TorusGeometry(.6,.045,6,32,Math.PI*1.5),material=new T.MeshBasicMaterial({color:0x9ebcff,transparent:true,opacity:.7,depthWrite:false,side:T.DoubleSide});
+ const waves=victims.map(v=>{const o=new T.Mesh(geometry,material);scene.add(o);return {v,o};});
  function update(ms,ground){
   if(disposed)return false;elapsedMs=ms;const p=ms/durations[1];
-  if(ms>=impactTimes[1]&&!hit){hit=true;for(const v of victims){v.hitAt=slot.effectAt+impactTimes[1];v.hitFrom=slot.home.clone();}slot.onImpact?.();slot.onImpact=null;}
+  if(ms>=impactTimes[1]&&!hit){hit=true;for(const v of victims){v.hitAt=slot.effectAt+impactTimes[1];v.hitFrom=slot.home.clone();}const cb=slot.onImpact;slot.onImpact=null;cb?.();}
   if(p>=1){dispose();return false;}
-  const fade=1-E(p,.79,.96);
-  for(let i=0;i<copies.length;i++){
-   const c=copies[i];c.actor.visible=p>.13&&p<.94;c.actor.position.copy(slot.actor.position).lerp(c.end,E(p,.23,.52));c.actor.position.y=slot.actor.position.y;
-   c.actor.rotation.y=Math.atan2(c.victim.home.x-c.actor.position.x,c.victim.home.z-c.actor.position.z);
-   const cp=p<.52?.03+E(p,.23,.52)*.18:p<.74?.64+E(p,.52,.74)*.13:.84;
-   c.rig.update(cp,0,ms+i*75);c.actor.scale.copy(slot.actor.scale).multiplyScalar(fade);
-   c.avatar.root.visible=c.actor.visible;c.avatar.root.position.copy(c.actor.position).setY(ground);c.avatar.root.rotation.y=c.actor.rotation.y;
-   c.avatar.root.scale.setScalar(1.18);c.avatar.update(p,ms,fade*.80);
-  }
-  for(const {o,v} of cuts){const age=(p-.68)/.24;o.visible=age>=0&&age<1;o.position.copy(v.home).setY(ground+.9);o.rotation.set(.2,dir*.35,-.65);o.scale.setScalar(.3+Math.max(0,age)*2);}
-  material.opacity=.75*(1-E(p,.70,.94));
-  smoke.forEach((o,i)=>{const out=p>.78,age=out?(p-.78)/.19:(p-.10)/.20,c=copies[i%3];o.visible=age>0&&age<1;o.position.copy(out?c.actor.position:slot.actor.position);o.position.x+=Math.cos(i*2.4)*age*.65;o.position.z+=Math.sin(i*2.4)*age*.65;o.position.y=ground+.25+(i%6)*.18+age*.35;o.scale.setScalar(Math.sin(Math.max(0,age)*Math.PI)*1.5);});
-  return true;
+  root.position.copy(slot.actor.position).setY(ground);root.quaternion.copy(slot.actor.quaternion);root.scale.setScalar(1.48);
+  avatar.update(p,ms,1-E(p,.80,1));
+  const age=(ms-impactTimes[1])/650;
+  for(const {v,o} of waves){o.visible=age>=0&&age<1;o.position.copy(v.home).setY(ground+1);o.rotation.set(.2,.5,-.6);o.scale.setScalar(.4+Math.max(0,age)*2);}
+  material.opacity=.7*(1-Math.max(0,age));return true;
  }
- function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;for(const c of copies){c.rig.dispose();c.avatar.dispose();c.actor.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.dispose();});}scene.remove(root);geometry.dispose();material.dispose();cloudGeometry.dispose();cloudMaterial.dispose();}
- return {update,dispose,inspect:()=>({id:'madara',technique:1,kind:'susanoo-clones',elapsedMs,hit,disposed,clones:3,rigged:copies.every(c=>c.rig.inspect().rigged),victims:victims.length})};
+ function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;scene.remove(root);avatar.dispose();waves.forEach(({o})=>scene.remove(o));geometry.dispose();material.dispose();}
+ return {update,dispose,inspect:()=>({id:'madara',technique:1,kind:'skeletal-susanoo',elapsedMs,hit,disposed,rigged:true,victims:victims.length,...avatar.inspect()})};
 }
 window.MadaraCombat={durations,impactTimes,pose,create};
 })();
