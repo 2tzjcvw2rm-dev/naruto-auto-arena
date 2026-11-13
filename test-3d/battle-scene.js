@@ -203,8 +203,9 @@ function initArena3d(){
     if (realSusanoo) {
       const m = effectClock - realSusanoo.effectAt;
       const easing = THREE.MathUtils.smoothstep;
-      camera.zoom *= 1 - .18 * easing(m, 180, 800) * (1 - easing(m, 3550, 4140));
-      camera.zoom += Math.sin(m * .13) * .0035 * easing(m, 3270, 3320) * (1 - easing(m, 3390, 3510));
+      // Wider framing accommodates the 4.60-unit original GLB without cutting off the helmet.
+      camera.zoom *= 1 - .30 * easing(m, 180, 820) * (1 - easing(m, 4000, 4930));
+      camera.zoom += Math.sin(m * .13) * .0058 * easing(m, 3290, 3325) * (1 - easing(m, 3460, 3580));
     }
     camera.updateProjectionMatrix();
     renderer.setRenderTarget(null);renderer.setViewport(0,0,width,height);renderer.render(scene,camera);
