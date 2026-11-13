@@ -21,14 +21,40 @@ function create(scene,slot,target,technique){
  const root=new T.Group();root.name='konan-paper-'+technique;scene.add(root);
  const geometry=paperGeometry(technique===0),scrapGeometry=paperGeometry();
  const mat=new T.MeshBasicMaterial({vertexColors:true,side:T.DoubleSide,transparent:true,opacity:1,depthWrite:false});
- const victims=technique===0?[target]:(slot.targets||[target]),perWave=Math.max(4,victims.length),count=technique===0?5:perWave*3,papers=[],bursts=[];
+ const victims=technique===0?[target]:(slot.targets||[target]),perWave=Math.max(4,victims.length),count=technique===0?5:technique===1?perWave*3:36,papers=[],bursts=[];
  for(let i=0;i<count;i++){const mesh=new T.Mesh(geometry,mat);root.add(mesh);papers.push(mesh)}
- for(let i=0;i<count;i++){const bits=[];for(let j=0;j<3;j++){const m=new T.Mesh(scrapGeometry,mat);root.add(m);bits.push(m)}bursts.push(bits)}
+ for(let i=0;i<(technique===2?victims.length:count);i++){const bits=[];for(let j=0;j<3;j++){const m=new T.Mesh(scrapGeometry,mat);root.add(m);bits.push(m)}bursts.push(bits)}
  let disposed=false,hit=false,elapsedMs=0;
  function update(ms,ground){
  if(disposed)return false;elapsedMs=ms;
  if(ms>=impactTimes[technique]&&!hit){hit=true;const apply=slot.onImpact;slot.onImpact=null;apply?.();}
  if(ms>=durations[technique]){dispose();return false;}
+ if(technique===2){
+ const direction=target.home.x>slot.home.x?1:-1;
+ for(let i=0;i<count;i++){
+ const m=papers[i],v=victims[i%victims.length],band=Math.floor(i/victims.length);
+ const launch=650+band*35,arrival=1400+band*45,travel=(ms-launch)/(arrival-launch);
+ // A narrow, open helix behind the wings: no opaque sphere over the face.
+ const angle=i*2.399+ms*.006,radius=.48+(i%4)*.09;
+ const orbit=slot.home.clone().add(V(-direction*(.20+.16*Math.cos(angle)),ground+1.0+Math.sin(angle)*.44,Math.cos(angle)*radius));
+ const releaseAngle=i*2.399+launch*.006;
+ const start=slot.home.clone().add(V(-direction*(.20+.16*Math.cos(releaseAngle)),ground+1.0+Math.sin(releaseAngle)*.44,Math.cos(releaseAngle)*radius));
+ const end=v.home.clone().setY(ground+.94+(band%3-1)*.13);
+ m.visible=ms>=i*8&&ms<arrival+260;
+ if(travel<0)m.position.copy(orbit);
+ else if(travel<1){m.position.copy(start).lerp(end,travel);m.position.y+=Math.sin(Math.PI*travel)*.20;}
+ else {const age=(ms-arrival)/260;m.position.copy(end).add(V(direction*age*.40,Math.sin(i*3)*age*.20,Math.cos(i*2)*age*.24));}
+ const fade=1-ease(ms,arrival,arrival+260);
+ m.scale.setScalar((.55+(i%5)*.07)*ease(ms,i*8,i*8+180)*fade);
+ m.rotation.set(.25*Math.sin(ms*.007+i),.38*Math.cos(ms*.009+i),travel<0?angle:-direction*Math.PI/2+.22*Math.sin(ms*.015+i));
+ }
+ for(let i=0;i<victims.length;i++){
+ const v=victims[i],age=(ms-1400)/270,end=v.home.clone().setY(ground+1.05);
+ for(let j=0;j<3;j++){const b=bursts[i][j];b.visible=age>=0&&age<1;b.position.copy(end).add(V(direction*age*.25,(j-1)*age*.28,Math.cos(j*2)*age*.26));b.scale.setScalar(.42*Math.max(0,1-age));b.rotation.set(j+age*4,i,age*5);}
+ if(ms>=1400&&ms<1480){v.hitAt=slot.effectAt+1400;v.hitFrom=slot.home.clone();}
+ }
+ return true;
+ }
  if(technique===1){
  for(let i=0;i<count;i++){
  const wave=Math.floor(i/perWave),lane=i%perWave,v=victims[lane%victims.length];
@@ -61,7 +87,7 @@ function create(scene,slot,target,technique){
  return true;
  }
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;scene.remove(root);geometry.dispose();scrapGeometry.dispose();mat.dispose();}
- return {update,dispose,inspect:()=>({id:'konan',technique,kind:technique===0?'paper-shuriken':'wing-blades',count,victims:victims.length,elapsedMs,hit,disposed})};
+ return {update,dispose,inspect:()=>({id:'konan',technique,kind:['paper-shuriken','wing-blades','paper-storm'][technique],count,victims:victims.length,elapsedMs,hit,disposed})};
 }
 window.KonanCombat={durations,impactTimes,pose,create};
 })();
