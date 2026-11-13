@@ -8,6 +8,7 @@ if(!T||!T.GLTFLoader||!S){console.error('[Madara GLB] Loader missing');return;}
 const url=new URL('models/madara_perfect_susano_sktech.glb?v=20261113-original',document.currentScript.src).href;
 let gltf=null,state='loading',error=null;const listeners=new Set();
 new T.GLTFLoader().load(url,x=>{gltf=x;state='ready';for(const cb of listeners)cb();listeners.clear();},undefined,e=>{error=String(e?.message||e);state='error';listeners.clear();console.error('[Madara GLB] Missing original asset, no procedural replacement',url,error);});
+S.duration=5000; // Visual duration only; the existing impact/damage frame stays at 3318ms.
 S.cast=function(scene,slot,target){
  const root=new T.Group();root.name='madara-user-susanoo-glb';scene.add(root);
  const fx=new T.Group();scene.add(fx);const owned=[];
