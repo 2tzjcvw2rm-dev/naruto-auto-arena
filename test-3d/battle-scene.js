@@ -197,6 +197,15 @@ function initArena3d(){
     const ocean=slots.find(x=>x.id==='konan'&&x.technique===2&&x.effect);
     if(ocean){const ms=effectClock-ocean.effectAt;camera.zoom=1-.13*THREE.MathUtils.smoothstep(ms,650,1450)*(1-THREE.MathUtils.smoothstep(ms,2850,3550));
       camera.zoom+=Math.sin(ms*.09)*.003*THREE.MathUtils.smoothstep(ms,2630,2660)*(1-THREE.MathUtils.smoothstep(ms,2700,2860));}
+    // Temporarily widen the camera only for Madara's real 3D Susanoo.
+    // Tiny shake around impact (under 350 ms); no change to normal side view.
+    const realSusanoo = slots.find(x => x.id === 'madara' && x.technique === 2 && x.effect);
+    if (realSusanoo) {
+      const m = effectClock - realSusanoo.effectAt;
+      const easing = THREE.MathUtils.smoothstep;
+      camera.zoom *= 1 - .18 * easing(m, 180, 800) * (1 - easing(m, 3550, 4140));
+      camera.zoom += Math.sin(m * .13) * .0035 * easing(m, 3270, 3320) * (1 - easing(m, 3390, 3510));
+    }
     camera.updateProjectionMatrix();
     renderer.setRenderTarget(null);renderer.setViewport(0,0,width,height);renderer.render(scene,camera);
   }
