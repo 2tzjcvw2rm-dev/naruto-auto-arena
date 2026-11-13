@@ -66,6 +66,55 @@ function create(scene,slot,target,technique){
    creases.forEach(m=>{m.visible=ms>=1050&&ms<1450;});
   };
  }
+ if(technique===2){
+  const xs=victims.map(v=>v.home.x),zs=victims.map(v=>v.home.z);
+  const cx=(Math.min(...xs)+Math.max(...xs))/2,cz=(Math.min(...zs)+Math.max(...zs))/2;
+  const width=Math.max(3.4,Math.max(...xs)-Math.min(...xs)+2.3),depth=Math.max(3.2,Math.max(...zs)-Math.min(...zs)+1.8);
+  const ocean=group(),walls=[],seals=[],fires=[];
+  ocean.position.set(cx,0,cz);
+  const abyss=mesh(geo(new T.PlaneGeometry(width,depth)),material({color:0x101321}),ocean);abyss.rotation.x=-Math.PI/2;abyss.position.y=.016;
+  const slabGeo=geo(new T.BoxGeometry(width,.07,depth/2));
+  const floors=[-1,1].map(sign=>{const m=mesh(slabGeo,paper,ocean);m.position.set(0,.06,sign*depth/4);return m;});
+  const wallGeo=geo(new T.BoxGeometry(width,.16,.28));
+  for(const sign of [-1,1]){
+   const wall=new T.Group();ocean.add(wall);walls.push(wall);
+   // Solid rear strata, low front lip: the side camera can still read every fighter.
+   const rows=sign<0?20:7;
+   for(let i=0;i<rows;i++){const m=mesh(wallGeo,i%4===0?grey:paper,wall);m.position.set((i%3-1)*.025,i*.15,Math.sin(i*1.7)*.04);}
+   wall.userData={sign};
+   for(let i=0;i<8;i++){
+    const seal=new T.Group();wall.add(seal);seal.position.set((i/7-.5)*(width-.35),sign<0?1.05+(i%2)*.8:.38,.17);
+    const ink=material({color:0x171a26});
+    const ring=mesh(geo(new T.RingGeometry(.085,.115,12)),ink,seal);
+    for(let k=0;k<3;k++){const stroke=mesh(geo(new T.PlaneGeometry(.035,.19)),ink,seal);stroke.rotation.z=k*1.1;stroke.position.z=.004;}
+    seals.push({seal,ink,index:i+(sign>0?8:0)});
+   }
+  }
+  const fireGeo=geo(new T.IcosahedronGeometry(1,1));
+  for(let i=0;i<9;i++){
+   const mat=material({color:0xff691b,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending});
+   const m=mesh(fireGeo,mat,ocean),core=mesh(fireGeo,material({color:0xffd17a,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}),m);core.scale.setScalar(.57);
+   fires.push({m,mat,core});
+  }
+  const waveMat=material({color:0xffb23f,transparent:true,opacity:0,side:T.DoubleSide,depthWrite:false,blending:T.AdditiveBlending});
+  const wave=mesh(geo(new T.RingGeometry(.8,1,48)),waveMat,ocean);wave.rotation.x=-Math.PI/2;wave.position.y=.12;
+  let title=null;
+  if(typeof document!=='undefined'&&document.createElement){const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=128;const ctx=canvas.getContext('2d');
+   if(ctx){ctx.fillStyle='#171b2a';ctx.fillRect(0,0,1024,128);ctx.fillStyle='#fff7e5';ctx.textAlign='center';ctx.font='bold 43px sans-serif';ctx.fillText('КОНАН — БУМАЖНЫЙ ОКЕАН',512,80);const tx=new T.CanvasTexture(canvas);textures.add(tx);const m=new T.SpriteMaterial({map:tx,transparent:true,depthTest:false});materials.add(m);title=new T.Sprite(m);root.add(title);title.scale.set(5,.625,1);title.renderOrder=20;}
+  }
+  animate=(ms,g)=>{
+   const rise=ease(ms,650,1450),end=ease(ms,2850,3550),appear=ease(ms,0,650);
+   ocean.position.y=g;ocean.scale.set(appear,1,appear);abyss.scale.set(1,Math.max(.01,rise*(1-end)),1);
+   floors.forEach((m,i)=>{const sign=i?1:-1;m.position.z=sign*(depth/4+rise*depth*.22);m.scale.z=(1-rise*.85)*(1-end);});
+   walls.forEach(w=>{const sign=w.userData.sign;w.position.set(0,.08-end*.3,sign*(depth/2+.15*rise));w.scale.set(1,rise*(1-end),1);w.rotation.x=sign*end*.28;});
+   seals.forEach(({seal,ink,index})=>{const ignition=ease(ms,1450+index*23,1580+index*23);seal.visible=ms>=1450;ink.color.setRGB(.06+ignition*.94,.07+ignition*.28,.10-ignition*.06);});
+   fires.forEach(({m,mat,core},i)=>{const launch=i<6?2050+i*65:2630+(i-6)*30,age=(ms-launch)/(i<6?330:480),on=age>=0&&age<1;
+    m.visible=on;if(!on)return;const blast=Math.sin(age*Math.PI),big=i>=6;m.position.set(((i%3)-1)*width*.27,.8+(i%2)*.45,((i%2)-.5)*depth*.3);m.scale.setScalar(blast*(big?1.7:.65));m.rotation.set(age*2,i,age);mat.opacity=blast*.85;core.material.opacity=blast*.9;
+   });
+   const age=(ms-2630)/600;wave.visible=age>=0&&age<1;wave.scale.setScalar(1+Math.max(0,age)*3.3);waveMat.opacity=age>=0?(1-age)*.75:0;
+   if(title){title.position.set(cx,g+3.8,cz);title.material.opacity=ease(ms,0,150)*(1-ease(ms,650,900));}
+  };
+ }
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;scene.remove(root);geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
  function update(ms,ground){
   if(disposed)return false;elapsedMs=ms;

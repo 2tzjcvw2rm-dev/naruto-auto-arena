@@ -193,7 +193,11 @@ function initArena3d(){
     }
     const focus=slots.find(x=>x.id==='kakashi'&&x.technique===2&&x.effect);
     const focusAge=focus?(effectClock-focus.effectAt)/KakashiCombat.durations[2]:-1;
-    camera.zoom=focusAge>=0?1+.10*THREE.MathUtils.smoothstep(focusAge,.04,.16)*(1-THREE.MathUtils.smoothstep(focusAge,.26,.40)):1;camera.updateProjectionMatrix();
+    camera.zoom=focusAge>=0?1+.10*THREE.MathUtils.smoothstep(focusAge,.04,.16)*(1-THREE.MathUtils.smoothstep(focusAge,.26,.40)):1;
+    const ocean=slots.find(x=>x.id==='konan'&&x.technique===2&&x.effect);
+    if(ocean){const ms=effectClock-ocean.effectAt;camera.zoom=1-.13*THREE.MathUtils.smoothstep(ms,650,1450)*(1-THREE.MathUtils.smoothstep(ms,2850,3550));
+      camera.zoom+=Math.sin(ms*.09)*.003*THREE.MathUtils.smoothstep(ms,2630,2660)*(1-THREE.MathUtils.smoothstep(ms,2700,2860));}
+    camera.updateProjectionMatrix();
     renderer.setRenderTarget(null);renderer.setViewport(0,0,width,height);renderer.render(scene,camera);
   }
   arena3d.bind();requestAnimationFrame(draw);
