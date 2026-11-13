@@ -987,7 +987,7 @@ itachi:['Katon — Огненный шар','Karasu Bunshin — Стая вор�
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
 madara:['Гунбай · Торнадо','Скелетный Сусаноо','Совершенный Сусаноо'],
-konan:['Бумажные сюрикены','Бумажные крылья','Бумажный шторм'],
+konan:['Бумажное копьё','Бумажная ловушка','Бумажный океан'],
 obito:['Удар цепью','Камуи','Изанаги']
 };
 const jutsuVisuals={
@@ -1177,9 +1177,9 @@ if(unit.id==='kakashi'){
  if(unit.buff>0)unit.buff--;return;
 }
 if(unit.id==='konan'){
- const side=own===allies?'allyTeam':'foeTeam',victims=action===0?[target]:alive.slice();let applied=false;
+ const side=own===allies?'allyTeam':'foeTeam',victims=action===2?alive.slice():[target];let applied=false;
  const impact=()=>{if(applied||unit.curHp<=0||unit.kamuiUntilRound||(own!==allies&&own!==foes)||!own.includes(unit))return;applied=true;
- const amount=Math.max(1,Math.round(dmg*(action===1?.60:action===2?.55:1)));
+ const amount=Math.max(1,Math.round(dmg*(action===2?.55:1)));
  for(const v of victims){if(!opponents.includes(v)||v.curHp<=0||v.kamuiUntilRound)continue;v.curHp=Math.max(0,v.curHp-amount);}
  if(own===allies)showDamage(amount,crit);log(unit.name+' · '+skill+': −'+amount+(crit?' КРИТ':''));renderTeams();};
  playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);

@@ -69,7 +69,7 @@ function initArena3d(){
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
       active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
-      active.targets=(active.id==='konan'&&technique>0||active.id==='madara'||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
+      active.targets=(active.id==='konan'&&technique===2||active.id==='madara'||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
       if(active.id==='madara'&&technique===0)active.targets=slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound);
       const susanoo=active.id==='madara'&&technique===2;
       const duration=active.id==='konan'?KonanCombat.durations[technique]:active.id==='madara'?MadaraCombat.durations[technique]:active.id==='kakashi'?KakashiCombat.durations[technique]:active.id==='naruto'?NarutoCombat.durations[technique]:active.id==='sasuke'?SasukeCombat.durations[technique]:susanoo||(active.id==='itachi'&&technique===2)?2300:1400;

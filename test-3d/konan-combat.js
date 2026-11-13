@@ -38,6 +38,34 @@ function create(scene,slot,target,technique){
    ring.position.copy(to);ring.scale.setScalar(1+age*2);ringMat.opacity=ms>=1250?(1-ease(ms,1250,1490))*.8:0;
   };
  }
+ if(technique===1){
+  const cage=group(),bands=[];
+  // Ten precomputed curved ribbons tile a closed, faceted egg. Draw ranges
+  // grow from the floor; no per-frame vertex uploads or cloth simulation.
+  for(let i=0;i<10;i++){
+   const positions=[],indices=[],steps=28;
+   for(let j=0;j<=steps;j++){
+    const t=j/steps,phi=t*Math.PI,r=Math.sin(phi)*.76;
+    for(const edge of [-.53,.53]){const a=(i+edge)*Math.PI*2/10+Math.sin(phi)*.28;positions.push(Math.cos(a)*r,1.25-Math.cos(phi)*1.25,Math.sin(a)*r);}
+    if(j<steps){const k=j*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
+   }
+   const g=geo(new T.BufferGeometry());g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();
+   const m=mesh(g,i%3===0?grey:paper,cage);bands.push(m);
+  }
+  const circle=mesh(geo(new T.CircleGeometry(.96,48)),paper);circle.rotation.x=-Math.PI/2;
+  const creaseGeo=geo(new T.TorusGeometry(.7,.014,3,40)),creases=[];
+  for(let i=0;i<5;i++){const m=mesh(creaseGeo,grey,cage);m.rotation.x=Math.PI/2;m.position.y=.45+i*.38;m.scale.setScalar(Math.sin((.45+i*.38)/2.5*Math.PI));creases.push(m);}
+  animate=(ms,g)=>{
+   cage.position.copy(target.home).setY(g+.025);circle.position.copy(target.home).setY(g+.018);
+   const grow=ease(ms,0,400),shrink=1-.25*ease(ms,1050,1250),tear=ease(ms,1450,1900);
+   circle.scale.setScalar(grow*(1-tear));cage.scale.set(shrink,shrink,shrink);
+   bands.forEach((m,i)=>{const rise=ease(ms,400+i*12,960+i*10);m.geometry.setDrawRange(0,Math.floor(rise*28)*6);const a=i*Math.PI*2/10;
+    m.position.set(Math.cos(a)*tear*1.1,tear*.15,Math.sin(a)*tear*1.1);m.rotation.set(tear*Math.cos(a),0,tear*Math.sin(a));m.scale.setScalar(1-tear);
+    if(ms>=1050&&ms<1450)m.position.x+=Math.sin(ms*.09+i)*.018*(1-tear);
+   });
+   creases.forEach(m=>{m.visible=ms>=1050&&ms<1450;});
+  };
+ }
  function dispose(){if(disposed)return;disposed=true;slot.onImpact=null;scene.remove(root);geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
  function update(ms,ground){
   if(disposed)return false;elapsedMs=ms;
