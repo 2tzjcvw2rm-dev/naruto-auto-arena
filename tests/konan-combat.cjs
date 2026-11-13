@@ -30,7 +30,7 @@ for(const page of ['index.html','test-3d/index.html']){
  c.a=a;run('allies[0].rage=a*50;foes.forEach(x=>x.curHp=10000);battleAction(allies[0],allies,foes);foes.forEach(x=>x.curHp=0);fx.update(10000,0)');assert(run('foes.every(x=>x.curHp===0)'));
  }
  // Equipment, guaranteed crit and buff still use the existing damage formula.
- run('s.damage=40;s.critChance=100;s.critDamage=200;allies[0].buff=2;allies[0].rage=50;foes.forEach(x=>x.curHp=10000);battleAction(allies[0],allies,foes);fx.update(1900,0)');
+ run('Math.random=()=>0;s.damage=40;s.critChance=100;s.critDamage=200;allies[0].buff=2;allies[0].rage=50;foes.forEach(x=>x.curHp=10000);battleAction(allies[0],allies,foes);fx.update(1900,0)');
  assert.equal(run('foes.filter(x=>x.curHp===9884).length'),1);
  run('s.damage=0;s.critChance=0;s.critDamage=150;allies[0].buff=0');
  run('const fighter=new THREE.Group();fighter.rotation.set(.1,.2,.3);const rest=fighter.rotation.clone(),pose=KonanCombat.pose(fighter);for(let a=0;a<3;a++){pose.update(.4,a);pose.update(-1,a);if(!fighter.rotation.equals(rest))throw Error("pose drift")}');
