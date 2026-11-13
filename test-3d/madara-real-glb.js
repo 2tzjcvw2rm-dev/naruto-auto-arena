@@ -10,7 +10,7 @@ let gltf=null,state='loading',error=null;const listeners=new Set();
 new T.GLTFLoader().load(url,x=>{gltf=x;state='ready';for(const cb of listeners)cb();listeners.clear();},undefined,e=>{error=String(e?.message||e);state='error';listeners.clear();console.error('[Madara GLB] Missing original asset, no procedural replacement',url,error);});
 S.cast=function(scene,slot,target){
  const root=new T.Group();root.name='madara-user-susanoo-glb';scene.add(root);
- const fx=new T.Group();scene.add(fx),owned=[];
+ const fx=new T.Group();scene.add(fx);const owned=[];
  const dir=slot.side==='foeTeam'?-1:1;
  const victims=(slot.targets||[target]).filter(Boolean);
  const center=victims.reduce((p,v)=>p.add(v.home||v.actor.position),new T.Vector3()).multiplyScalar(1/Math.max(1,victims.length));
