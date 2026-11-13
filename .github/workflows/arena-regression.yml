@@ -61,3 +61,4 @@ jobs:
           node tests/naruto-combat.cjs
           node tests/sasuke-combat.cjs
           node tests/kakashi-combat.cjs
+          node tests/konan-combat.cjs

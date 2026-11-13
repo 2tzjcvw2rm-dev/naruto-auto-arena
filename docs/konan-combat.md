@@ -1,19 +1,47 @@
-# Konan paper combat — 2026-11-13
+# Konan: spear, trap, ocean — 2026-11-13
 
-Both HTML entrypoints load `test-3d/konan-combat.js` before the arena. The source `konan.glb` has no skin/bone rig. Its geometry, materials, proportions and sculpted wings are unchanged. Generic battle morph motion and generic pose are bypassed for Konan only; the new pose gently rotates the intact fighter and the existing arena ground solver plants the model. No camera, formation, equipment, progression or other character abilities are changed.
+Both entrypoints use the same `test-3d/konan-combat.js`. Original unrigged
+`konan.glb` and the other characters are preserved. Whole-model anticipation
+and ten supplemental wing sections replace invented bone animation.
 
-| Technique | Duration | First impact | Paper elements | Damage per victim |
-|---|---:|---:|---:|---|
-| Paper shuriken | 1450 ms | 770 ms | 5 folded four-point shuriken | Existing basic attack damage, once |
-| Paper wings | 1750 ms | 1050 ms | 12–15 blades in three waves | 60% of existing secondary damage, once |
-| Paper storm | 2150 ms | 1400 ms | 36 folded blades | 55% of existing ultimate damage, once |
+| Skill | Duration | Single damage event | Targets |
+|---|---:|---:|---|
+| Paper spear | 1750 ms | 1250 ms | One, existing basic damage |
+| Paper trap | 1900 ms | 1200 ms | One, existing secondary damage |
+| Paper ocean | 3550 ms | 2630 ms | Living opponents, 55% of existing ultimate damage each |
 
-All times are game time from the arena clock; pause and x1/x2/x3 share the existing battle clock. The storm is an open helix behind the wings, followed by individual directed paths to every live target, and short dissipating fragments. The same geometry and material are reused by meshes; no per-frame geometry, textures or lights are created. Five visual shuriken impacts and three visual wing waves never multiply damage. HP is applied at the first visible contact. Later contacts are visual only. Equipment, buffs and crits feed the existing damage formula before the Konan-only AoE multiplier.
+The existing formula supplies equipment, attack, buffs and critical damage.
+Times use the arena game clock, including pause and x1/x2/x3. Large skipped
+frames still apply damage once. Death, Kamui, stale teams, removed targets and
+cancellation are guarded. Renderer rebinding disposes the effect.
 
-The renderer owns effect lifetime; cast completion, death and rebinding dispose shared geometry/material once and cancel the callback. Logical damage additionally guards stale battles and removed/dead/Kamui targets. The 2D fallback schedules damage through BattleTempo and suppresses old generic Konan VFX; it does not pretend to render these 3D techniques.
+Spear: one folded solid BufferGeometry tip and shaft, assembling sheets,
+longitudinal rotation, accelerating launch, seven large fracture pieces.
+Trap: ten indexed curved ribbons with precomputed paths; draw ranges rise from
+a paper circle into a closed egg. Compression, crease rings and segment tearing
+never move the target's formation position.
+Ocean: two opening floor slabs, a dark chasm plane, two 20-layer walls, sixteen
+procedural ink seals, nine low-poly fire volumes with cores, an expanding light
+ring and a brief title. The near wall is translucent to keep enemies visible.
+The camera pulls back 13% without changing its side angle and receives a small,
+time-limited zoom pulse at the final explosion. It returns to its default zoom.
+The earlier explosions are visual only. No fullscreen white flash is used.
+
+Geometry/materials are reused within a cast, tracked in Sets, and disposed once,
+including the title texture. No geometry or materials are allocated per frame.
 
 ## Verification
 
-Run `node tests/konan-combat.cjs`. It checks both real HTML battle handlers, all three skills at x1/x2/x3, damage timing and amount, skipped-frame impact, death/cancel, finite transforms, both attack directions, 1–5 victims, ground clearance of paper centers, effect cleanup, and pose restoration. Existing Itachi, Naruto, Sasuke, Kakashi and Madara combat suites also passed.
+`node tests/konan-combat.cjs` exercises both HTML handlers, damage timing and
+amounts, x1/x2/x3 frame steps, skipped frames, cancellation, caster/target death,
+empty targets, equipment/crit/buff calculation, finite transforms, both directions,
+1–5 enemies, cleanup and pose reset. `tests/side-battle.cjs` additionally loads
+original GLBs and checks the scene integration at five viewport sizes and three
+formations, including all characters' effects and disposal. This is GPU-free.
 
-Browser preview was attempted in the provided Chrome environment. It failed to create a WebGL context (`THREE.WebGLRenderer: Error creating WebGL context`) and showed the existing 2D fallback. Therefore **3D appearance, real Safari/iPhone performance, small-screen readability and impact screenshots are not visually verified**. Mathematical tests do not prove these visual qualities. No claim of visual perfection or measured mobile FPS is made.
+The available browser reports `THREE.WebGLRenderer: Error creating WebGL
+context`. The page loads its 2D fallback. **Real 3D appearance, effect composition,
+iPhone Safari performance and screenshots of key phases remain unverified.**
+Passing JavaScript/geometry tests is not a visual quality approval. Inspect all
+three techniques on a WebGL-capable device before considering visual acceptance
+complete.

@@ -2,7 +2,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=require('node:path').resolve(__dirname,'..');process.chdir(root);
 const context={console,TextDecoder,TextEncoder,ArrayBuffer,Uint8Array,Float32Array,setTimeout,clearTimeout,performance,URL,Blob};
-context.window=context;context.self=context;context.document={hidden:false,querySelector:()=>null,createElement:()=>({getContext:()=>({createRadialGradient:()=>({addColorStop(){}}),fillRect(){}})})};
+context.window=context;context.self=context;context.document={hidden:false,querySelector:()=>null,createElement:()=>({getContext:()=>({createRadialGradient:()=>({addColorStop(){}}),fillRect(){},fillText(){}})})};
 vm.createContext(context);const run=s=>vm.runInContext(s,context);const load=p=>run(fs.readFileSync(p,'utf8'));
 load('test-3d/vendor/three.min.js');load('test-3d/vendor/GLTFLoader.js');
 const html=fs.readFileSync(process.env.NARUTO_TEST_PAGE||'test-3d/index.html','utf8');
@@ -17,7 +17,7 @@ assert.equal(new Set(available.foes).size,5);
 assert(html.includes("const previousTeam="),'Unavailable old team slots must be migrated');
 
 run(html.slice(html.indexOf('function normalizedFighter('),html.indexOf('function openModelPreview(')));
-load('test-3d/madara-susanoo.js');load('test-3d/madara-combat.js');load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
+load('test-3d/konan-combat.js');load('test-3d/madara-susanoo.js');load('test-3d/madara-combat.js');load('test-3d/kakashi-combat.js');load('test-3d/naruto-combat.js');load('test-3d/sasuke-combat.js');load('test-3d/sasuke-profile.js');load('test-3d/combat-profile.js');
 run(html.slice(html.indexOf('const skills='),html.indexOf('const jutsuVisuals=')));
 run(html.slice(html.indexOf('const jutsuVisuals='),html.indexOf('function ',html.indexOf('const jutsuVisuals='))));
 run(`let arena3d=null,arenaUnavailable=false,paused=false;
@@ -67,7 +67,7 @@ if(!((side==='allyTeam'?available.team[index]:available.foes[index])==='madara'&
   if(technique===2)assert.equal(typeof live[0].ultimate,'string',
     'Each non-Madara ultimate should have a unique 3D identity');
 }
-for(let tick=1;tick<=((['naruto','sasuke','kakashi','madara'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?100:technique===2?60:40);tick++)frame();
+for(let tick=1;tick<=((['naruto','sasuke','kakashi','madara','konan'].includes(side==='allyTeam'?available.team[index]:available.foes[index]))?100:technique===2?60:40);tick++)frame();
 assert.equal(run('arena3d.effects().length'),0,'GPU jutsu resources must be removed after the attack');
 const slot=run(`arena3d.inspect().slots.filter(a=>a.side==='${side}')[${index}]`);assert(Math.abs(slot.position[0]-slot.home[0])<.001);assert(Math.abs(slot.position[2]-slot.home[2])<.001);
 }

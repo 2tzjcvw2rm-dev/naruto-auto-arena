@@ -11,6 +11,7 @@ function folded(length,width){
  g.setAttribute('position',new T.Float32BufferAttribute(a,3));g.setAttribute('color',new T.Float32BufferAttribute(c,3));g.computeVertexNormals();return g;
 }
 function create(scene,slot,target,technique){
+ if(!target||!slot?.home)return {update:()=>false,dispose(){if(slot)slot.onImpact=null;},inspect:()=>({id:'konan',technique,disposed:true,victims:0})};
  const root=new T.Group();root.name='konan-'+['spear','cocoon','ocean'][technique];scene.add(root);
  const geometries=new Set(),materials=new Set(),textures=new Set();
  const geo=g=>(geometries.add(g),g),material=p=>{const m=new T.MeshBasicMaterial(p);materials.add(m);return m;};
@@ -78,12 +79,12 @@ function create(scene,slot,target,technique){
   const wallGeo=geo(new T.BoxGeometry(width,.16,.28));
   for(const sign of [-1,1]){
    const wall=new T.Group();ocean.add(wall);walls.push(wall);
-   // Solid rear strata, low front lip: the side camera can still read every fighter.
-   const rows=sign<0?20:7;
-   for(let i=0;i<rows;i++){const m=mesh(wallGeo,i%4===0?grey:paper,wall);m.position.set((i%3-1)*.025,i*.15,Math.sin(i*1.7)*.04);}
+   // Near wall remains translucent so fighters inside the chasm stay readable.
+   const rows=20,frontPaper=sign>0?material({color:0xf5f2e9,transparent:true,opacity:.22,depthWrite:false}):paper,frontGrey=sign>0?material({color:0x9aa6b4,transparent:true,opacity:.2,depthWrite:false}):grey;
+   for(let i=0;i<rows;i++){const m=mesh(wallGeo,i%4===0?frontGrey:frontPaper,wall);m.position.set((i%3-1)*.025,i*.15,Math.sin(i*1.7)*.04);}
    wall.userData={sign};
    for(let i=0;i<8;i++){
-    const seal=new T.Group();wall.add(seal);seal.position.set((i/7-.5)*(width-.35),sign<0?1.05+(i%2)*.8:.38,.17);
+    const seal=new T.Group();wall.add(seal);seal.position.set((i/7-.5)*(width-.35),1.05+(i%2)*.8,.17);
     const ink=material({color:0x171a26});
     const ring=mesh(geo(new T.RingGeometry(.085,.115,12)),ink,seal);
     for(let k=0;k<3;k++){const stroke=mesh(geo(new T.PlaneGeometry(.035,.19)),ink,seal);stroke.rotation.z=k*1.1;stroke.position.z=.004;}
@@ -125,7 +126,7 @@ function create(scene,slot,target,technique){
   wings.position.copy(slot.home).setY(ground);wings.scale.set(1,1+spread*.2,spread*(technique===2?1.7:1));wings.rotation.y=(target.home.x>slot.home.x?1:-1)*Math.PI/2;
   animate(ms,ground);return true;
  }
- return {update,dispose,inspect:()=>({id:'konan',technique,kind:['paper-spear','paper-trap','paper-ocean'][technique],victims:victims.length,elapsedMs,hit,disposed,objects:root.children.length})};
+ return {update,dispose,inspect:()=>({id:'konan',technique,kind:['paper-spear','paper-trap','paper-ocean'][technique],ultimate:technique===2?'paper-ocean':undefined,victims:victims.length,elapsedMs,hit,disposed,objects:root.children.length})};
 }
 window.KonanCombat={durations,impactTimes,pose,create};
 })();
