@@ -1,0 +1,37 @@
+name: Restore original Madara Susanoo GLB
+on:
+  push:
+    branches:
+      - feature/madara-real-susanoo-glb
+    paths:
+      - '.madara-asset/madara-original.glb.xz.b64'
+      - '.github/workflows/restore-madara-glb.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Reconstruct user-provided original GLB
+        run: |
+          set -euo pipefail
+          mkdir -p test-3d/models
+          base64 --decode .madara-asset/madara-original.glb.xz.b64 | xz --decompress > test-3d/models/madara_perfect_susano_sktech.glb
+          echo '16b3897cb8d469420244e3360b9b4d5056ed0dc794f5a90ff186baaf584fd362  test-3d/models/madara_perfect_susano_sktech.glb' | sha256sum --check
+          test "$(stat -c%s test-3d/models/madara_perfect_susano_sktech.glb)" = "1243628"
+      - name: Commit original model bytes to current branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-3d/models/madara_perfect_susano_sktech.glb
+          if ! git diff --cached --quiet; then
+            git commit -m "Add verified original Madara Perfect Susanoo GLB"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
