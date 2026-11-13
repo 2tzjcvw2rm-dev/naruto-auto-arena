@@ -2,7 +2,8 @@
 (function(){
 'use strict';
 const T=window.THREE,E=T.MathUtils.smoothstep,L=T.MathUtils.lerp;
-const durations=[3600,3400,4200],impactTimes=[2700,2312,3318];
+// The first two Madara skills retain their original timings. The GLB ultimate has a longer aftershock.
+const durations=[3600,3400,5000],impactTimes=[2700,2312,3318];
 function pose(fighter){
  const bones=[];fighter.traverse(b=>{if(b.isBone)bones.push({b,rest:b.rotation.clone()});});
  let phase='idle';
