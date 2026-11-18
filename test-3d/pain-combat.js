@@ -139,6 +139,7 @@ function create(scene,slot,target,k) {
     }else{
       if(leftBone)hand.lerp(leftBone.getWorldPosition(left),.5);
       const fly=ease(t,820,1600),compress=ease(t,3470,3780),blast=ease(t,3780,4440);
+      const impulse=1-Math.pow(1-Math.min(1,Math.max(0,(t-3780)/660)),2.8);
       temp.copy(center);temp.y=ground+4.65;
       core.position.copy(hand).lerp(temp,fly);core.visible=t<3780;
       core.scale.setScalar(.155*ease(t,140,620)+.64*ease(t,2060,3270)-.48*compress);
@@ -147,7 +148,7 @@ function create(scene,slot,target,k) {
       for(let i=0;rocks.visible&&i<shards.length;i++){
         const {a,end,span,size}=shards[i], rise=ease(t,1410+(i%8)*76,2810+(i%8)*78);
         const angle=a+rise*2.75, radius=span*(1-rise);
-        dummy.position.copy(temp).addScaledVector(end,1.08*(1-.47*compress)+blast*span*1.35);
+        dummy.position.copy(temp).addScaledVector(end,1.08*(1-.47*compress)+impulse*span*1.55);
         dummy.position.x+=Math.cos(angle)*radius;dummy.position.z+=Math.sin(angle)*radius;
         dummy.position.y=ground+(dummy.position.y-ground)*rise-.85*blast*blast;
         dummy.rotation.set(a+.9*rise+blast*2,a*2+rise,a*.5);
@@ -155,7 +156,7 @@ function create(scene,slot,target,k) {
         dummy.scale.set(scale*1.27,scale,scale*.88);dummy.updateMatrix();rocks.setMatrixAt(i,dummy.matrix);
       }
       rocks.instanceMatrix.needsUpdate=true;
-      burst(temp,.4+blast*(reach*.46+1.6),t>=3780?1-blast:0);
+      burst(temp,.35+impulse*(reach*.52+2.2),t>=3780?1-blast:0);
     }
     return true;
   }
