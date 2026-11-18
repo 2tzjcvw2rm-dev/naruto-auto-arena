@@ -419,7 +419,7 @@ button:active{transform:translateY(2px)}
 </style><link rel="stylesheet" href="./test-3d/battle-scene.css?v=20261105-calm-tempo1"><link rel="stylesheet" href="./test-3d/battle-cinematics.css?v=20261105-cinematic1">
 <script src="./test-3d/battle-environment.js?v=20261105-konoha2" defer></script>
 <script src="./test-3d/naruto-combat.js?v=20261111-ultimate" defer></script>
-<script src="./test-3d/konan-combat.js?v=20261113-ocean2" defer></script><script src="./test-3d/madara-susanoo.js?v=20261112-perfect4" defer></script><script src="./test-3d/madara-real-glb.js?v=20261113-destruction2" defer></script><script src="./test-3d/madara-combat.js?v=20261113-destruction2" defer></script><script src="./test-3d/kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./test-3d/sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./test-3d/battle-pose.js?v=konan1-madara-clones1-20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./test-3d/battle-cinematics.js?v=20261111-naruto" defer></script><script src="./test-3d/battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-scene.js?v=madara-susanoo-destruction2" defer></script><script src="./test-3d/battle-speed.js?v=20261105-tempo1" defer></script><script src="./test-3d/battle-backdrop.js?v=20261105-calm1" defer></script><script src="./test-3d/madara-profile.js?v=20261112-armor1" defer></script>
+<script src="./test-3d/pain-combat.js?v=tendo1" defer></script><script src="./test-3d/konan-combat.js?v=20261113-ocean2" defer></script><script src="./test-3d/madara-susanoo.js?v=20261112-perfect4" defer></script><script src="./test-3d/madara-real-glb.js?v=20261113-destruction2" defer></script><script src="./test-3d/madara-combat.js?v=20261113-destruction2" defer></script><script src="./test-3d/kakashi-combat.js?v=20261112-kamui1" defer></script><script src="./test-3d/sasuke-combat.js?v=20261111-fireball2" defer></script><script src="./test-3d/battle-pose.js?v=konan1-madara-clones1-20261112-kakashi3-20261111-itachi-final1" defer></script><script src="./test-3d/battle-cinematics.js?v=20261111-naruto" defer></script><script src="./test-3d/battle-visual-upgrade.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-ultimate-fx.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/itachi-susanoo.js?v=20261111-itachi-final1" defer></script><script src="./test-3d/battle-scene.js?v=tendo1" defer></script><script src="./test-3d/battle-speed.js?v=20261105-tempo1" defer></script><script src="./test-3d/battle-backdrop.js?v=20261105-calm1" defer></script><script src="./test-3d/madara-profile.js?v=20261112-armor1" defer></script>
 <style>.in-kamui>svg,.in-kamui>.battle-model-image,.in-kamui>.unit-hp,.in-kamui>.rage-bar,.in-kamui>.unit-name,.in-kamui>.unit-power{visibility:hidden!important}.kamui-status{display:block;color:#e7d4ff;background:#281742e8;border:1px solid #a68bea;border-radius:7px;padding:4px 6px;font-size:10px;white-space:nowrap;position:absolute;left:50%;transform:translateX(-50%);top:20px}</style><style>
 .arena-cinematic[data-ninja="madara"] .arena-cinematic-banner{display:none}
 .arena-cinematic[data-ninja="madara"] .arena-cinematic-veil{opacity:.18!important}
@@ -818,6 +818,7 @@ ensureFormation();save();initTeams();renderTeamCards();
 ensureFormation();
 let allies=[],foes=[];
 function initTeams(){
+window.PainCombat?.cancelFallback();
 window.BattleTempo?.cancel('itachi-impact');
 renderedLayout='';
 allies=s.team.map(id=>{let r=roster.find(x=>x.id===id),b=heroBonuses(id);return {...r,atk:r.atk+b.atk,spd:r.spd+b.speed,bonusCrit:b.crit,bonusCritDamage:b.critDamage,curHp:r.hp+b.hp+s.maxHp*.25,maxHp:r.hp+b.hp+s.maxHp*.25,rage:0,buff:0}});
@@ -942,7 +943,7 @@ const skills={
 naruto:['Теневые клоны','Расенган','Футон: Расенсюрикен'],sasuke:['Катон: Большой огненный шар','Чидори','Кирин: Грозовой дракон'],sakura:['Удар','Усиление команды','Великое исцеление'],
 kakashi:['Двойной Чидори','Суйтон: Водяной дракон','Камуи'],hinata:['Мягкий кулак','Восемь триграмм','Защитная ладонь'],
 shikamaru:['Удар','Теневая ловушка','Теневое связывание'],gaara:['Песчаный удар','Песчаный щит','Песчаная буря'],
-itachi:['Katon — Огненный шар','Karasu Bunshin — Стая воронов','Сусаноо — Аматерасу'],pain:['Удар','Притяжение','Шинра Тенсей'],
+itachi:['Katon — Огненный шар','Karasu Bunshin — Стая воронов','Сусаноо — Аматерасу'],pain:['Баншо Тенин','Шинра Тенсей','Чибаку Тенсей'],
 kisame:['Самехада','Водяная атака','Водяной купол'],deidara:['Глина','Взрывная птица','C3'],
 sasori:['Кукла','Ядовитые иглы','Сотня кукол'],
 madara:['Гунбай · Торнадо','Скелетный Сусаноо','Совершенный Сусаноо'],
@@ -1032,6 +1033,7 @@ const visual=(jutsuVisuals[unit.id]||jutsuVisuals.naruto)[action],kind=visual[0]
 const source=el(side+sourceIndex),target=supportTarget||el(targetSide+targetIndex),layer=el('jutsuFxLayer'),arena=layer&&layer.parentElement;
 if(!source||!target||!layer||!arena)return;
 if(arena3d&&arena3d.trigger&&arena3d.trigger(side,sourceIndex,action,targetSide,targetIndex,onImpact))return;
+if(onImpact&&unit.id==='pain'){PainCombat.playFallback(unit,action,source,target,onImpact);return;}
 if(onImpact&&unit.id==='madara'&&action===0){[1008,1332,1692,2700].forEach((ms,i)=>BattleTempo.after('madara-hit-'+i,ms,()=>onImpact(i)));}
 else if(onImpact&&unit.id==='madara')BattleTempo.after('madara-susanoo-impact',MadaraCombat.impactTimes[action],onImpact);
 else if(onImpact&&unit.id==='konan')BattleTempo.after('konan-impact',KonanCombat.impactTimes[action],onImpact);
@@ -1135,6 +1137,25 @@ if(unit.id==='kakashi'){
  playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
  if(unit.buff>0)unit.buff--;return;
 }
+if(unit.id==='pain'){
+ const side=own===allies?'allyTeam':'foeTeam';
+ const victims=action===0?[target]:alive;
+ const amount=Math.max(1,Math.round(dmg*[1,.55,.45][action]));
+ let resolved=false;
+ function impact(){
+   if(resolved||unit.curHp<=0||unit.kamuiUntilRound||!(own===allies&&opponents===foes||own===foes&&opponents===allies))return;
+   resolved=true;
+   const living=victims.filter(v=>opponents.includes(v)&&v.curHp>0&&!v.kamuiUntilRound);
+   if(!living.length)return;
+   for(const v of living)v.curHp=Math.max(0,v.curHp-amount);
+   if(own===allies)showDamage(amount,crit);
+   log(unit.name+' · '+skill+' → '+(action===0?target.name:'вся команда')+' −'+amount+(crit?' КРИТ':''));
+   renderTeams();
+ }
+ playJutsu(unit,side,own.indexOf(unit),own===allies?'foeTeam':'allyTeam',opponents.indexOf(target),action,null,impact);
+ if(unit.buff>0)unit.buff--;
+ return;
+}
 if(unit.id==='konan'){
  const side=own===allies?'allyTeam':'foeTeam',victims=action===2?alive.slice():[target];let applied=false;
  const impact=()=>{if(applied||unit.curHp<=0||unit.kamuiUntilRound||(own!==allies&&own!==foes)||!own.includes(unit))return;applied=true;
@@ -1219,7 +1240,7 @@ battleRoundNumber=0;initTeams();if(el('roundIndicator'))el('roundIndicator').tex
 let roundInProgress=false,actionTimer=null;
 function battleRound(){
 if(roundInProgress)return;
-if(arena3d?.isItachiBusy?.()){BattleTempo.after('round',100,battleRound);return;}
+if(window.PainCombat?.busy||arena3d?.isItachiBusy?.()){BattleTempo.after('round',100,battleRound);return;}
 if(!allies.some(u=>u.curHp>0)){finishBattle(false);return}
 if(!foes.some(u=>u.curHp>0)){finishBattle(true);return}
 roundInProgress=true;
@@ -1230,7 +1251,7 @@ const order=[...allies.map(u=>({u,own:allies,enemy:foes})),...foes.map(u=>({u,ow
 let i=0;
 function step(){
 if(!started||paused){roundInProgress=false;return}
-if(arena3d?.isItachiBusy?.()){actionTimer=BattleTempo.after('action',100,step);return;}
+if(window.PainCombat?.busy||arena3d?.isItachiBusy?.()){actionTimer=BattleTempo.after('action',100,step);return;}
 if(i<order.length&&allies.some(u=>u.curHp>0)&&foes.some(u=>u.curHp>0)){
 const a=order[i++];battleAction(a.u,a.own,a.enemy);render();
 actionTimer=BattleTempo.after('action',2450,()=>{renderTeams();step()});return;

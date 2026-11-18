@@ -53,6 +53,7 @@ function initArena3d(){
     camera.position.copy(center).addScaledVector(view,distance);camera.lookAt(center);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
   }
   function screenPoint(position){projected.copy(position).project(camera);return {x:(projected.x+1)*width/2,y:(1-projected.y)*height/2}}
+  const painOffset=new THREE.Vector3();
   function bodyBounds(slot){
     slot.actor.updateMatrixWorld(true);bounds.makeEmpty();
     for(const mesh of slot.bodyMeshes){if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();bounds.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));}
@@ -65,32 +66,32 @@ function initArena3d(){
       if(!active)return false;
       const target=slots.find(x=>x.side===targetSide&&x.index===targetIndex);
       if(!target)return false; // Keep original 2D fallback during GLB loading.
-      if((active.id==='konan'||active.id==='itachi'||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi'||active.id==='madara')&&active.effect)return true;
+      if((active.id==='pain'||active.id==='konan'||active.id==='itachi'||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi'||active.id==='madara')&&active.effect)return true;
       active.effect?.dispose();active.effect=null;
       active.attackAt=effectClock;active.effectAt=effectClock;
       active.technique=technique;active.target=target;active.onImpact=onImpact;active.impactMs=technique===2?1817:868;
-      active.targets=(active.id==='konan'&&technique===2||active.id==='madara'||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
+      active.targets=(active.id==='pain'&&technique>0||active.id==='konan'&&technique===2||active.id==='madara'||active.id==='kakashi'&&technique===0||active.id==='itachi'&&technique===2||active.id==='sasuke'&&technique!==1)?slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound):[target];
       if(active.id==='madara'&&technique===0)active.targets=slots.filter(x=>x.side===targetSide&&!x.unit.classList.contains('down')&&!x.combatant?.kamuiUntilRound);
       const susanoo=active.id==='madara'&&technique===2;
-      const duration=active.id==='konan'?KonanCombat.durations[technique]:active.id==='madara'?MadaraCombat.durations[technique]:active.id==='kakashi'?KakashiCombat.durations[technique]:active.id==='naruto'?NarutoCombat.durations[technique]:active.id==='sasuke'?SasukeCombat.durations[technique]:susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
-      if(technique===2&&active.id!=='konan')window.BattleCinematics?.start({
+      const duration=active.id==='pain'?PainCombat.durations[technique]:active.id==='konan'?KonanCombat.durations[technique]:active.id==='madara'?MadaraCombat.durations[technique]:active.id==='kakashi'?KakashiCombat.durations[technique]:active.id==='naruto'?NarutoCombat.durations[technique]:active.id==='sasuke'?SasukeCombat.durations[technique]:susanoo||(active.id==='itachi'&&technique===2)?2300:1400;
+      if(technique===2&&active.id!=='pain'&&active.id!=='konan')window.BattleCinematics?.start({
         id:active.id,side,label:(skills[active.id]||[])[2],now:effectClock,duration
       });
       const visual=(jutsuVisuals[active.id]||jutsuVisuals.naruto)[technique];
-      active.effect=(active.id==='konan'?KonanCombat.create(scene,active,target,technique):active.id==='madara'&&technique<2?MadaraCombat.create(scene,active,target,technique):active.id==='kakashi'?KakashiCombat.create(scene,active,target,technique):active.id==='naruto'?NarutoCombat.create(scene,active,target,technique):active.id==='sasuke'?SasukeCombat.create(scene,active,target,technique):null)|| (susanoo?createMadaraSusanoo(THREE,scene,active,target):
+      active.effect=(active.id==='pain'?PainCombat.create(scene,active,target,technique):active.id==='konan'?KonanCombat.create(scene,active,target,technique):active.id==='madara'&&technique<2?MadaraCombat.create(scene,active,target,technique):active.id==='kakashi'?KakashiCombat.create(scene,active,target,technique):active.id==='naruto'?NarutoCombat.create(scene,active,target,technique):active.id==='sasuke'?SasukeCombat.create(scene,active,target,technique):null)|| (susanoo?createMadaraSusanoo(THREE,scene,active,target):
         (window.createArenaTechniqueFX?.(THREE,scene,active,target,technique,visual[0],visual[1])||null));
       if(target.side!==side){
-        target.hitAt=(active.id==='konan'||active.id==='madara'||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi')?Infinity:effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
+        target.hitAt=(active.id==='pain'||active.id==='konan'||active.id==='madara'||active.id==='naruto'||active.id==='sasuke'||active.id==='kakashi')?Infinity:effectClock+(active.id==='itachi'?active.impactMs:susanoo?1817:760);
         target.hitFrom=active.home.clone();
         // Battle HP updates immediately. Preserve a knocked-out model until
         // the impact reaches it, then honor the normal 'down' state.
         target.downGraceUntil=Math.max(target.downGraceUntil||0,effectClock+(active.id==='naruto'||active.id==='sasuke'?duration:susanoo?2120:1090));
-        if(active.id==='konan'||active.id==='sasuke'&&technique!==1)for(const other of active.targets)
+        if(active.id==='pain'||active.id==='konan'||active.id==='sasuke'&&technique!==1)for(const other of active.targets)
           other.downGraceUntil=Math.max(other.downGraceUntil||0,effectClock+duration);
       }
       return true;
     },
-    isItachiBusy(){return slots.some(a=>(a.id==='konan'||a.id==='itachi'||a.id==='naruto'||a.id==='sasuke'||a.id==='kakashi'||a.id==='madara')&&a.effect)},
+    isItachiBusy(){return slots.some(a=>(a.id==='pain'||a.id==='konan'||a.id==='itachi'||a.id==='naruto'||a.id==='sasuke'||a.id==='kakashi'||a.id==='madara')&&a.effect)},
     returnKamui(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);if(!slot)return;slot.kamuiWarp=1;slot.returnAt=effectClock;slot.returnEffect?.dispose();slot.returnEffect=KakashiCombat.portal(scene,slot,true);},
     effects(){return slots.filter(a=>a.effect).map(a=>a.effect.inspect())},
     point(side,index){const slot=slots.find(x=>x.side===side&&x.index===index);return slot?slotPoint(slot,1):null},
@@ -109,8 +110,8 @@ function initArena3d(){
           const bodyMeshes=[];model.traverse(o=>{if(o.isMesh)bodyMeshes.push(o)});
           const actor=new THREE.Group();actor.add(fighter);actor.scale.setScalar(1.65);actor.position.copy(home);actor.rotation.y=side==='allyTeam'?Math.PI/2:-Math.PI/2;scene.add(actor);
           const shadow=new THREE.Mesh(shadowGeometry,shadowMaterial);shadow.rotation.x=-Math.PI/2;shadow.position.copy(home);shadow.position.y=.012;scene.add(shadow);
-          const motion=u.id==='konan'?null:combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='naruto'?NarutoCombat.mount(fighter):u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
-          const pose=window.BattlePose?.mount(fighter,u.id)||null;
+          const motion=u.id==='pain'||u.id==='konan'?null:combat?CombatProfile.mount(u.id,fighter,{renderer,scene,camera,battle:true}):(u.id==='naruto'?NarutoCombat.mount(fighter):u.id==='sasuke'?makeSasukeProfileMotion(fighter,true):makeHeroMotion(u.id,fighter));
+          const pose=u.id==='pain'?PainCombat.pose(fighter):window.BattlePose?.mount(fighter,u.id)||null;
           const posedMeshes=bodyMeshes.map(mesh=>mesh.parent?mesh:model.getObjectByName(mesh.name)).filter(Boolean);
           slots.push({id:u.id,combatant:u,unit,model,bodyMeshes:posedMeshes,actor,fighter,shadow,home,side,index:i,motion,pose,attackAt:null,technique:0,target:null,phase:'idle',downGraceUntil:0});unit.classList.add('has-model');
         });
@@ -134,16 +135,17 @@ function initArena3d(){
     // Preserve the exact x/z lanes, yaw, scale and camera. Only visually
     // place the existing fighters and their contact shadows on the GIF grass.
     visualGroundY=height>=width?-2.65:-1.1;
+    const tendo=slots.find(a=>a.id==='pain'&&a.effect&&a.combatant.curHp>0&&!a.combatant.kamuiUntilRound);
     for(const slot of slots){
       const {unit,actor,shadow,side,home,motion}=slot;
       if(slot.returnEffect&&!slot.returnEffect.update(effectClock-slot.returnAt,visualGroundY))slot.returnEffect=null;
       actor.scale.setScalar(1.65*(slot.kamuiWarp===undefined?1:slot.kamuiWarp));
       actor.visible=!slot.combatant?.kamuiUntilRound&&(!unit.classList.contains('down')||effectClock<(slot.downGraceUntil||0));
       shadow.visible=actor.visible;
-      if((slot.id==='konan'||slot.id==='itachi'||slot.id==='naruto'||slot.id==='sasuke'||slot.id==='kakashi'||slot.id==='madara')&&unit.classList.contains('down')){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;slot.attackAt=null;}
+      if((slot.id==='pain'||slot.id==='konan'||slot.id==='itachi'||slot.id==='naruto'||slot.id==='sasuke'||slot.id==='kakashi'||slot.id==='madara')&&unit.classList.contains('down')){slot.effect?.dispose();slot.effect=null;slot.onImpact=null;slot.attackAt=null;}
       if(!actor.visible){const label=screenPoint(new THREE.Vector3(home.x,visualGroundY+1.98,home.z));unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');slot.effect?.dispose();slot.effect=null;slot.onImpact=null;continue}
       const susanoo=slot.id==='madara'&&slot.technique===2;
-      const duration=slot.id==='konan'?KonanCombat.durations[slot.technique]:slot.id==='madara'?MadaraCombat.durations[slot.technique]:slot.id==='kakashi'?KakashiCombat.durations[slot.technique]:slot.id==='naruto'?NarutoCombat.durations[slot.technique]:slot.id==='sasuke'?SasukeCombat.durations[slot.technique]:susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
+      const duration=slot.id==='pain'?PainCombat.durations[slot.technique]:slot.id==='konan'?KonanCombat.durations[slot.technique]:slot.id==='madara'?MadaraCombat.durations[slot.technique]:slot.id==='kakashi'?KakashiCombat.durations[slot.technique]:slot.id==='naruto'?NarutoCombat.durations[slot.technique]:slot.id==='sasuke'?SasukeCombat.durations[slot.technique]:susanoo||(slot.id==='itachi'&&slot.technique===2)?2300:1400;
       const elapsed=slot.attackAt===null?-1:effectClock-slot.effectAt;
       const p=elapsed>=0&&elapsed<duration?elapsed/duration:-1;
       const direction=side==='allyTeam'?1:-1,target=slot.target;
@@ -160,7 +162,7 @@ function initArena3d(){
       if(enemyTarget&&p>=0){
         const dx=target.home.x-home.x,dz=target.home.z-home.z,distance=Math.max(.01,Math.hypot(dx,dz));
         yaw=Math.atan2(dx,dz);
-        const travel=slot.id==='konan'||slot.id==='madara'||slot.id==='kakashi'||susanoo||slot.id==='naruto'&&slot.technique===2||slot.id==='sasuke'&&slot.technique!==1?0:melee?Math.max(0,distance-((slot.id==='naruto'||slot.id==='sasuke'||slot.id==='kakashi')?0.70:1.2)):.16;
+        const travel=slot.id==='pain'||slot.id==='konan'||slot.id==='madara'||slot.id==='kakashi'||susanoo||slot.id==='naruto'&&slot.technique===2||slot.id==='sasuke'&&slot.technique!==1?0:melee?Math.max(0,distance-((slot.id==='naruto'||slot.id==='sasuke'||slot.id==='kakashi')?0.70:1.2)):.16;
         actor.position.x+=dx/distance*travel*advance;
         actor.position.z+=dz/distance*travel*advance;
       }
@@ -184,10 +186,11 @@ function initArena3d(){
       }else if(slot.id==='madara')slot.fighter.rotation.x=0;
       // Recompute footing after all rotations; shadows remain on the GIF grass.
       actor.position.y=0;bodyBounds(slot);actor.position.y=visualGroundY-bounds.min.y;
+      if(tendo?.effect){tendo.effect.motion(slot,effectClock-tendo.effectAt,painOffset);actor.position.add(painOffset);}
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
       if(slot.effect&&!slot.effect.update(elapsed,visualGroundY))slot.effect=null;
       shadow.position.set(actor.position.x,visualGroundY+.012,actor.position.z);
-      if(slot.onImpact&&!(slot.id==='konan')&&slot.id!=='naruto'&&slot.id!=='sasuke'&&!(slot.id==='kakashi'||slot.id==='madara')&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
+      if(slot.onImpact&&slot.id!=='pain'&&!(slot.id==='konan')&&slot.id!=='naruto'&&slot.id!=='sasuke'&&!(slot.id==='kakashi'||slot.id==='madara')&&elapsed>=slot.impactMs){const impact=slot.onImpact;slot.onImpact=null;impact();}
       const label=slotPoint(slot,1.98);
       unit.style.setProperty('left',label.x+'px','important');unit.style.setProperty('top',label.y+'px','important');
     }
@@ -206,6 +209,11 @@ function initArena3d(){
       // Wider framing accommodates the 4.60-unit original GLB without cutting off the helmet.
       camera.zoom *= 1 - .30 * easing(m, 180, 820) * (1 - easing(m, 4000, 4930));
       camera.zoom += Math.sin(m * .13) * .0058 * easing(m, 3290, 3325) * (1 - easing(m, 3460, 3580));
+    }
+    if(tendo?.effect&&tendo.technique===2){
+      const ms=effectClock-tendo.effectAt,ease=THREE.MathUtils.smoothstep;
+      camera.zoom*=1-.17*ease(ms,640,1440)*(1-ease(ms,4030,4720));
+      camera.zoom+=.017*Math.sin((ms-3780)*.045)*ease(ms,3780,3800)*(1-ease(ms,3810,4030));
     }
     camera.updateProjectionMatrix();
     renderer.setRenderTarget(null);renderer.setViewport(0,0,width,height);renderer.render(scene,camera);
